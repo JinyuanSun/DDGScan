@@ -1,6 +1,6 @@
 # Codes_for_FoldX
 some useful codes for [foldx](http://foldxsuite.crg.eu/products#foldx) 
-# pdb2seq
+# [pdb2seq](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/pdb2seq.py)
 convert a pdb file to a fasta  
 usage: python pdb2seq.py name.pdb
 # [prepare4scan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4scan.py)
