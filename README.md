@@ -1,5 +1,8 @@
 # Codes_for_FoldX
-some useful codes for foldx 
-# [prepare4scan] (https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4scan.py)
+some useful codes for [foldx](http://foldxsuite.crg.eu/products#foldx) 
+# pdb2seq
+convert a pdb file to a fasta  
+usage: python pdb2seq.py name.pdb
+# [prepare4scan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4scan.py)
 to build the config file for foldx to preform a saturated mutation scan  
-usage: python prepare4scan -i seq.fasta -p name_Repair.pdb
+usage: python prepare4scan.py -i seq.fasta -p name_Repair.pdb
