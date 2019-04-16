@@ -7,5 +7,5 @@ usage: python pdb2seq.py name.pdb
 to build the config file for foldx to preform a saturated mutation scan  
 usage: python prepare4scan.py -i seq.fasta -p name_Repair.pdb
 # prepare4buildmodel
-prepare the individual list for BuildModel in FoldX   
+prepare the individual list for [BuildModel](http://foldxsuite.crg.eu/command/BuildModel) in FoldX   
 usage:python prepare4buildmodel.py -i PS_pdbid_scanning_output.txt -l a_number
