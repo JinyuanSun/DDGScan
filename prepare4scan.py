@@ -18,7 +18,7 @@ def readseq(fasta):
     return seq
 
 
-ofile = open('config_scan.cgf', "w")
+ofile = open('config_scan.cfg', "w")
 print('command=PositionScan' + '\n' + 'pdb=' + pdbid + '\n' + 'positions=', end='', file=ofile)
 
 seq = readseq(inf)
