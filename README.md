@@ -9,3 +9,6 @@ usage: python prepare4scan.py -i seq.fasta -p name_Repair.pdb
 # [prepare4buildmodel](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4buildmodel.py)
 prepare the individual list for [BuildModel](http://foldxsuite.crg.eu/command/BuildModel) in FoldX   
 usage:python prepare4buildmodel.py -i PS_pdbid_scanning_output.txt -l a_number
+# [prepare4buildmodel](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positioncsan.py)
+To run the positionscan in a faster way with more threads 
+usage:python multiple_threads_foldx_positioncsan.py -s pdb -nt number_of_threads
