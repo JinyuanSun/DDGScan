@@ -11,7 +11,9 @@ LARGE_FONT= ("Verdana", 12)
 NORM_FONT = ("Helvetica", 10)
 SMALL_FONT = ("Helvetica", 8)
 '''
-
+os.system("mkdir EasyFoldx")
+sourcePath = "EasyFoldx"
+os.chdir(sourcePath)
 
 def mutation():
     inputname = pdb_text.get()
@@ -19,14 +21,38 @@ def mutation():
     pdbname = inputname.split(".")[0] + "_Repair.pdb"
     mut = mutation_text.get()
     l = mut[0] + chainid + mut[1:]
-
+    print(l)
     o = "command=PositionScan\npdb=" + pdbname + "\npositions=" + l
     of_name = "MT_" + mut + ".cfg"
     of = open(of_name, "w+")
     of = open(of_name, "a+")
     print(o, file=of)
-    os.system("nohup ./foldx -f " + of_name + " &")
+    #cmd = "./foldx --config " + of_name
+    #os.system("./foldx -f " + of_name)
+    os.system("nohup ./foldx -f " + of_name+" &")
 
+
+def analyze():
+    inputname = pdb_text.get()
+    filename = "PS_"+inputname+"_Repair_scanning_output.txt"
+    '''
+    file = open(filename)
+    l = ''
+    for x in file:
+        l = l +x+"\n"
+    mut_out.insert(END,l)
+    '''
+    data = []
+    with open(filename) as f:
+        for line in f:
+            data += line.split()
+
+#Create your listbox here.
+    for i in range(len(data)):
+        mut_out.insert(i+1, data[i])
+
+    #print("./foldx -f " + of_name)
+#
 
 def PS():
     inputname = pdb_text.get()
@@ -136,15 +162,15 @@ nt_lable.grid(row=3, column=0, sticky=W)
 nt_entry = Entry(app, textvariable=nt_text)
 nt_entry.grid(row=3, column=1)
 
-'''
+
 # mutation out
 mut_out = Listbox(app, height=8, width=50, border=0)
-mut_out.grid(row=3, column=0, columnspan=3, rowspan=6, pady=20, padx=20)
+mut_out.grid(row=4, column=0, columnspan=3, rowspan=6, pady=20, padx=20)
 
 # creat scrollbar
 scrollbar = Scrollbar(app)
-scrollbar.grid(row=3, column=3)
-'''
+scrollbar.grid(row=4, column=3)
+
 
 # Buttons
 fetch_btn = Button(app, text='Fetch', width=12, command=getpdb)
@@ -159,6 +185,15 @@ Position_Scan_btn.grid(row=3, column=2)
 mutation_btn = Button(app, text='Foldx Mutation', width=12, command=mutation)
 mutation_btn.grid(row=2, column=2)
 
+analyze_btn = Button(app, text='Show', width=12, command=analyze)
+analyze_btn.grid(row=5, column=0)
+
+
+def pwd():
+    print(os.getcwd())
+
+pwd_btn = Button(app, text='pwd', width=12, command=pwd)
+pwd_btn.grid(row=2, column=3)
 # set scroll to listbox
 # mut_out.configure(yscrollcommand=scrollbar.set)
 # scrollbar.configure(command=mut_out.yview)
