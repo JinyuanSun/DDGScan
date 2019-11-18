@@ -23,6 +23,11 @@ This script can be simply builded by: `pyinstaller GUI.py`
   - LINUX: `sudo apt-get install python3-tk`
   - MAC: Most already installed and you can refer to this link: https://discourse.brew.sh/t/python3-installation-with-tkinter/3636  
 3. run `python3 GUI.py`  
+4. Usage  
+  - After the PDB ID, you can enter the four-digit PDB code, or you can enter six digits: 3wzl_A represents the A chain of  3wzl, and the acquisition is directly downloaded from the RCSB database.  
+  - At present, the PDB ID and the input PDB are synchronized and can be modified by user. Foldx Repair is a preparation step for calculating the mutation ddG, and the calculation of A chain of 3wzl takes about several minutes.  
+  - Mutation currently only supports single point mutations (eg. M1A, mutate the first Met to Ala)  
+  - The <"Foldx Position Scan"> is currently not recommended. This is a saturated mutation scanner, the input is the number of threads, because foldx does not support MPI, so this is a manual multi-thread. See [multiple_threads_positionscan](https://github.com/github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positionscan.py) for details. 
 If you have any questions, please contact 1650949260@qq.com  
 # GUI版本foldx使用教程（目前支持MAC,LINUX)  
 # 因为foldx本身是需要许可证的，所以我不能在这里提供下载，以下的说明是针对我所在的组里面的成员的。
