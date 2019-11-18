@@ -15,9 +15,19 @@ usage:python multiple_threads_foldx_positioncsan.py -s pdb -nt number_of_threads
 
 # [GUI script](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/GUI.py)
 For Biologists who has difficulty in command-line tools.  
-This script can be simply builded by: pyinstaller GUI.py  
+This script can be simply builded by: `pyinstaller GUI.py`  
 
-# GUI版本foldx使用教程（目前支持MAC）  
+# For the most people  
+1. Download the GUI.py  
+2. make sure you have tkinter installed, which can be install by the following command:  
+  - LINUX: `sudo apt-get install python3-tk`
+  - MAC: Most already installed and you can refer to this link: https://discourse.brew.sh/t/python3-installation-with-tkinter/3636  
+3. run `python3 GUI.py`  
+
+If you have any questions, please contact 1650949260@qq.com  
+
+# GUI版本foldx使用教程（目前支持MAC,LINUX)  
+# 因为foldx本身是需要许可证的，所以我不能在这里提供下载，以下的说明是针对我所在的组里面的成员的。
 
 1.安装  
   1. 打开终端  
@@ -33,7 +43,8 @@ This script can be simply builded by: pyinstaller GUI.py
  
 如有任何问题，请联系1650949260@qq.com
 
-# GUI version foldx tutorial (currently supports MAC only )
+# GUI version foldx tutorial (currently supports MAC and LINUX only)  
+# Beacues Foldx requires lisence, I can't provide it here, the following guide is for members in the lab I'm working with.  
 
 1. Installation  
   - Open terminal  
