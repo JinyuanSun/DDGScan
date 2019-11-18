@@ -50,3 +50,10 @@ If you have any questions, please contact 1650949260@qq.com
   - Mutation currently only supports single point mutations (eg. M1A, mutate the first Met to Ala)  
   - The <"Foldx Position Scan"> is currently not recommended. This is a saturated mutation scanner, the input is the number of threads, because foldx does not support MPI, so this is a manual multi-thread. See [multiple_threads_positionscan](https://github.com/github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positionscan.py) for details.  
 If you have any questions, please contact 1650949260@qq.com
+
+
+# PS:  
+The FoldX5 provides a graphical user interface available as a python plugin for the YASARA molecular viewer.
+
+# Reference
+1. Javier Delgado, Leandro G Radusky, Damiano Cianferoni, Luis Serrano, FoldX 5.0: working with RNA, small molecules and a new graphical interface, Bioinformatics, Volume 35, Issue 20, 15 October 2019, Pages 4168–4169, https://doi.org/10.1093/bioinformatics/btz184
