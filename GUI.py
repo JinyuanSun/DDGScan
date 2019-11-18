@@ -124,7 +124,7 @@ def getpdb():
 
 
 def repair_pdb():
-    inputname = pdb_text.get()
+    inputname = pdb_text.get()+".pdb"
     pdbname = inputname.split(".")[0] + "_Repair.pdb"
     os.system("./foldx --command=RepairPDB --pdb=" + inputname)
     cwd = os.getcwd() + "/" + pdbname
