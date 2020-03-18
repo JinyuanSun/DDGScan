@@ -15,7 +15,7 @@ import os
 try:
     file = open("SO_"+pdbname.replace("pdb","fxout"),"r")
 except FileNotFoundError:
-    os.system("./foldx -command=SequenceOnly -pdb="+pdbname)
+    os.system("./foldx --command=SequenceOnly --pdb="+pdbname)
     file = open("SO_"+pdbname.replace("pdb","fxout"),"r")
 lst = []
 for line in file:
@@ -23,7 +23,7 @@ for line in file:
     if len(l)>3:
         lst.append(l[3]+"a")
         
-t = len(lst)//(nt-1)
+t = len(lst)//(int(nt)-1)
 n = 0
 for i in range(0,len(lst),t):
     b=lst[i:i+t]
@@ -33,7 +33,7 @@ for i in range(0,len(lst),t):
     n = n + 1
     o = "command=PositionScan\npdb="+pdbname+"\npositions="+l
     of_name = "PS_"+str(n)+".cfg"
-    #of = open(of_name,"w+")
-    #of = open(of_name,"a+")
+    of = open(of_name,"w+")
+    of = open(of_name,"a+")
     print(o[:-1],file=of)
     os.system("nohup ./foldx -f "+of_name+" &")
