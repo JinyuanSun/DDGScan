@@ -41,7 +41,7 @@ If you have any questions, please contact
   - 目前PDB ID和Input PDB是同步的，可自行修改，Foldx Repair是计算突变ddG的准备步骤，3wzl的A链大概需要几分钟。  
   - Mutation目前仅支持单点突变，（如M1A，即为第一位的Met突变为Ala）  
   - Number of Threads目前不建议使用，这是一个饱和突变扫描程序，输入为线程数，因为foldx不支持MPI，所以这是一个手动多线程。具体内容可参见[multiple_threads_positionscan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positionscan.py)。  
-如有任何问题，请联系1650949260@qq.com
+如有任何问题，请联系
 # GUI version foldx tutorial (currently supports MAC and LINUX only)  
 # Beacues Foldx requires lisence, I can't provide it here, the following guide is for members in the lab I'm working with.  
 1. Installation  
