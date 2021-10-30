@@ -1,23 +1,24 @@
 # Codes_for_FoldX
+## Scripts
 some useful codes for [foldx](http://foldxsuite.crg.eu/products#foldx) 
-# [pdb2seq](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/pdb2seq.py)
+### [pdb2seq](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/pdb2seq.py)
 convert a pdb file to a fasta  
 usage: python pdb2seq.py name.pdb
-# [prepare4scan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4scan.py)
+### [prepare4scan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4scan.py)
 to build the config file for foldx to preform a saturated mutation scan  
 usage: python prepare4scan.py -i seq.fasta -p name_Repair.pdb
-# [prepare4buildmodel](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4buildmodel.py)
+### [prepare4buildmodel](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/prepare4buildmodel.py)
 prepare the individual list for [BuildModel](http://foldxsuite.crg.eu/command/BuildModel) in FoldX   
 usage:python prepare4buildmodel.py -i PS_pdbid_scanning_output.txt -l a_number
-# [multiple_threads_positionscan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positionscan.py)
+### [multiple_threads_positionscan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positionscan.py)
 To run the positionscan in a faster way with more threads   
 usage:python multiple_threads_foldx_positioncsan.py -s pdb -nt number_of_threads
 
-# [GUI script](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/GUI.py)
+## [GUI script](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/GUI.py)
 For Biologists who has difficulty in command-line tools.  
 This script can be simply builded by: `pyinstaller GUI.py`  
 
-# Guide for the most people  
+## Guide for the most people  
 1. Download the GUI.py  
 2. make sure you have tkinter installed, which can be install by the following command:  
   - LINUX: `sudo apt-get install python3-tk`
@@ -29,8 +30,8 @@ This script can be simply builded by: `pyinstaller GUI.py`
   - Mutation currently only supports single point mutations (eg. M1A, mutate the first Met to Ala)  
   - The <"Foldx Position Scan"> is currently not recommended. This is a saturated mutation scanner, the input is the number of threads, because foldx does not support MPI, so this is a manual multi-thread. See [multiple_threads_positionscan](https://github.com/github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positionscan.py) for details. 
 If you have any questions, please contact  
-# GUI版本foldx使用教程（目前支持MAC,LINUX)  
-# 因为foldx本身是需要许可证的，所以我不能在这里提供下载，以下的说明是针对我所在的组里面的成员的。
+## GUI版本foldx使用教程（目前支持MAC,LINUX)  
+### 因为foldx本身是需要许可证的，所以我不能在这里提供下载，以下的说明是针对我所在的组里面的成员的。
 1.安装  
   - 打开终端  
   - 输入： mkdir EasyFoldx  
@@ -42,8 +43,8 @@ If you have any questions, please contact
   - Mutation目前仅支持单点突变，（如M1A，即为第一位的Met突变为Ala）  
   - Number of Threads目前不建议使用，这是一个饱和突变扫描程序，输入为线程数，因为foldx不支持MPI，所以这是一个手动多线程。具体内容可参见[multiple_threads_positionscan](https://github.com/JinyuanSun/Codes_for_FoldX/blob/master/multiple_threads_foldx_positionscan.py)。  
 如有任何问题，请联系
-# GUI version foldx tutorial (currently supports MAC and LINUX only)  
-# Beacues Foldx requires lisence, I can't provide it here, the following guide is for members in the lab I'm working with.  
+## GUI version foldx tutorial (currently supports MAC and LINUX only)  
+### Beacues Foldx requires lisence, I can't provide it here, the following guide is for members in the lab I'm working with.  
 1. Installation  
   - Open terminal  
   - Enter: mkdir EasyFoldx  
@@ -57,8 +58,8 @@ If you have any questions, please contact
 If you have any questions, please contact 
 
 
-# PS:  
+## PS:  
 The FoldX5 provides a graphical user interface available as a python plugin for the YASARA molecular viewer.
 
-# Reference
+## Reference
 1. Javier Delgado, Leandro G Radusky, Damiano Cianferoni, Luis Serrano, FoldX 5.0: working with RNA, small molecules and a new graphical interface, Bioinformatics, Volume 35, Issue 20, 15 October 2019, Pages 4168–4169, https://doi.org/10.1093/bioinformatics/btz184
