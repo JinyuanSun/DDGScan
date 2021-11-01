@@ -4,7 +4,7 @@
 
 ### Installation
 First of all, please make sure you have added the foldx executable to your environment!  
-The installation is simplely clone this repo and add it to PATH:
+To install it, simplely clone this repo and add it to PATH:
 ```bash
 git clone https://github.com/JinyuanSun/Codes_for_FoldX.git &&
 cd Codes_for_FoldX && export PATH="$(pwd):$PATH"
