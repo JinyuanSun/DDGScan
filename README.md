@@ -16,7 +16,7 @@ wget https://files.rcsb.org/download/1PGA.pdb
 nohup parallelfoldscan.py -pdb 1PGA.pdb -chain A -cpu 16 -fc 1 -mode run &
 ```
 You should expecting outputs like:  
-A floder named `foldx_results` containing:
+A folder named `foldx_results` containing:
 ```
 All_FoldX.score
 MutationsEnergies_BestPerPositionBelowCutOff_SortedByEnergy.tab
@@ -29,6 +29,11 @@ MutationsEnergies_CompleteList_SortedByEnergy.tab
 MutationsEnergies_BestPerPositionBelowCutOff.tab
 ```
 And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for every mutation built by FoldX.
+### Inspect structures
+Using `scripts/inspectmutation.py` to inspect mutations in pymol:
+```bash
+pymol inspectmutation.py $Wildtype_structure $Mutation_structure $Mutation_position $Chain
+```
 ### 如果你在中国大陆地区，可以使用`Gitee`:
 ```bash
 git clone https://gitee.com/puzhunanlu30/Codes_for_FoldX.git
