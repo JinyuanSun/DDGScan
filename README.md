@@ -30,3 +30,7 @@ MutationsEnergies_BestPerPosition.tab
 MutationsEnergies_CompleteList_SortedByEnergy.tab
 MutationsEnergies_BestPerPositionBelowCutOff.tab
 ```
+### 如果你在中国大陆地区，可以使用`Gitee`:
+```bash
+git clone https://gitee.com/puzhunanlu30/Codes_for_FoldX.git
+```
