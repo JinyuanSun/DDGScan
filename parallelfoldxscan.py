@@ -1,4 +1,5 @@
-import argparse
+#!/usr/bin/env python
+
 import pandas as pd
 import os
 import utlis.foldx as foldx

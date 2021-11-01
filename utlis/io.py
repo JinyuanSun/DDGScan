@@ -33,7 +33,7 @@ class Parser:
     def __init__(self):
         pass
     def get_args():
-        parser = argparse.ArgumentParser(description='Run GRAPE')
+        parser = argparse.ArgumentParser(description='Run FoldX in Parallel for in silico deep mutation scan.')
         parser.add_argument("-pdb", '--pdb', help="Input PDB")
         parser.add_argument("-chain", '--chain', help="Input PDB Chain to do in silico DMS", default="A")
         parser.add_argument("-cpu", '--threads', help="Number of threads to run FoldX, Rosetta and HHblits", default=16)
