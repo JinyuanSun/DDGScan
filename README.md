@@ -30,6 +30,7 @@ MutationsEnergies_BestPerPosition.tab
 MutationsEnergies_CompleteList_SortedByEnergy.tab
 MutationsEnergies_BestPerPositionBelowCutOff.tab
 ```
+And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for every mutation built by FoldX.
 ### 如果你在中国大陆地区，可以使用`Gitee`:
 ```bash
 git clone https://gitee.com/puzhunanlu30/Codes_for_FoldX.git
