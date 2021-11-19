@@ -4,10 +4,12 @@ import pandas as pd
 import os
 import utlis.foldx as foldx
 import utlis.io as io
+from joblib import Parallel, delayed
 
 from multiprocessing import Pool, cpu_count
 
 
+'''
 class ParallelSim(object):
     def __init__(self, processes=cpu_count()):
         self.pool = Pool(processes=processes)
@@ -30,38 +32,48 @@ class ParallelSim(object):
 
     def get_results(self):
         return self.results
+'''
 
 class GRAPE:
     def __init__(self):
-        
+        self.repaired_pdbfile: str
+        # self.repaired_pdbfile: str
         pass
     def run_foldx(self, pdb, threads, chain):
         prot_foldx = foldx.FoldX(pdb, '', threads, foldx_cutoff)
-        pdbname = prot_foldx.repairPDB()
-        prot = io.Protein(pdbname, chain)
+        self.repaired_pdbfile = prot_foldx.repairPDB()
+        prot = io.Protein(self.repaired_pdbfile, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
         # parallel:
-        parall = ParallelSim(threads)
-        os.mkdir('foldx_jobs')
+        # parall = ParallelSim(threads)
+        try:
+            os.mkdir('foldx_jobs')
+        except FileExistsError:
+            pass
         all_results = []
-
+        job_list = []
         for i, res in enumerate(seq):
             resNum = resNumList[i]
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
-                jobID = "foldx_jobs/" + str(i) + "_" + str(j)
-                parall.add(prot_foldx.runOneJob, [pdbname, wild, chain, aa, resNum, jobID])
-        parall.run()
-        all_results = parall.get_results()
+                jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
+                job_list.append([self.repaired_pdbfile, wild, chain, aa, resNum, jobID])
+
+                # parall.add(prot_foldx.runOneJob, [self.repaired_pdbfile, wild, chain, aa, resNum, jobID])
+        # parall.run()
+        # all_results = parall.get_results()
+        # print(job_list)
+        Parallel(n_jobs=threads)(delayed(prot_foldx.runOneJob)(var) for var in job_list)
         
         return all_results
 
-    def Analysis_foldx(self, pdbname, chain, foldx1):
+    def Analysis_foldx(self, pdb, chain, foldx1):
+        self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
         try:
             os.mkdir("foldx_results")
         except FileExistsError:
             pass
-        prot = io.Protein(pdbname, chain)
+        prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
         all_results = []
@@ -69,8 +81,9 @@ class GRAPE:
             resNum = resNumList[i]
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
-                jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
-                all_results.append(foldx1.calScore(wild, resNum, aa, pdbname, jobID))
+                # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
+                jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
+                all_results.append(foldx1.calScore(wild, resNum, aa, pdb, jobID))
         
         with open("foldx_results/All_FoldX.score", 'w+') as foldxout:
             foldxout.write("#Score file formated by GRAPE.\n#mutation\tscore\tstd\n")
@@ -166,7 +179,3 @@ if __name__ == '__main__':
 
 
     print('Done')
-
-
-
-
