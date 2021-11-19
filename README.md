@@ -13,7 +13,7 @@ cd Codes_for_FoldX && export PATH="$(pwd):$PATH"
 You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-nohup parallelfoldscan.py -pdb 1PGA.pdb -chain A -cpu 16 -fc 1 -mode run &
+nohup parallelfoldxscan.py -pdb 1PGA.pdb -chain A -cpu 16 -fc 1 -mode run &
 ```
 You should expecting outputs like:  
 A folder named `foldx_results` containing:
