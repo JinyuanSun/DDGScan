@@ -74,7 +74,7 @@ class GRAPE:
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
         relaxed_prot = prot_rosetta.relax()
 
-        prot = io.Protein(self.repaired_pdbfile, chain)
+        prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
         try:
@@ -90,10 +90,7 @@ class GRAPE:
                 jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
                 job_list.append([wild, aa, str(i), jobID])
 
-                # parall.add(prot_foldx.runOneJob, [self.repaired_pdbfile, wild, chain, aa, resNum, jobID])
-        # parall.run()
-        # all_results = parall.get_results()
-        # print(job_list)
+
         Parallel(n_jobs=threads)(delayed(prot_rosetta.runOneJob)(var) for var in job_list)
 
         return all_results
@@ -196,7 +193,7 @@ if __name__ == '__main__':
 
     grape = GRAPE()
     # foldx1 = foldx.FoldX(pdb, '', threads, foldx_cutoff)
-    # rosetta1 = rosetta.Rosetta(pdb, relax_num, threads)
+    rosetta1 = rosetta.Rosetta(pdb, relax_num, threads)
 
 
     if mode == "run":

@@ -19,6 +19,12 @@ class Rosetta:
         self.result = []
 
     def relax(self):
+        try:
+            os.mkdir('rosetta_relax')
+            os.chdir('rosetta_relax')
+        except FileExistsError:
+            os.chdir('rosetta_relax')
+            pass
 
         with open("cart2.script","w+") as cart2:
             cart2.write("switch:cartesian\n")
@@ -47,6 +53,7 @@ class Rosetta:
         print("==" * 20)
         relaxed_pdb_name = os.popen("sort -nk2 score.sc |head -n 1|awk '{print$22}'").read()
         self.relaxedpdb = relaxed_pdb_name
+        os.chdir("../")
         return relaxed_pdb_name.replace("\n", "") + ".pdb"
 
     def read_rosetta_ddgout(self, rosettaddgfilename):
@@ -72,7 +79,7 @@ class Rosetta:
         except FileExistsError:
             os.chdir(jobID)
 
-        os.popen('cp ../../' + self.relaxedpdb + ' ./')
+        os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
         with open('mtfile', 'w+') as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")
@@ -96,12 +103,7 @@ class Rosetta:
                          "9.0",
                          "1>/dev/null"]
         cartddg_cmd = " ".join(argument_list)
-        print(cartddg_cmd)
-        # print(' '.join(argument_list))
-        # proc = subprocess.Popen(' '.join(argument_list), shell = True)
-        # time.sleep(2)
-        # pid = proc.pid
-        # score, std = read_rosetta_ddgout('mtfile.ddg')
+        os.system(cartddg_cmd)
         os.chdir("../../")
         # return pid, '_'.join([wild, str(trueResNum), mutation])
 
