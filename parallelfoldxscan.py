@@ -3,6 +3,7 @@
 import pandas as pd
 import os
 import utlis.foldx as foldx
+import utlis.rosetta as rosetta
 import utlis.io as io
 from joblib import Parallel, delayed
 
@@ -37,6 +38,7 @@ class ParallelSim(object):
 class GRAPE:
     def __init__(self):
         self.repaired_pdbfile: str
+        self.relaxed_prot: str
         # self.repaired_pdbfile: str
         pass
     def run_foldx(self, pdb, threads, chain):
@@ -65,6 +67,35 @@ class GRAPE:
         # print(job_list)
         Parallel(n_jobs=threads)(delayed(prot_foldx.runOneJob)(var) for var in job_list)
         
+        return all_results
+
+    def run_rosetta(self, pdb, threads, chain):
+        relax_num = 200
+        prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
+        relaxed_prot = prot_rosetta.relax()
+
+        prot = io.Protein(self.repaired_pdbfile, chain)
+        seq, resNumList = io.Protein.pdb2seq(prot)
+
+        try:
+            os.mkdir('rosetta_jobs')
+        except FileExistsError:
+            pass
+        all_results = []
+        job_list = []
+        for i, res in enumerate(seq):
+            resNum = resNumList[i]
+            wild = res
+            for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
+                jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
+                job_list.append([wild, aa, str(i), jobID])
+
+                # parall.add(prot_foldx.runOneJob, [self.repaired_pdbfile, wild, chain, aa, resNum, jobID])
+        # parall.run()
+        # all_results = parall.get_results()
+        # print(job_list)
+        Parallel(n_jobs=threads)(delayed(prot_rosetta.runOneJob)(var) for var in job_list)
+
         return all_results
 
     def Analysis_foldx(self, pdb, chain, foldx1):
@@ -151,26 +182,29 @@ class GRAPE:
         out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df")
 
 if __name__ == '__main__':
-    args = io.Parser.get_args()
+    args = io.Parser().get_args()
     #print(args)
     
     pdb = args.pdb
     chain = args.chain
     threads = int(args.threads)
     # ratio = args.ratio
+    relax_num = args.relax_number
     foldx_cutoff = -float(args.foldx_cutoff)
 
     mode = args.mode
 
     grape = GRAPE()
-    foldx1 = foldx.FoldX(pdb, '', threads, foldx_cutoff)
+    # foldx1 = foldx.FoldX(pdb, '', threads, foldx_cutoff)
+    # rosetta1 = rosetta.Rosetta(pdb, relax_num, threads)
 
 
     if mode == "run":
         #FoldX
-        grape.run_foldx(pdb, threads, chain)
-        grape.Analysis_foldx(pdb, chain, foldx1)
-        grape.analysisGrapeScore('All_FoldX.score', foldx_cutoff)
+        # grape.run_foldx(pdb, threads, chain)
+        # grape.Analysis_foldx(pdb, chain, foldx1)
+        # grape.analysisGrapeScore('All_FoldX.score', foldx_cutoff)
+        grape.run_rosetta(pdb, threads, chain)
     if mode == "analysis":
         #FoldX
         pdb = pdb.replace(".pdb", "_Repair.pdb")

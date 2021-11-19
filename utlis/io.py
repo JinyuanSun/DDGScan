@@ -32,7 +32,7 @@ class Parser:
 
     def __init__(self):
         pass
-    def get_args():
+    def get_args(self):
         parser = argparse.ArgumentParser(description='Run FoldX in Parallel for in silico deep mutation scan.')
         parser.add_argument("-pdb", '--pdb', help="Input PDB")
         parser.add_argument("-chain", '--chain', help="Input PDB Chain to do in silico DMS", default="A")
@@ -41,7 +41,7 @@ class Parser:
         # parser.add_argument("-r", '--ratio', help="Select by ratio mode",default=False)
 
         parser.add_argument("-fc", '--foldx_cutoff',help="Cutoff of foldx ddg", default=1.5)
-
+        parser.add_argument("-nstruct", '--relax_number',help="Number of how many relaxed structure", default=50)
         parser.add_argument("-mode", '--mode',help="Run, Rerun or analysis")
 
 
