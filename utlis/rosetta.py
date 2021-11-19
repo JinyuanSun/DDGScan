@@ -27,7 +27,7 @@ class Rosetta:
             os.system("cp  " + self.pdbname + " rosetta_relax/")
             os.chdir('rosetta_relax')
             pass
-        
+
         with open("cart2.script","w+") as cart2:
             cart2.write("switch:cartesian\n")
             cart2.write("repeat 2\n")
@@ -74,7 +74,8 @@ class Rosetta:
 
         return round(np.array(ddg_array).mean(),4), round(np.array(ddg_array).std(),4)
 
-    def runOneJob(self, wild, mutation, resNum, jobID):
+    def runOneJob(self, varlist: list):
+        wild, mutation, resNum, jobID = varlist
         try:
             os.mkdir(jobID)
             os.chdir(jobID)

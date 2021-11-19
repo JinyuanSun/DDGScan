@@ -111,7 +111,7 @@ class GRAPE:
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
                 # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                 jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
-                all_results.append(foldx1.calScore(wild, resNum, aa, pdb, jobID))
+                all_results.append(foldx1.calScore(wild, resNum, aa, self.repaired_pdbfile, jobID))
         
         with open("foldx_results/All_FoldX.score", 'w+') as foldxout:
             foldxout.write("#Score file formated by GRAPE.\n#mutation\tscore\tstd\n")
