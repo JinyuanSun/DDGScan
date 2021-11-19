@@ -21,11 +21,13 @@ class Rosetta:
     def relax(self):
         try:
             os.mkdir('rosetta_relax')
+            os.system("cp  " + self.pdbname + " rosetta_relax/")
             os.chdir('rosetta_relax')
         except FileExistsError:
+            os.system("cp  " + self.pdbname + " rosetta_relax/")
             os.chdir('rosetta_relax')
             pass
-
+        
         with open("cart2.script","w+") as cart2:
             cart2.write("switch:cartesian\n")
             cart2.write("repeat 2\n")
@@ -47,7 +49,7 @@ class Rosetta:
         )
         print("==" * 20)
         print(" Relaxing your Protein: ")
-        print(relax_cmd)
+        # os.system(relax_cmd)
         relaxed_pdb_name = os.popen(relax_cmd).read()
         print(" Finished relax! ")
         print("==" * 20)

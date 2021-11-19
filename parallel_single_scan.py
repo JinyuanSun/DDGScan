@@ -69,8 +69,8 @@ class GRAPE:
         
         return all_results
 
-    def run_rosetta(self, pdb, threads, chain):
-        relax_num = 200
+    def run_rosetta(self, pdb, threads, chain, relax_num):
+        # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
         relaxed_prot = prot_rosetta.relax()
 
@@ -201,7 +201,7 @@ if __name__ == '__main__':
         # grape.run_foldx(pdb, threads, chain)
         # grape.Analysis_foldx(pdb, chain, foldx1)
         # grape.analysisGrapeScore('All_FoldX.score', foldx_cutoff)
-        grape.run_rosetta(pdb, threads, chain)
+        grape.run_rosetta(pdb, threads, chain, relax_num)
     if mode == "analysis":
         #FoldX
         pdb = pdb.replace(".pdb", "_Repair.pdb")
