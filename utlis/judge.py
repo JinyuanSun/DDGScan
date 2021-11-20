@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import sys
-
 class Protein:
     def __init__(self, pdbname, chain):
         self.pdbname = pdbname
@@ -22,13 +19,14 @@ class Protein:
         resNumList = []
         with open(self.pdbname) as pdbfile:
             for line in pdbfile:
-                if 'ATOM' == line[0:6].replace(" ",""):
-                    if self.chain == line[21].replace(" ",""):
-                        if line[12:16].replace(" ","") == "CA":
-                            seq += self._3_2_1(line[17:20].replace(" ",""))
-                            resNumList.append(int(line[22:26].replace(" ","")))
+                if 'ATOM' == line[0:6].replace(" ", ""):
+                    if self.chain == line[21].replace(" ", ""):
+                        if line[12:16].replace(" ", "") == "CA":
+                            seq += self._3_2_1(line[17:20].replace(" ", ""))
+                            resNumList.append(int(line[22:26].replace(" ", "")))
         pdbfile.close()
         return seq, resNumList
+
 
 def judge(userSeq, seq, resNumList):
     listLen = int(resNumList[-1]) - int(resNumList[0]) + 1
@@ -39,8 +37,10 @@ def judge(userSeq, seq, resNumList):
     else:
         return 0
 
+
 if __name__ == '__main__':
     import sys
+
     pdb = sys.argv[1]
     chain = sys.argv[2]
     userSeq = sys.argv[3]
@@ -49,7 +49,3 @@ if __name__ == '__main__':
     # print(userSeq, userPdb.seq, userPdb.resNumList)
     if judge_result != 0:
         print('Chain break detected! Transfer to AlphaFold.')
-
-
-
-
