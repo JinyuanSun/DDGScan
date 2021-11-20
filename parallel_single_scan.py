@@ -213,7 +213,7 @@ if __name__ == '__main__':
     pdb = args.pdb
     chain = args.chain
     threads = int(args.threads)
-    numOfRuns = args.numofruns
+    numOfRuns = str(args.numofruns)
     # ratio = args.ratio
     relax_num = args.relax_number
     foldx_cutoff = -float(args.foldx_cutoff)
