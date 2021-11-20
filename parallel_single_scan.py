@@ -236,7 +236,7 @@ if __name__ == '__main__':
         if "Rosetta" in softlist:
             prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
             grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-            grape.analysisGrapeScore('rosetta_results/All_rosetta', rosetta_cutoff, "rosetta_results/")
+            grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
     if mode == "analysis":
         #FoldX
         if "FoldX" in softlist:
