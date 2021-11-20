@@ -40,8 +40,11 @@ class Parser:
 
         # parser.add_argument("-r", '--ratio', help="Select by ratio mode",default=False)
 
-        parser.add_argument("-fc", '--foldx_cutoff',help="Cutoff of foldx ddg", default=1.5)
+        parser.add_argument("-fc", '--foldx_cutoff',help="Cutoff of FoldX ddg(kcal/mol)", default=1.5)
+        parser.add_argument("-rc", '--rosetta_cutoff',help="Cutoff of Rosetta ddg(R.E.U.)", default=5)
         parser.add_argument("-nstruct", '--relax_number',help="Number of how many relaxed structure", default=50)
+        parser.add_argument("-nruns", '--numofruns',help="Number of runs in FoldX BuildModel", default=5    )
+
         parser.add_argument("-mode", '--mode',help="Run, Rerun or analysis")
 
 
