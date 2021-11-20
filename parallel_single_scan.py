@@ -240,13 +240,13 @@ if __name__ == '__main__':
     if mode == "analysis":
         #FoldX
         if "FoldX" in softlist:
-            pdb = pdb.replace(".pdb", "_Repair.pdb")
+            # pdb = pdb.replace(".pdb", "_Repair.pdb")
             grape.Analysis_foldx(pdb, chain, foldx1)
-            grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff)
+            grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff, "foldx_results/")
         if "Rosetta" in softlist:
             prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
             grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-            grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff)
+            grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
 
 
     print('Done')
