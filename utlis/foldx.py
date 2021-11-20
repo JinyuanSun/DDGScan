@@ -41,7 +41,7 @@ class FoldX:
         return ["_".join([wild, str(resNum), mutation]), score, sd]
 
     def runOneJob(self, varlist: list):
-        pdbfile, wild, chain, mutation, resNum, jobID = varlist
+        pdbfile, wild, chain, mutation, resNum, jobID, numOfRuns = varlist
         # mutation_name = "_".join([wild, str(resNum), mutation])
         try:
             os.mkdir(jobID)
@@ -54,8 +54,8 @@ class FoldX:
             indFile.close()
         cmd1 = "cp ../../" + pdbfile + " ./"
         os.popen(cmd1)
-        cmd2 = self.path + "foldx --command=BuildModel --numberOfRuns=10 --mutant-file=individual_list.txt --pdb=" + \
-               pdbfile + " 1>/dev/null"
+        cmd2 = self.path + "foldx --command=BuildModel --numberOfRuns=" + numOfRuns + \
+               " --mutant-file=individual_list.txt --pdb=" + pdbfile + " 1>/dev/null"
         os.system(cmd2)
         os.chdir("../../")
         # return self.calScore(self, pdbfile)  # need self?

@@ -9,12 +9,15 @@ import subprocess
 import time
 
 class Rosetta:
-    def __init__(self, pdbName, relax_num, numThreads, exe='cartesian_ddg.mip.linuxgccrelease'):
-        self.exe = "cartesian_ddg.mpi.linuxgccrelease"
+    def __init__(self, pdbName, relax_num, numThreads, exe='cartesian_ddg.static.linuxgccrelease', rosettadb= "/opt/rosetta_bin_linux_2021.16.61629_bundle/main/database"):
+        self.exe = exe
         self.pdbname = pdbName
         self.relax_num = relax_num
         self.threads = numThreads
-        self.relaxedpdb: str
+        # self.relaxedpdb = pdbName #for test
+        self.rosettadb = rosettadb
+        self.relaxedpdb: str  # for test
+
         #self.cutoff = cutOff
         self.result = []
 
@@ -39,7 +42,7 @@ class Rosetta:
             cart2.write("endrepeat")
             cart2.close()
         relax_cmd = "".join(
-            ["nohup mpirun -n " + str(self.threads) + " relax.mpi.linuxgccrelease -s " + self.pdbname + " -use_input_sc",
+            ["mpirun -n " + str(self.threads) + " relax.mpi.linuxgccrelease -s " + self.pdbname + " -use_input_sc",
             " -constrain_relax_to_start_coords -ignore_unrecognized_res",
             " -nstruct " + str(self.relax_num),
             " -relax:coord_constrain_sidechains",
@@ -82,14 +85,15 @@ class Rosetta:
         except FileExistsError:
             os.chdir(jobID)
 
-        os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
+        # os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
+        os.system('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
         with open('mtfile', 'w+') as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")
             mtfile.write(wild + " " + str(resNum) + " " + mutation)
             mtfile.close()
 
-        argument_list = [self.exe, "-database","$ROSETTADB",
+        argument_list = [self.exe, "-database", self.rosettadb,
                          "-use_input_sc",
                          "-s", self.relaxedpdb,
                          "-ddg:mut_file", "mtfile",
@@ -107,6 +111,7 @@ class Rosetta:
                          "1>/dev/null"]
         cartddg_cmd = " ".join(argument_list)
         os.system(cartddg_cmd)
+        print(cartddg_cmd)
         os.chdir("../../")
         # return pid, '_'.join([wild, str(trueResNum), mutation])
 

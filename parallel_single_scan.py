@@ -41,7 +41,7 @@ class GRAPE:
         self.relaxed_prot: str
         # self.repaired_pdbfile: str
         pass
-    def run_foldx(self, pdb, threads, chain):
+    def run_foldx(self, pdb, threads, chain, numOfRuns):
         prot_foldx = foldx.FoldX(pdb, '', threads, foldx_cutoff)
         self.repaired_pdbfile = prot_foldx.repairPDB()
         prot = io.Protein(self.repaired_pdbfile, chain)
@@ -59,7 +59,7 @@ class GRAPE:
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
                 jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
-                job_list.append([self.repaired_pdbfile, wild, chain, aa, resNum, jobID])
+                job_list.append([self.repaired_pdbfile, wild, chain, aa, resNum, jobID, numOfRuns])
 
                 # parall.add(prot_foldx.runOneJob, [self.repaired_pdbfile, wild, chain, aa, resNum, jobID])
         # parall.run()
@@ -72,7 +72,7 @@ class GRAPE:
     def run_rosetta(self, pdb, threads, chain, relax_num):
         # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
-        relaxed_prot = prot_rosetta.relax()
+        # relaxed_prot = prot_rosetta.relax()
 
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
@@ -81,19 +81,19 @@ class GRAPE:
             os.mkdir('rosetta_jobs')
         except FileExistsError:
             pass
-        all_results = []
+        # all_results = []
         job_list = []
         for i, res in enumerate(seq):
             resNum = resNumList[i]
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
                 jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
-                job_list.append([wild, aa, str(i), jobID])
+                job_list.append([wild, aa, str(i + 1), jobID])
 
 
         Parallel(n_jobs=threads)(delayed(prot_rosetta.runOneJob)(var) for var in job_list)
 
-        return all_results
+        return prot_rosetta
 
     def Analysis_foldx(self, pdb, chain, foldx1):
         self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
@@ -112,15 +112,43 @@ class GRAPE:
                 # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                 jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
                 all_results.append(foldx1.calScore(wild, resNum, aa, self.repaired_pdbfile, jobID))
-        
+
         with open("foldx_results/All_FoldX.score", 'w+') as foldxout:
-            foldxout.write("#Score file formated by GRAPE.\n#mutation\tscore\tstd\n")
+            foldxout.write("#Score file formated by GRAPE from FoldX.\n#mutation\tscore\tstd\n")
             for line in all_results:
                 foldxout.write('\t'.join([line[0], str(line[1]), str(line[2])]) + "\n")
             foldxout.close()
 
         return all_results
-    
+
+    def Analysis_rosetta(self, pdb, chain, prot_rosetta):
+        # self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
+        # prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
+        try:
+            os.mkdir("rosetta_results")
+        except FileExistsError:
+            pass
+        prot = io.Protein(pdb, chain)
+        seq, resNumList = io.Protein.pdb2seq(prot)
+
+        all_results = []
+        for i, res in enumerate(seq):
+            resNum = resNumList[i]
+            wild = res
+            for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
+                # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
+                # "_".join([wild, str(resNum), mutation])
+                rosettaddgfile = "rosetta_jobs/" + "_".join([wild, str(resNum), aa]) + "/mtfile.ddg"
+                all_results.append(["_".join([wild, str(resNum), aa])] + prot_rosetta.read_rosetta_ddgout(rosettaddgfile))
+
+        with open("rosetta_results/All_rosetta.score", 'w+') as rosettaout:
+            rosettaout.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
+            for line in all_results:
+                rosettaout.write('\t'.join([line[0], str(line[1]), str(line[2])]) + "\n")
+            rosettaout.close()
+
+        return all_results
+
     def analysisGrapeScore(self, scoreFile, cutoff):
         result_dict = {'mutation':[],'energy':[],'SD':[],'position':[]}
         with open(scoreFile) as scorefile:
@@ -168,7 +196,7 @@ class GRAPE:
             with open(filename,"w+") as of:
                 of.write(df.to_csv(columns=['mutation', 'energy', 'SD'], sep='\t', index=False))
                 of.close()
-                
+
         out_tab_file(CompleteList_df, "CompleteList_df")
         out_tab_file(CompleteList_SortedByEnergy_df, "CompleteList_SortedByEnergy_df")
         out_tab_file(BestPerPosition_SortedByEnergy_df, "BestPerPosition_SortedByEnergy_df")
@@ -181,32 +209,41 @@ class GRAPE:
 if __name__ == '__main__':
     args = io.Parser().get_args()
     #print(args)
-    
+
     pdb = args.pdb
     chain = args.chain
     threads = int(args.threads)
+    numOfRuns = args.numofruns
     # ratio = args.ratio
     relax_num = args.relax_number
     foldx_cutoff = -float(args.foldx_cutoff)
+    rosetta_cutoff = -float(args.rosetta_cutoff)
 
     mode = args.mode
 
     grape = GRAPE()
-    # foldx1 = foldx.FoldX(pdb, '', threads, foldx_cutoff)
+    foldx1 = foldx.FoldX(pdb, '', threads, foldx_cutoff)
     rosetta1 = rosetta.Rosetta(pdb, relax_num, threads)
 
 
     if mode == "run":
         #FoldX
-        # grape.run_foldx(pdb, threads, chain)
-        # grape.Analysis_foldx(pdb, chain, foldx1)
-        # grape.analysisGrapeScore('All_FoldX.score', foldx_cutoff)
-        grape.run_rosetta(pdb, threads, chain, relax_num)
+        grape.run_foldx(pdb, threads, chain, numOfRuns)
+        grape.Analysis_foldx(pdb, chain, foldx1)
+        grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff)
+
+        prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
+        grape.Analysis_rosetta(pdb, chain, prot_rosetta)
+        grape.analysisGrapeScore('rosetta_results/All_rosetta', rosetta_cutoff)
     if mode == "analysis":
         #FoldX
         pdb = pdb.replace(".pdb", "_Repair.pdb")
         grape.Analysis_foldx(pdb, chain, foldx1)
         grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff)
+
+        prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
+        grape.Analysis_rosetta(pdb, chain, prot_rosetta)
+        grape.analysisGrapeScore('rosetta_results/All_rosetta', rosetta_cutoff)
 
 
     print('Done')
