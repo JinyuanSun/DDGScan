@@ -1,14 +1,18 @@
-# Codes for FoldX towards Stable Proteins
+# Towards Stable Proteins
 
 ### See [GUI](GUI/) for the GUI plugin of foldx.
 
 ### Installation
-First of all, please make sure you have added the FoldX executable to your environment!  
-To install it, simplely clone this repo and add it to PATH:
+<span style="color:red">**Warning**  
+First of all, please make sure you have added the FoldX executable to your environment! Also, Rosetta is required for 
+cartesian_ddg calculation. Due to their licences, I cannot redistribute them here!</span>
+  
+To install it, clone this repo and add it to PATH:
 ```bash
 git clone https://github.com/JinyuanSun/Codes_for_FoldX.git &&
 cd Codes_for_FoldX && export PATH="$(pwd):$PATH"
 ```
+Then, one need to reconfigure the path to rosetta database in `utils/rosetta.py`.
 ### Quickstart
 You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):
 ```bash

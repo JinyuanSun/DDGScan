@@ -149,7 +149,7 @@ class GRAPE:
 
         return all_results
 
-    def analysisGrapeScore(self, scoreFile, cutoff):
+    def analysisGrapeScore(self, scoreFile, cutoff, result_dir):
         result_dict = {'mutation':[],'energy':[],'SD':[],'position':[]}
         with open(scoreFile) as scorefile:
             for line in scorefile:
@@ -191,20 +191,20 @@ class GRAPE:
         BestPerPositionBelowCutOff_SortedByEnergy_df = BelowCutOff(BestPerPosition_SortedByEnergy_df, cutoff)
         BestPerPositionBelowCutOff_df = BelowCutOff(BestPerPosition_df, cutoff)
 
-        def out_tab_file(df, name):
-            filename = "foldx_results/MutationsEnergies_" + name[:-3] + ".tab"
+        def out_tab_file(df, name, result_dir):
+            filename = result_dir + "/MutationsEnergies_" + name[:-3] + ".tab"
             with open(filename,"w+") as of:
                 of.write(df.to_csv(columns=['mutation', 'energy', 'SD'], sep='\t', index=False))
                 of.close()
 
-        out_tab_file(CompleteList_df, "CompleteList_df")
-        out_tab_file(CompleteList_SortedByEnergy_df, "CompleteList_SortedByEnergy_df")
-        out_tab_file(BestPerPosition_SortedByEnergy_df, "BestPerPosition_SortedByEnergy_df")
-        out_tab_file(BestPerPosition_df, "BestPerPosition_df")
-        out_tab_file(BelowCutOff_df, "BelowCutOff_df")
-        out_tab_file(BelowCutOff_SortedByEnergy_df, "BelowCutOff_SortedByEnergy_df")
-        out_tab_file(BestPerPositionBelowCutOff_SortedByEnergy_df, "BestPerPositionBelowCutOff_SortedByEnergy_df")
-        out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df")
+        out_tab_file(CompleteList_df, "CompleteList_df", result_dir)
+        out_tab_file(CompleteList_SortedByEnergy_df, "CompleteList_SortedByEnergy_df", result_dir)
+        out_tab_file(BestPerPosition_SortedByEnergy_df, "BestPerPosition_SortedByEnergy_df", result_dir)
+        out_tab_file(BestPerPosition_df, "BestPerPosition_df", result_dir)
+        out_tab_file(BelowCutOff_df, "BelowCutOff_df", result_dir)
+        out_tab_file(BelowCutOff_SortedByEnergy_df, "BelowCutOff_SortedByEnergy_df", result_dir)
+        out_tab_file(BestPerPositionBelowCutOff_SortedByEnergy_df, "BestPerPositionBelowCutOff_SortedByEnergy_df", result_dir)
+        out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir)
 
 if __name__ == '__main__':
     args = io.Parser().get_args()
@@ -232,11 +232,11 @@ if __name__ == '__main__':
         if "FoldX" in softlist:
             grape.run_foldx(pdb, threads, chain, numOfRuns)
             grape.Analysis_foldx(pdb, chain, foldx1)
-            grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff)
+            grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff, "foldx_results/")
         if "Rosetta" in softlist:
             prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
             grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-            grape.analysisGrapeScore('rosetta_results/All_rosetta', rosetta_cutoff)
+            grape.analysisGrapeScore('rosetta_results/All_rosetta', rosetta_cutoff, "rosetta_results/")
     if mode == "analysis":
         #FoldX
         if "FoldX" in softlist:
@@ -246,7 +246,7 @@ if __name__ == '__main__':
         if "Rosetta" in softlist:
             prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
             grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-            grape.analysisGrapeScore('rosetta_results/All_rosetta', rosetta_cutoff)
+            grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff)
 
 
     print('Done')
