@@ -57,7 +57,7 @@ class Rosetta:
         print(" Finished relax! ")
         print("==" * 20)
         relaxed_pdb_name = os.popen("sort -nk2 score.sc |head -n 1|awk '{print$22}'").read()
-        self.relaxedpdb = relaxed_pdb_name
+        self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
         os.chdir("../")
         return relaxed_pdb_name.replace("\n", "") + ".pdb"
 
