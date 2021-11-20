@@ -111,7 +111,7 @@ class Rosetta:
                          "1>/dev/null"]
         cartddg_cmd = " ".join(argument_list)
         os.system(cartddg_cmd)
-        print(cartddg_cmd)
+        # print(cartddg_cmd)
         os.chdir("../../")
         # return pid, '_'.join([wild, str(trueResNum), mutation])
 
