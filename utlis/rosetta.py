@@ -75,7 +75,7 @@ class Rosetta:
                     ddg_array.append(ddg)
             rosettaddg.close()
 
-        return round(np.array(ddg_array).mean(),4), round(np.array(ddg_array).std(),4)
+        return [round(np.array(ddg_array).mean(),4), round(np.array(ddg_array).std(),4)]
 
     def runOneJob(self, varlist: list):
         wild, mutation, resNum, jobID = varlist
