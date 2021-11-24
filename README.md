@@ -57,7 +57,7 @@ You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/st
 I will recommend to use the `fast` mode with `-md` turned on `True` and using `CUDA` to accelerate molecular dynamics simulations.
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-parallel_single_scan.py -pdb 1PGA.pdb -chain A -sl "FodlX,Rosetta,ABACUS" -mode run -cpu 40 -preset fast -md True -platform CUDA
+parallel_single_scan.py -pdb 1PGA.pdb -chain A -sl "FoldX,Rosetta,ABACUS" -mode run -cpu 40 -preset fast -md True -platform CUDA
 ```
 You should expecting outputs like:  
 A folder named `foldx_results` containing:
