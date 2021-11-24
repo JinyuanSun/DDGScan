@@ -226,9 +226,10 @@ def main():
                 if exe_dict['pmut'] == '':
                     print("[Error:] Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!")
                     exit()
-        if exe_dict[soft] == '':
-            print("[Error:] Cannot find %s!" %(soft))
-            exit()
+        else:
+            if exe_dict[soft] == '':
+                print("[Error:] Cannot find %s!" %(soft))
+                exit()
 
 
 
