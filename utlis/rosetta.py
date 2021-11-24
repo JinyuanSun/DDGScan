@@ -116,6 +116,7 @@ class Rosetta:
         # return pid, '_'.join([wild, str(trueResNum), mutation])
 
     def pmut_scan(self, relaxed_pdb):
+
         pmut_scan_exe = os.popen("which pmut_scan_parallel.mpi.linuxgccrelease").read().replace("\n", "")
         rosettadb = "/".join(pmut_scan_exe.split("/")[:-3]) + "/database/"
         arg_list = [

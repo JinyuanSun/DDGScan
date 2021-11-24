@@ -293,7 +293,7 @@ def main1():
                     os.chdir("rosetta_jobs")
                 except FileExistsError:
                     os.chdir("rosetta_jobs")
-                os.system("cp rosetta_relax/%s ./")
+                os.system("cp rosetta_relax/%s ./" %(relaxed_pdb))
                 rosetta1.pmut_scan(relaxed_pdb)
                 os.chdir("..")
 
