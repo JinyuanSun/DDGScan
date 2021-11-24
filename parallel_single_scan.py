@@ -5,8 +5,10 @@ import os
 import utlis.foldx as foldx
 import utlis.rosetta as rosetta
 from utlis import abacus
+from utlis import mdrelax
 import utlis.io as io
 from joblib import Parallel, delayed
+
 
 from multiprocessing import Pool, cpu_count
 
@@ -182,7 +184,35 @@ class GRAPE:
         out_tab_file(BestPerPositionBelowCutOff_SortedByEnergy_df, "BestPerPositionBelowCutOff_SortedByEnergy_df", result_dir)
         out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir)
 
-def main():
+def selectpdb4md(pdb, platform, softlist):
+    try:
+        os.mkdir("selectpdb")
+    except FileExistsError:
+        os.system("rm -rf selectpdb")
+    selected_dict = {"mutation": [], "score": [], "sd": [], "soft": []}
+    for soft in softlist:
+        with open("%s_results/MutationsEnergies_BelowCutOff.tab") as scorefile:
+            for line in scorefile:
+                linelist = line.strip().split()
+                if linelist[0] != "mutation":
+                    selected_dict["mutation"].append(linelist[0])
+                    selected_dict["score"].append(linelist[1])
+                    selected_dict["score"].append(linelist[2])
+                    selected_dict["soft"].append(soft)
+            scorefile.close()
+    selected_df = pd.DataFrame(selected_dict)
+    selected_df.to_csv("Selected_Mutation.csv")
+    for mutation in selected_dict['mutation']:
+        mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
+        os.system("cp foldx_jobs/%s/%s selectpdb/%s.pdb" %(mutation, mut_pdb, mutation))
+        os.chdir("selectpdb")
+        mutant = mutation + ".pdb"
+        mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
+        os.system("rm *dcd")
+        os.chdir("..")
+
+
+def main1():
     args = io.Parser().get_args()
     #print(args)
 
@@ -196,6 +226,10 @@ def main():
     rosetta_cutoff = -float(args.rosetta_cutoff)
     softlist = args.softlist.lower().split(",")
     preset = args.preset.lower()
+    md = args.molecular_dynamics
+    platform = args.platform
+
+
     exe_dict = {'foldx': '', 'relax': '', 'cartddg': '', 'pmut': '', 'abacus': ''}
 
     foldx_exe = os.popen("which foldx").read().replace("\n", "")
@@ -306,10 +340,18 @@ def main():
         if "abacus" in softlist:
             # abacus.run_abacus(pdb)
             abacus.parse_abacus_out()
-            grape.analysisGrapeScore('ABACUS_results/All_ABACUS.score', rosetta_cutoff, "ABACUS_results/")
+            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', rosetta_cutoff, "abacus_results/")
 
 
-    print('Done')
+    print('\nFinish calculation of single point mutation ddG.\n')
+
+    if md == True:
+        selectpdb4md(pdb, platform, softlist)
+    else:
+        print("No MDs!")
+
+
+
 
 if __name__ == '__main__':
-    main()
+    main1()

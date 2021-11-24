@@ -4,8 +4,8 @@ import os
 
 def run_abacus(pdbfilename):
     try:
-        os.mkdir("ABACUS_jobs")
-        os.chdir("ABACUS_jobs")
+        os.mkdir("abacus_jobs")
+        os.chdir("abacus_jobs")
         os.system("cp %s ./" % (pdbfilename))
         print("[INFO: ] Running ABACUS_prepare.")
         os.system("ABACUS_prepare %s" % (pdbfilename))
@@ -14,7 +14,7 @@ def run_abacus(pdbfilename):
         print("[INFO: ] Running ABACUS_singleMutationScan.")
         os.system("ABACUS_singleMutationScan %s abacus_output.txt" % (pdbfilename))
     except FileExistsError:
-        os.chdir("ABACUS_jobs")
+        os.chdir("abacus_jobs")
         if os.path.exists("./abacus_output.txt"):
             print("==" * 2)
             print("[INFO: ] ABACUS results found. Skipping.")
@@ -24,7 +24,7 @@ def run_abacus(pdbfilename):
 
 def parse_abacus_out():
     try:
-        os.mkdir("ABACUS_results")
+        os.mkdir("abacus_results")
     except FileExistsError:
         pass
     longer_names = {'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D',
@@ -34,7 +34,7 @@ def parse_abacus_out():
                     'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V'}
 
     with open('tempfile', 'w') as tem:
-        with open("ABACUS_jobs/abacus_output.txt") as abacusfile:
+        with open("abacus_jobs/abacus_output.txt") as abacusfile:
             for line in abacusfile:
                 if line.startswith('site'):
                     wildAA = line.strip().split()[4]
@@ -42,7 +42,7 @@ def parse_abacus_out():
                 else:
                     tem.write(wildAA + ' ' + wildAAnum + ' ' + line)
 
-    with open('ABACUS_results/All_ABACUS.score', 'w+') as complete:
+    with open('abacus_results/All_ABACUS.score', 'w+') as complete:
         complete.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
         with open('tempfile') as abacusfile:
             for line in abacusfile:

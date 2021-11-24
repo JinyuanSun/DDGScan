@@ -48,6 +48,9 @@ class Parser:
         parser.add_argument("-sl", '--softlist',help="List of Software to be used in ddg calculations", default="FoldX,Rosetta")
         parser.add_argument("-mode", '--mode',help="Run, Rerun or analysis")
         parser.add_argument("-preset", "--preset",help="Fast or Slow")
+        parser.add_argument("-md", "--molecular_dynamics",help="Run 1ns molecular dynamics simulations for each mutation using openmm.", default=True)
+        parser.add_argument("-platform", "--platform",help="CUDA or CPU", default="CPU")
+
 
 
         args = parser.parse_args()
