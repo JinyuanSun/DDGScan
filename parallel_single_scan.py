@@ -4,36 +4,12 @@ import pandas as pd
 import os
 import utlis.foldx as foldx
 import utlis.rosetta as rosetta
+from utlis import abacus
 import utlis.io as io
 from joblib import Parallel, delayed
 
 from multiprocessing import Pool, cpu_count
 
-
-'''
-class ParallelSim(object):
-    def __init__(self, processes=cpu_count()):
-        self.pool = Pool(processes=processes)
-        self.total_processes = 0
-        self.completed_processes = 0
-        self.results = []
-
-    def add(self, func, args):
-        self.pool.apply_async(func=func, args=args, callback=self.complete)
-        self.total_processes += 1
-
-    def complete(self, result):
-        self.results.extend(result)
-        self.completed_processes += 1
-        print('Progress: {:.2f}%'.format((self.completed_processes/self.total_processes)*100))
-
-    def run(self):
-        self.pool.close()
-        self.pool.join()
-
-    def get_results(self):
-        return self.results
-'''
 
 class GRAPE:
     def __init__(self):
@@ -42,7 +18,7 @@ class GRAPE:
         # self.repaired_pdbfile: str
         pass
     def run_foldx(self, pdb, threads, chain, numOfRuns):
-        prot_foldx = foldx.FoldX(pdb, '', threads, foldx_cutoff)
+        prot_foldx = foldx.FoldX(pdb, '', threads)
         self.repaired_pdbfile = prot_foldx.repairPDB()
         prot = io.Protein(self.repaired_pdbfile, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
@@ -206,7 +182,7 @@ class GRAPE:
         out_tab_file(BestPerPositionBelowCutOff_SortedByEnergy_df, "BestPerPositionBelowCutOff_SortedByEnergy_df", result_dir)
         out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir)
 
-if __name__ == '__main__':
+def main():
     args = io.Parser().get_args()
     #print(args)
 
@@ -218,35 +194,121 @@ if __name__ == '__main__':
     relax_num = args.relax_number
     foldx_cutoff = -float(args.foldx_cutoff)
     rosetta_cutoff = -float(args.rosetta_cutoff)
-    softlist = args.softlist.split(",")
+    softlist = args.softlist.lower().split(",")
+    preset = args.preset.lower()
+    exe_dict = {'foldx': '', 'relax': '', 'cartddg': '', 'pmut': '', 'abacus': ''}
+
+    foldx_exe = os.popen("which foldx").read().replace("\n", "")
+    exe_dict['foldx'] = foldx_exe
+    pmut_scan_parallel_exe = os.popen("which pmut_scan_parallel.mpi.linuxgccrelease").read().replace("\n", "")
+    rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
+    exe_dict['pmut'] = pmut_scan_parallel_exe
+    for release in ['','.static','.mpi','.default']:
+        cartesian_ddg_exe = os.popen("which cartesian_ddg%s.linuxgccrelease" %(release)).read().replace("\n", "")
+        if cartesian_ddg_exe != "":
+            exe_dict['cartddg'] = cartesian_ddg_exe
+    relax_exe = os.popen("which relax.mpi.linuxgccrelease" %(release)).read().replace("\n", "")
+    exe_dict['relax'] = relax_exe
+    abacus_prep = os.popen("which ABACUS_prepare" %(release)).read().replace("\n", "")
+
+    exe_dict['abacus'] = abacus_prep
+
+    for soft in softlist:
+        if soft == 'rosetta':
+            if exe_dict['relax'] == '':
+                print("[Error:] Cannot find Rosetta: relax.mpi.linuxgccrelease!")
+                exit()
+            if preset == 'slow':
+                if exe_dict['cartddg'] == '':
+                    print("[Error:] Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
+                    exit()
+            if preset == 'fast':
+                if exe_dict['pmut'] == '':
+                    print("[Error:] Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!")
+                    exit()
+        if exe_dict[soft] == '':
+            print("[Error:] Cannot find %s!" %(soft))
+            exit()
+
+
 
     mode = args.mode
 
     grape = GRAPE()
-    foldx1 = foldx.FoldX(pdb, '', threads, foldx_cutoff)
-    rosetta1 = rosetta.Rosetta(pdb, relax_num, threads)
-
+    foldx1 = foldx.FoldX(pdb, foldx_exe, threads)
+    rosetta1 = rosetta.Rosetta(pdb, relax_num, threads, cartesian_ddg_exe, rosettadb)
 
     if mode == "run":
         #FoldX
-        if "FoldX" in softlist:
+        if "foldx" in softlist:
             grape.run_foldx(pdb, threads, chain, numOfRuns)
             grape.Analysis_foldx(pdb, chain, foldx1)
             grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff, "foldx_results/")
-        if "Rosetta" in softlist:
-            prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
-            grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-            grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+        if preset == "slow":
+            if "rosetta" in softlist:
+                prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
+                grape.Analysis_rosetta(pdb, chain, prot_rosetta)
+                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+        if preset == "fast":
+            if "rosetta" in softlist:
+                relaxed_pdb = rosetta1.relax()
+
+                try:
+                    os.mkdir("rosetta_jobs")
+                    os.chdir("rosetta_jobs")
+                except FileExistsError:
+                    os.chdir("rosetta_jobs")
+                os.system("cp rosetta_relax/%s ./")
+                rosetta1.pmut_scan(relaxed_pdb)
+                os.chdir("..")
+
+                try:
+                    os.mkdir("rosetta_results")
+                    os.chdir("rosetta_results")
+                except FileExistsError:
+                    os.chdir("rosetta_results")
+                    os.system("rm *")
+                rosetta1.pmut_scan_analysis("../rosetta_jobs/pmut.out")
+                os.chdir("..")
+
+                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+
+                # prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
+                # grape.Analysis_rosetta(pdb, chain, prot_rosetta)
+                # grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+        if "abacus" in softlist:
+            abacus.run_abacus(pdb)
+            abacus.parse_abacus_out()
+            grape.analysisGrapeScore('ABACUS_results/All_ABACUS.score', rosetta_cutoff, "ABACUS_results/")
     if mode == "analysis":
         #FoldX
-        if "FoldX" in softlist:
+        if "foldx" in softlist:
             # pdb = pdb.replace(".pdb", "_Repair.pdb")
             grape.Analysis_foldx(pdb, chain, foldx1)
             grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff, "foldx_results/")
-        if "Rosetta" in softlist:
-            prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
-            grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-            grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+        if preset == "slow":
+            if "rosetta" in softlist:
+                prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
+                grape.Analysis_rosetta(pdb, chain, prot_rosetta)
+                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+        if preset == "fast":
+            if "rosetta" in softlist:
+                try:
+                    os.mkdir("rosetta_results")
+                    os.chdir("rosetta_results")
+                except FileExistsError:
+                    os.chdir("rosetta_results")
+                    os.system("rm *")
+                rosetta1.pmut_scan_analysis("../rosetta_jobs/pmut.out")
+                os.chdir("..")
+                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+        if "abacus" in softlist:
+            # abacus.run_abacus(pdb)
+            abacus.parse_abacus_out()
+            grape.analysisGrapeScore('ABACUS_results/All_ABACUS.score', rosetta_cutoff, "ABACUS_results/")
 
 
     print('Done')
+
+if __name__ == '__main__':
+    main()

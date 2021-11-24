@@ -7,11 +7,11 @@ import pandas as pd
 
 
 class FoldX:
-    def __init__(self, pdbName, path2foldx, numThreads, cutOff):
+    def __init__(self, pdbName, path2foldx, numThreads):
         self.pdbname = pdbName
         self.path = path2foldx
         self.threads = numThreads
-        self.cutoff = cutOff
+        self.cutoff : int
         self.result = []
 
     def repairPDB(self):

@@ -115,16 +115,78 @@ class Rosetta:
         os.chdir("../../")
         # return pid, '_'.join([wild, str(trueResNum), mutation])
 
+    def pmut_scan(self, relaxed_pdb):
+        pmut_scan_exe = os.popen("which pmut_scan_parallel.mpi.linuxgccrelease").read().replace("\n", "")
+        rosettadb = "/".join(pmut_scan_exe.split("/")[:-3]) + "/database/"
+        arg_list = [
+            'mpirun',
+            '-np',
+            str(self.threads),
+            pmut_scan_exe,
+            '-database',
+            rosettadb,
+            '-s',
+            relaxed_pdb,
+            '-ex1',
+            '-ex2',
+            '-extrachi_cutoff 1',
+            '-use_input_sc',
+            '-ignore_unrecognized_res',
+            '-no_his_his_pairE',
+            '-multi_cool_annealer',
+            '10',
+            '-mute',
+            'basic',
+            'core'
+            '>',
+            "pmut.out && ls pmut.out"
+        ]
+        print("[INFO: ] Running pmut_scan_parallel")
+        os.system(" ".join(arg_list))
+
+    def pmut_scan_analysis(self, pmutoutfile):
+        with open(pmutoutfile) as pmut_out:
+
+            i = -1
+            start_line = 0
+            for line in pmut_out:
+                i += 1
+                line = line.replace("\x1b[0m", "")
+                if line.endswith("mutation   mutation_PDB_numbering   average_ddG   average_total_energy\n"):
+                    start_line = 1
+                if "protocol took" in line:
+                    start_line = 0
+                if start_line == 1:
+                    mutinfo = line.replace("\n", "").split(")")[1].split()
+                    if mutinfo[2] == "average_ddG":
+                        with open("All_Rosetta.score", 'w') as scorefile:
+                            scorefile.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
+                            scorefile.close()
+                    else:
+                        with open("All_Rosetta.score", 'a+') as scorefile:
+                            mut = mutinfo[0].split("-")[1]
+                            scorefile.write("_".join([mut[0], mut[1:-1], mut[-1]]) + "\t" + mutinfo[2] + "\t" + "0\n")
+                            scorefile.close()
+        pmut_out.close()
+
+
+
+
+
 
 if __name__ == '__main__':
-    pdbname = '1PGA.pdb'
-    chain = 'A'
-    threads = 24
-    relax_num = 200
-    prot = Rosetta(pdbname, relax_num, 'numThreads')
-    score, std = prot.read_rosetta_ddgout('rosetta_jobs/0_1_/mtfile.ddg')
-    print(score, std)
+    print("run")
+    # pdbname = '1PGA.pdb'
+    # chain = 'A'
+    # threads = 24
+    # relax_num = 200
+    # prot = Rosetta(pdbname, relax_num, 'numThreads')
+    # score, std = prot.read_rosetta_ddgout('rosetta_jobs/0_1_/mtfile.ddg')
+    # print(score, std)
     #relax_pdb_name = prot.relax(pdbname, threads)
     #print("Using: " + relax_pdb_name)
     #os.mkdir('rosetta_jobs')
     #prot.runOneJob(relax_pdb_name, "M", chain, "Q", 1, 'rosetta_jobs/0_1/')
+
+
+
