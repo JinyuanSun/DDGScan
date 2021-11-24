@@ -116,34 +116,36 @@ class Rosetta:
         # return pid, '_'.join([wild, str(trueResNum), mutation])
 
     def pmut_scan(self, relaxed_pdb):
-
-        pmut_scan_exe = os.popen("which pmut_scan_parallel.mpi.linuxgccrelease").read().replace("\n", "")
-        rosettadb = "/".join(pmut_scan_exe.split("/")[:-3]) + "/database/"
-        arg_list = [
-            'mpirun',
-            '-np',
-            str(self.threads),
-            pmut_scan_exe,
-            '-database',
-            rosettadb,
-            '-s',
-            relaxed_pdb,
-            '-ex1',
-            '-ex2',
-            '-extrachi_cutoff 1',
-            '-use_input_sc',
-            '-ignore_unrecognized_res',
-            '-no_his_his_pairE',
-            '-multi_cool_annealer',
-            '10',
-            '-mute',
-            'basic',
-            'core'
-            '>',
-            "pmut.out && ls pmut.out"
-        ]
-        print("[INFO: ] Running pmut_scan_parallel")
-        os.system(" ".join(arg_list))
+        if os.path.isfile('pmut.out'):
+            pass
+        else:
+            pmut_scan_exe = os.popen("which pmut_scan_parallel.mpi.linuxgccrelease").read().replace("\n", "")
+            rosettadb = "/".join(pmut_scan_exe.split("/")[:-3]) + "/database/"
+            arg_list = [
+                'mpirun',
+                '-np',
+                str(self.threads),
+                pmut_scan_exe,
+                '-database',
+                rosettadb,
+                '-s',
+                relaxed_pdb,
+                '-ex1',
+                '-ex2',
+                '-extrachi_cutoff 1',
+                '-use_input_sc',
+                '-ignore_unrecognized_res',
+                '-no_his_his_pairE',
+                '-multi_cool_annealer',
+                '10',
+                '-mute',
+                'basic',
+                'core'
+                '>',
+                "pmut.out && ls pmut.out"
+            ]
+            print("[INFO: ] Running pmut_scan_parallel")
+            os.system(" ".join(arg_list))
 
     def pmut_scan_analysis(self, pmutoutfile):
         with open(pmutoutfile) as pmut_out:
@@ -160,11 +162,11 @@ class Rosetta:
                 if start_line == 1:
                     mutinfo = line.replace("\n", "").split(")")[1].split()
                     if mutinfo[2] == "average_ddG":
-                        with open("All_Rosetta.score", 'w') as scorefile:
+                        with open("All_rosetta.score", 'w') as scorefile:
                             scorefile.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
                             scorefile.close()
                     else:
-                        with open("All_Rosetta.score", 'a+') as scorefile:
+                        with open("All_rosetta.score", 'a+') as scorefile:
                             mut = mutinfo[0].split("-")[1]
                             scorefile.write("_".join([mut[0], mut[1:-1], mut[-1]]) + "\t" + mutinfo[2] + "\t" + "0\n")
                             scorefile.close()

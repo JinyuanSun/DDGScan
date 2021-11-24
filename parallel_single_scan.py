@@ -129,7 +129,7 @@ class GRAPE:
 
     def analysisGrapeScore(self, scoreFile, cutoff, result_dir):
         result_dict = {'mutation':[],'energy':[],'SD':[],'position':[]}
-        with open(scoreFile) as scorefile:
+        with open(scoreFile, 'w+') as scorefile:
             for line in scorefile:
                 if line[0] != "#":
                     lst = line.strip().split("\t")
@@ -191,7 +191,7 @@ def selectpdb4md(pdb, platform, softlist):
         os.system("rm -rf selectpdb")
     selected_dict = {"mutation": [], "score": [], "sd": [], "soft": []}
     for soft in softlist:
-        with open("%s_results/MutationsEnergies_BelowCutOff.tab") as scorefile:
+        with open("%s_results/MutationsEnergies_BelowCutOff.tab"%(soft)) as scorefile:
             for line in scorefile:
                 linelist = line.strip().split()
                 if linelist[0] != "mutation":
@@ -293,7 +293,7 @@ def main1():
                     os.chdir("rosetta_jobs")
                 except FileExistsError:
                     os.chdir("rosetta_jobs")
-                os.system("cp rosetta_relax/%s ./" %(relaxed_pdb))
+                os.system("cp ../rosetta_relax/%s ./" %(relaxed_pdb))
                 rosetta1.pmut_scan(relaxed_pdb)
                 os.chdir("..")
 

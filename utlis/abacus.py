@@ -6,7 +6,7 @@ def run_abacus(pdbfilename):
     try:
         os.mkdir("abacus_jobs")
         os.chdir("abacus_jobs")
-        os.system("cp %s ./" % (pdbfilename))
+        os.system("cp ../%s ./" % (pdbfilename))
         print("[INFO: ] Running ABACUS_prepare.")
         os.system("ABACUS_prepare %s" % (pdbfilename))
         print("[INFO: ] Running ABACUS_S1S2.")
