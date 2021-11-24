@@ -207,9 +207,9 @@ def main():
         cartesian_ddg_exe = os.popen("which cartesian_ddg%s.linuxgccrelease" %(release)).read().replace("\n", "")
         if cartesian_ddg_exe != "":
             exe_dict['cartddg'] = cartesian_ddg_exe
-    relax_exe = os.popen("which relax.mpi.linuxgccrelease" %(release)).read().replace("\n", "")
+    relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
     exe_dict['relax'] = relax_exe
-    abacus_prep = os.popen("which ABACUS_prepare" %(release)).read().replace("\n", "")
+    abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
 
     exe_dict['abacus'] = abacus_prep
 
