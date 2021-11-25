@@ -6,14 +6,14 @@ GUIs only work for FoldX.
 ### Installation
 **Warning**  
 First of all, please make sure you have added the FoldX executable to your environment! Also, Rosetta is required for 
-cartesian_ddg calculation or pmut_scan. Also, ABACUS is an outstanding software with great statistical energy function
- for protein design. Due to their licences, I cannot redistribute them here! To our glad, openmm is open source! So the 
- glass is half full :).
+cartesian_ddg calculation or pmut_scan (a mpi build is necessary). Also, ABACUS is an outstanding software with great 
+statistical energy function for protein design. Due to their licences, I cannot redistribute them here! To our glad, 
+openmm is open source! So the glass is half full :).
   
 To install it, clone this repo and add it to PATH:
 ```bash
 conda install -c conda-forge openmm pdbfixer
-pip install mdtraj
+pip install mdtraj pandas numpy joblib
 git clone https://github.com/JinyuanSun/DDGScan.git &&
 cd DDGScan && export PATH="$(pwd):$PATH"
 ```
@@ -73,7 +73,8 @@ MutationsEnergies_CompleteList_SortedByEnergy.tab
 MutationsEnergies_BestPerPositionBelowCutOff.tab
 ```
 And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for 
-every mutation built by FoldX. Of course there will be folder start with rosetta or abacus, depending on your choice!
+every mutation built by FoldX. Of course there will be folder start with rosetta or abacus, depending on your choice!  
+If `-md` was turned on, all produced snapshots can by found in `selectpdb` with `afterMD` as suffix in the name of pdbfiles.
 ### Inspect structures
 Using `scripts/inspectmutation.py` to inspect mutations in pymol:
 ```bash

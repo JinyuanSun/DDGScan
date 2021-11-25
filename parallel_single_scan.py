@@ -129,7 +129,7 @@ class GRAPE:
 
     def analysisGrapeScore(self, scoreFile, cutoff, result_dir):
         result_dict = {'mutation':[],'energy':[],'SD':[],'position':[]}
-        with open(scoreFile, 'w+') as scorefile:
+        with open(scoreFile, 'r') as scorefile:
             for line in scorefile:
                 if line[0] != "#":
                     lst = line.strip().split("\t")
@@ -189,6 +189,7 @@ def selectpdb4md(pdb, platform, softlist):
         os.mkdir("selectpdb")
     except FileExistsError:
         os.system("rm -rf selectpdb")
+        os.mkdir("selectpdb")
     selected_dict = {"mutation": [], "score": [], "sd": [], "soft": []}
     for soft in softlist:
         with open("%s_results/MutationsEnergies_BelowCutOff.tab"%(soft)) as scorefile:
@@ -197,12 +198,13 @@ def selectpdb4md(pdb, platform, softlist):
                 if linelist[0] != "mutation":
                     selected_dict["mutation"].append(linelist[0])
                     selected_dict["score"].append(linelist[1])
-                    selected_dict["score"].append(linelist[2])
+                    selected_dict["sd"].append(linelist[2])
                     selected_dict["soft"].append(soft)
             scorefile.close()
     selected_df = pd.DataFrame(selected_dict)
     selected_df.to_csv("Selected_Mutation.csv")
     for mutation in selected_dict['mutation']:
+        mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
         os.system("cp foldx_jobs/%s/%s selectpdb/%s.pdb" %(mutation, mut_pdb, mutation))
         os.chdir("selectpdb")
@@ -273,6 +275,13 @@ def main1():
     foldx1 = foldx.FoldX(pdb, foldx_exe, threads)
     rosetta1 = rosetta.Rosetta(pdb, relax_num, threads, cartesian_ddg_exe, rosettadb)
 
+    if mode == "rerun":
+        os.system("rm -rf *_jobs")
+        os.system("rm -rf *_results")
+        os.system("rm -rf *_relax")
+        os.system("rm -rf selectpdb")
+        mode = 'run'
+
     if mode == "run":
         #FoldX
         if "foldx" in softlist:
@@ -314,7 +323,7 @@ def main1():
         if "abacus" in softlist:
             abacus.run_abacus(pdb)
             abacus.parse_abacus_out()
-            grape.analysisGrapeScore('ABACUS_results/All_ABACUS.score', rosetta_cutoff, "ABACUS_results/")
+            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', rosetta_cutoff, "abacus_results/")
     if mode == "analysis":
         #FoldX
         if "foldx" in softlist:
@@ -345,7 +354,7 @@ def main1():
 
     print('\nFinish calculation of single point mutation ddG.\n')
 
-    if md == True:
+    if md == "True":
         selectpdb4md(pdb, platform, softlist)
     else:
         print("No MDs!")

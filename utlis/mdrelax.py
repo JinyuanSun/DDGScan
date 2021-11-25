@@ -68,7 +68,7 @@ def produciton(pdbfilename, platform="CUDA"):
     simulation.minimizeEnergy()
 
     # equilibrate for 100 steps
-    simulation.context.setVelocitiesToTemperature(298 * unit.kelvin)
+    simulation.context.setVelocitiesToTemperature(300 * unit.kelvin)
     print('Equilibrating...')
     simulation.step(100)
 
