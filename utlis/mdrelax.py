@@ -57,10 +57,11 @@ def produciton(pdbfilename, platform="CUDA"):
     if platform == "CUDA":
         platform = mm.Platform.getPlatformByName(platform)
         properties = {'CudaPrecision': 'mixed'}
+        simulation = app.Simulation(modeller.topology, system, integrator, platform, properties)
     else:
         platform = mm.Platform.getPlatformByName("CPU")
-    simulation = app.Simulation(modeller.topology, system, integrator, platform,
-                                properties)
+        simulation = app.Simulation(modeller.topology, system, integrator, platform)
+
     simulation.context.setPositions(modeller.positions)
 
     # minimize
