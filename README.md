@@ -80,6 +80,39 @@ Using `scripts/inspectmutation.py` to inspect mutations in pymol:
 ```bash
 pymol inspectmutation.py $Wildtype_structure $Mutation_structure $Mutation_position $Chain
 ```
+### Citations
+If you find the models useful in your research, we ask that you cite the relevant paper:
+
+```bibtex
+
+@article{cui20201cascatal,
+    author = {Cui, Yinglu and Chen, Yanchun and Liu, Xinyue and Dong, Saijun and Tian, Yu’e and Qiao, Yuxin and Mitra, Ruchira and Han, Jing and Li, Chunli and Han, Xu and Liu, Weidong and Chen, Quan and Wei, Wangqing and Wang, Xin and Du, Wenbin and Tang, Shuangyan and Xiang, Hua and Liu, Haiyan and Liang, Yong and Houk, Kendall N. and Wu, Bian},
+    title = {Computational Redesign of a PETase for Plastic Biodegradation under Ambient Condition by the GRAPE Strategy},
+    journal = {ACS Catalysis},
+    volume = {11},
+    number = {3},
+    pages = {1340-1350},
+    year = {2021},
+    doi = {10.1021/acscatal.0c05126}
+}
+@article {sun2021mie,
+	Title = {GRAPE, a greedy accumulated strategy for computational protein engineering},
+	Author = {Sun, Jinyuan and Cui, Yinglu and Wu, Bian},
+	DOI = {10.1016/bs.mie.2020.12.026},
+	Volume = {648},
+	Year = {2021},
+	Journal = {Methods in enzymology},
+	ISSN = {0076-6879},
+	Pages = {207—230},
+	URL = {https://doi.org/10.1016/bs.mie.2020.12.026}
+}
+@article {cui2022,
+	Title = {GRAPE-web: A web server for automated design of thermostable proteins. (in prep.)},
+	Author = {Cui, Yinglu and Wu, Bian}
+}
+```
+
+
 ### 如果你在中国大陆地区，可以使用`Gitee`:
 ```bash
 git clone https://gitee.com/puzhunanlu30/Codes_for_FoldX.git
