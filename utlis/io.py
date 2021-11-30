@@ -42,7 +42,7 @@ class Parser:
 
         parser.add_argument("-fc", '--foldx_cutoff',help="Cutoff of FoldX ddg(kcal/mol)", default=1.5)
         parser.add_argument("-rc", '--rosetta_cutoff',help="Cutoff of Rosetta ddg(R.E.U.)", default=5)
-        parser.add_argument("-ac", '--ABACUS_cutoff',help="Cutoff of ABACUS SEF(A.E.U.)", default=3)
+        parser.add_argument("-ac", '--abacus_cutoff',help="Cutoff of ABACUS SEF(A.E.U.)", default=3)
         parser.add_argument("-nstruct", '--relax_number',help="Number of how many relaxed structure", default=50)
         parser.add_argument("-nruns", '--numofruns',help="Number of runs in FoldX BuildModel", default=5)
         parser.add_argument("-sl", '--softlist',help="List of Software to be used in ddg calculations", default="FoldX,Rosetta")

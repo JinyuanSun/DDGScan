@@ -226,6 +226,7 @@ def main1():
     relax_num = args.relax_number
     foldx_cutoff = -float(args.foldx_cutoff)
     rosetta_cutoff = -float(args.rosetta_cutoff)
+    abacus_cutoff = -float(args.abacus_cutoff)
     softlist = args.softlist.lower().split(",")
     preset = args.preset.lower()
     md = args.molecular_dynamics
@@ -323,7 +324,7 @@ def main1():
         if "abacus" in softlist:
             abacus.run_abacus(pdb)
             abacus.parse_abacus_out()
-            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', rosetta_cutoff, "abacus_results/")
+            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
     if mode == "analysis":
         #FoldX
         if "foldx" in softlist:
@@ -349,7 +350,7 @@ def main1():
         if "abacus" in softlist:
             # abacus.run_abacus(pdb)
             abacus.parse_abacus_out()
-            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', rosetta_cutoff, "abacus_results/")
+            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
 
 
     print('\nFinish calculation of single point mutation ddG.\n')
