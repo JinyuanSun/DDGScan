@@ -23,8 +23,11 @@ class Protein:
                 if 'ATOM' == line[0:6].replace(" ",""):
                     if self.chain == line[21].replace(" ",""):
                         if line[12:16].replace(" ","") == "CA":
-                            self.seq += self._3_2_1(line[17:20].replace(" ",""))
-                            self.resNumList.append(int(line[22:26].replace(" ","")))
+                            if line[16] == "B":
+                                continue
+                            else:
+                                self.seq += self._3_2_1(line[17:20].replace(" ",""))
+                                self.resNumList.append(int(line[22:26].replace(" ","")))
         pdbfile.close()
         return self.seq, self.resNumList
 

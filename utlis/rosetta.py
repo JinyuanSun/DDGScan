@@ -90,7 +90,7 @@ class Rosetta:
         with open('mtfile', 'w+') as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")
-            mtfile.write(wild + " " + str(resNum) + " " + mutation)
+            mtfile.write(wild + " " + str(resNum) + " " + mutation + "\n")
             mtfile.close()
 
         argument_list = [self.exe, "-database", self.rosettadb,

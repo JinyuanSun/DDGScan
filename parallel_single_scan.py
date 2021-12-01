@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
-import pandas as pd
 import os
+
+import pandas as pd
+from joblib import Parallel, delayed
+from numba import jit
 import utlis.foldx as foldx
+import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
 from utlis import mdrelax
-import utlis.io as io
-from joblib import Parallel, delayed
-
-
-from multiprocessing import Pool, cpu_count
 
 
 class GRAPE:
@@ -19,6 +18,8 @@ class GRAPE:
         self.relaxed_prot: str
         # self.repaired_pdbfile: str
         pass
+
+    @jit(nopython=True)
     def run_foldx(self, pdb, threads, chain, numOfRuns):
         prot_foldx = foldx.FoldX(pdb, '', threads)
         self.repaired_pdbfile = prot_foldx.repairPDB()
@@ -44,13 +45,14 @@ class GRAPE:
         # all_results = parall.get_results()
         # print(job_list)
         Parallel(n_jobs=threads)(delayed(prot_foldx.runOneJob)(var) for var in job_list)
-        
+
         return all_results
 
+    @jit(nopython=True)
     def run_rosetta(self, pdb, threads, chain, relax_num):
         # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
-        relaxed_prot = prot_rosetta.relax()
+        # relaxed_prot = prot_rosetta.relax()
 
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
@@ -62,17 +64,19 @@ class GRAPE:
         # all_results = []
         job_list = []
         for i, res in enumerate(seq):
+
             resNum = resNumList[i]
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
-                jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
-                job_list.append([wild, aa, str(i + 1), jobID])
-
+                if aa != wild:
+                    jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
+                    job_list.append([wild, aa, str(i + 1), jobID])
 
         Parallel(n_jobs=threads)(delayed(prot_rosetta.runOneJob)(var) for var in job_list)
 
         return prot_rosetta
 
+    @jit(nopython=True)
     def Analysis_foldx(self, pdb, chain, foldx1):
         self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
         try:
@@ -99,6 +103,7 @@ class GRAPE:
 
         return all_results
 
+    @jit(nopython=True)
     def Analysis_rosetta(self, pdb, chain, prot_rosetta):
         # self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
         # prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
@@ -117,7 +122,8 @@ class GRAPE:
                 # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                 # "_".join([wild, str(resNum), mutation])
                 rosettaddgfile = "rosetta_jobs/" + "_".join([wild, str(resNum), aa]) + "/mtfile.ddg"
-                all_results.append(["_".join([wild, str(resNum), aa])] + prot_rosetta.read_rosetta_ddgout(rosettaddgfile))
+                all_results.append(
+                    ["_".join([wild, str(resNum), aa])] + prot_rosetta.read_rosetta_ddgout(rosettaddgfile))
 
         with open("rosetta_results/All_rosetta.score", 'w+') as rosettaout:
             rosettaout.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
@@ -127,8 +133,9 @@ class GRAPE:
 
         return all_results
 
+    @jit(nopython=True)
     def analysisGrapeScore(self, scoreFile, cutoff, result_dir):
-        result_dict = {'mutation':[],'energy':[],'SD':[],'position':[]}
+        result_dict = {'mutation': [], 'energy': [], 'SD': [], 'position': []}
         with open(scoreFile, 'r') as scorefile:
             for line in scorefile:
                 if line[0] != "#":
@@ -138,10 +145,11 @@ class GRAPE:
                     result_dict['SD'].append(float(lst[2]))
                     result_dict['position'].append(int(lst[0].split("_")[1]))
             scorefile.close()
-        #print(result_dict)
+        # print(result_dict)
         CompleteList_df = pd.DataFrame(result_dict)
         CompleteList_SortedByEnergy_df = CompleteList_df.sort_values('energy').reset_index(drop=True)
 
+        @jit(nopython=True)
         def BetsPerPosition(df):
             position_list = []
             length = df.shape[0]
@@ -152,8 +160,9 @@ class GRAPE:
                     position_list.append(df['position'][i])
             return df.reset_index(drop=True)
 
-        def BelowCutOff(df,cutoff):
-            #position_list = []
+        @jit(nopython=True)
+        def BelowCutOff(df, cutoff):
+            # position_list = []
             length = df.shape[0]
             for i in range(length):
                 if float(df['energy'][i]) > float(cutoff):
@@ -171,7 +180,7 @@ class GRAPE:
 
         def out_tab_file(df, name, result_dir):
             filename = result_dir + "/MutationsEnergies_" + name[:-3] + ".tab"
-            with open(filename,"w+") as of:
+            with open(filename, "w+") as of:
                 of.write(df.to_csv(columns=['mutation', 'energy', 'SD'], sep='\t', index=False))
                 of.close()
 
@@ -181,9 +190,11 @@ class GRAPE:
         out_tab_file(BestPerPosition_df, "BestPerPosition_df", result_dir)
         out_tab_file(BelowCutOff_df, "BelowCutOff_df", result_dir)
         out_tab_file(BelowCutOff_SortedByEnergy_df, "BelowCutOff_SortedByEnergy_df", result_dir)
-        out_tab_file(BestPerPositionBelowCutOff_SortedByEnergy_df, "BestPerPositionBelowCutOff_SortedByEnergy_df", result_dir)
+        out_tab_file(BestPerPositionBelowCutOff_SortedByEnergy_df, "BestPerPositionBelowCutOff_SortedByEnergy_df",
+                     result_dir)
         out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir)
 
+@jit(nopython=True)
 def selectpdb4md(pdb, platform, softlist):
     try:
         os.mkdir("selectpdb")
@@ -192,7 +203,7 @@ def selectpdb4md(pdb, platform, softlist):
         os.mkdir("selectpdb")
     selected_dict = {"mutation": [], "score": [], "sd": [], "soft": []}
     for soft in softlist:
-        with open("%s_results/MutationsEnergies_BelowCutOff.tab"%(soft)) as scorefile:
+        with open("%s_results/MutationsEnergies_BelowCutOff.tab" % (soft)) as scorefile:
             for line in scorefile:
                 linelist = line.strip().split()
                 if linelist[0] != "mutation":
@@ -206,7 +217,7 @@ def selectpdb4md(pdb, platform, softlist):
     for mutation in selected_dict['mutation']:
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
-        os.system("cp foldx_jobs/%s/%s selectpdb/%s.pdb" %(mutation, mut_pdb, mutation))
+        os.system("cp foldx_jobs/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation))
         os.chdir("selectpdb")
         mutant = mutation + ".pdb"
         mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
@@ -216,7 +227,7 @@ def selectpdb4md(pdb, platform, softlist):
 
 def main1():
     args = io.Parser().get_args()
-    #print(args)
+    # print(args)
 
     pdb = args.pdb
     chain = args.chain
@@ -232,7 +243,6 @@ def main1():
     md = args.molecular_dynamics
     platform = args.platform
 
-
     exe_dict = {'foldx': '', 'relax': '', 'cartddg': '', 'pmut': '', 'abacus': ''}
 
     foldx_exe = os.popen("which foldx").read().replace("\n", "")
@@ -240,8 +250,8 @@ def main1():
     pmut_scan_parallel_exe = os.popen("which pmut_scan_parallel.mpi.linuxgccrelease").read().replace("\n", "")
     rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
     exe_dict['pmut'] = pmut_scan_parallel_exe
-    for release in ['','.static','.mpi','.default']:
-        cartesian_ddg_exe = os.popen("which cartesian_ddg%s.linuxgccrelease" %(release)).read().replace("\n", "")
+    for release in ['', '.static', '.mpi', '.default']:
+        cartesian_ddg_exe = os.popen("which cartesian_ddg%s.linuxgccrelease" % (release)).read().replace("\n", "")
         if cartesian_ddg_exe != "":
             exe_dict['cartddg'] = cartesian_ddg_exe
     relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
@@ -257,7 +267,8 @@ def main1():
                 exit()
             if preset == 'slow':
                 if exe_dict['cartddg'] == '':
-                    print("[Error:] Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
+                    print(
+                        "[Error:] Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
                     exit()
             if preset == 'fast':
                 if exe_dict['pmut'] == '':
@@ -265,10 +276,8 @@ def main1():
                     exit()
         else:
             if exe_dict[soft] == '':
-                print("[Error:] Cannot find %s!" %(soft))
+                print("[Error:] Cannot find %s!" % (soft))
                 exit()
-
-
 
     mode = args.mode
 
@@ -284,7 +293,7 @@ def main1():
         mode = 'run'
 
     if mode == "run":
-        #FoldX
+        # FoldX
         if "foldx" in softlist:
             grape.run_foldx(pdb, threads, chain, numOfRuns)
             grape.Analysis_foldx(pdb, chain, foldx1)
@@ -303,7 +312,7 @@ def main1():
                     os.chdir("rosetta_jobs")
                 except FileExistsError:
                     os.chdir("rosetta_jobs")
-                os.system("cp ../rosetta_relax/%s ./" %(relaxed_pdb))
+                os.system("cp ../rosetta_relax/%s ./" % (relaxed_pdb))
                 rosetta1.pmut_scan(relaxed_pdb)
                 os.chdir("..")
 
@@ -326,7 +335,7 @@ def main1():
             abacus.parse_abacus_out()
             grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
     if mode == "analysis":
-        #FoldX
+        # FoldX
         if "foldx" in softlist:
             # pdb = pdb.replace(".pdb", "_Repair.pdb")
             grape.Analysis_foldx(pdb, chain, foldx1)
@@ -352,15 +361,12 @@ def main1():
             abacus.parse_abacus_out()
             grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
 
-
     print('\nFinish calculation of single point mutation ddG.\n')
 
     if md == "True":
         selectpdb4md(pdb, platform, softlist)
     else:
         print("No MDs!")
-
-
 
 
 if __name__ == '__main__':
