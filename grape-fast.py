@@ -19,7 +19,7 @@ class GRAPE:
         # self.repaired_pdbfile: str
         pass
 
-    @jit(nopython=True)
+
     def run_foldx(self, pdb, threads, chain, numOfRuns):
         prot_foldx = foldx.FoldX(pdb, '', threads)
         self.repaired_pdbfile = prot_foldx.repairPDB()
@@ -48,7 +48,7 @@ class GRAPE:
 
         return all_results
 
-    @jit(nopython=True)
+
     def run_rosetta(self, pdb, threads, chain, relax_num):
         # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
@@ -194,7 +194,7 @@ class GRAPE:
                      result_dir)
         out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir)
 
-@jit(nopython=True)
+
 def selectpdb4md(pdb, platform, softlist):
     try:
         os.mkdir("selectpdb")
