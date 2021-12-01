@@ -13,7 +13,7 @@ openmm is open source! So the glass is half full :).
 To install it, clone this repo and add it to PATH:
 ```bash
 conda install -c conda-forge openmm pdbfixer
-pip install mdtraj pandas numpy joblib
+pip install mdtraj pandas numpy joblib numba
 git clone https://github.com/JinyuanSun/DDGScan.git &&
 cd DDGScan && export PATH="$(pwd):$PATH"
 ```
@@ -57,7 +57,7 @@ You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/st
 I will recommend to use the `fast` mode with `-md` turned on `True` and using `CUDA` to accelerate molecular dynamics simulations.
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-parallel_single_scan.py -pdb 1PGA.pdb -chain A -sl "FoldX,Rosetta,ABACUS" -mode run -cpu 40 -preset fast -md True -platform CUDA
+grape-fast.py -pdb 1PGA.pdb -chain A -sl "FoldX,Rosetta,ABACUS" -mode run -cpu 40 -preset fast -md True -platform CUDA
 ```
 You should expecting outputs like:  
 A folder named `foldx_results` containing:
@@ -116,4 +116,8 @@ If you find the models useful in your research, we ask that you cite the relevan
 ### 如果你在中国大陆地区，可以使用`Gitee`:
 ```bash
 git clone https://gitee.com/puzhunanlu30/Codes_for_FoldX.git
+```
+or try this:
+```bash
+git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 ```
