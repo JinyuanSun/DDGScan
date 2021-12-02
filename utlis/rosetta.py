@@ -110,7 +110,11 @@ class Rosetta:
                          "9.0",
                          "1>/dev/null"]
         cartddg_cmd = " ".join(argument_list)
+
+        starttime = time.time()
         os.system(cartddg_cmd)
+        finishtime = time.time()
+        print("[DEBUG]: Rosetta mutation %s_%s_%s took %f seconds." %(wild, resNum, mutation, finishtime-starttime))
         # print(cartddg_cmd)
         os.chdir("../../")
         # return pid, '_'.join([wild, str(trueResNum), mutation])
@@ -144,8 +148,13 @@ class Rosetta:
                 '>',
                 "pmut.out && ls pmut.out"
             ]
-            print("[INFO: ] Running pmut_scan_parallel")
+            print("[INFO]: Running pmut_scan_parallel")
+            pmut_start = time.time()
+            print(" ")
             os.system(" ".join(arg_list))
+            pmut_end = time.time()
+            pmut_time = pmut_end - pmut_start
+            return pmut_time
 
     def pmut_scan_analysis(self, pmutoutfile):
         with open(pmutoutfile) as pmut_out:

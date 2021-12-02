@@ -13,7 +13,7 @@ openmm is open source! So the glass is half full :).
 To install it, clone this repo and add it to PATH:
 ```bash
 conda install -c conda-forge openmm pdbfixer
-pip install mdtraj pandas numpy joblib numba
+pip install mdtraj pandas numpy joblib
 git clone https://github.com/JinyuanSun/DDGScan.git &&
 cd DDGScan && export PATH="$(pwd):$PATH"
 ```

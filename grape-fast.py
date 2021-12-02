@@ -4,29 +4,45 @@ import os
 
 import pandas as pd
 from joblib import Parallel, delayed
-from numba import jit
 import utlis.foldx as foldx
 import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
 from utlis import mdrelax
+import time
+import json
 
 
 class GRAPE:
     def __init__(self):
         self.repaired_pdbfile: str
         self.relaxed_prot: str
+        self.running_time = {
+            "foldx_repair": 0,
+            "foldx_scan": 0,
+            "rosetta_relax": 0,
+            'rosetta_scan': 0,
+            'abacus_prepare': 0,
+            'abacus_scan': 0,
+            'MD simulations': 0
+        }
         # self.repaired_pdbfile: str
         pass
 
 
     def run_foldx(self, pdb, threads, chain, numOfRuns):
+        print("[INFO]: FoldX started at %s" %(time.ctime()))
         prot_foldx = foldx.FoldX(pdb, '', threads)
+        repair_start = time.time()
         self.repaired_pdbfile = prot_foldx.repairPDB()
+        repair_end = time.time()
+        repair_time = repair_end - repair_start
+        self.running_time['foldx_repair'] = repair_time
+        print("[INFO]: FoldX Repair took %f seconds." %(repair_time))
+
         prot = io.Protein(self.repaired_pdbfile, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
-        # parallel:
-        # parall = ParallelSim(threads)
+
         try:
             os.mkdir('foldx_jobs')
         except FileExistsError:
@@ -37,22 +53,31 @@ class GRAPE:
             resNum = resNumList[i]
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
-                jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
-                job_list.append([self.repaired_pdbfile, wild, chain, aa, resNum, jobID, numOfRuns])
-
-                # parall.add(prot_foldx.runOneJob, [self.repaired_pdbfile, wild, chain, aa, resNum, jobID])
-        # parall.run()
-        # all_results = parall.get_results()
-        # print(job_list)
+                if aa != wild:
+                    jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
+                    job_list.append([self.repaired_pdbfile, wild, chain, aa, resNum, jobID, numOfRuns])
+        # print("[INFO]: FoldX started at %s" %(time.ctime()))
+        scan_start = time.time()
         Parallel(n_jobs=threads)(delayed(prot_foldx.runOneJob)(var) for var in job_list)
+        scan_end = time.time()
+        scan_time = scan_end - scan_start
+        self.running_time['foldx_scan'] = scan_time
+        print("[INFO]: FoldX Scan took %f seconds." %(scan_time))
+
 
         return all_results
 
 
     def run_rosetta(self, pdb, threads, chain, relax_num):
+        print("[INFO]: Rosetta started at %s" %(time.ctime()))
         # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
-        # relaxed_prot = prot_rosetta.relax()
+        relax_start = time.time()
+        relaxed_prot = prot_rosetta.relax()
+        relax_end = time.time()
+        relax_time = relax_end - relax_start
+        self.running_time['rosetta_relax'] = relax_time
+        print("[INFO]: Rosetta Relax took %f seconds." %(relax_time))
 
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
@@ -72,11 +97,16 @@ class GRAPE:
                     jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
                     job_list.append([wild, aa, str(i + 1), jobID])
 
+        scan_start = time.time()
         Parallel(n_jobs=threads)(delayed(prot_rosetta.runOneJob)(var) for var in job_list)
+        scan_end = time.time()
+        scan_time = scan_end - scan_start
+        self.running_time['rosetta_scan'] = scan_time
+        print("[INFO]: Rosetta cartesian_ddg Scan took %f seconds." %(scan_time))
 
         return prot_rosetta
 
-    @jit(nopython=True)
+
     def Analysis_foldx(self, pdb, chain, foldx1):
         self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
         try:
@@ -92,8 +122,9 @@ class GRAPE:
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
                 # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
-                jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
-                all_results.append(foldx1.calScore(wild, resNum, aa, self.repaired_pdbfile, jobID))
+                if aa != wild:
+                    jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
+                    all_results.append(foldx1.calScore(wild, resNum, aa, self.repaired_pdbfile, jobID))
 
         with open("foldx_results/All_FoldX.score", 'w+') as foldxout:
             foldxout.write("#Score file formated by GRAPE from FoldX.\n#mutation\tscore\tstd\n")
@@ -103,10 +134,7 @@ class GRAPE:
 
         return all_results
 
-    @jit(nopython=True)
     def Analysis_rosetta(self, pdb, chain, prot_rosetta):
-        # self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
-        # prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
         try:
             os.mkdir("rosetta_results")
         except FileExistsError:
@@ -119,11 +147,12 @@ class GRAPE:
             resNum = resNumList[i]
             wild = res
             for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
+                if aa != wild:
                 # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                 # "_".join([wild, str(resNum), mutation])
-                rosettaddgfile = "rosetta_jobs/" + "_".join([wild, str(resNum), aa]) + "/mtfile.ddg"
-                all_results.append(
-                    ["_".join([wild, str(resNum), aa])] + prot_rosetta.read_rosetta_ddgout(rosettaddgfile))
+                    rosettaddgfile = "rosetta_jobs/" + "_".join([wild, str(resNum), aa]) + "/mtfile.ddg"
+                    all_results.append(
+                        ["_".join([wild, str(resNum), aa])] + prot_rosetta.read_rosetta_ddgout(rosettaddgfile))
 
         with open("rosetta_results/All_rosetta.score", 'w+') as rosettaout:
             rosettaout.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
@@ -133,7 +162,6 @@ class GRAPE:
 
         return all_results
 
-    @jit(nopython=True)
     def analysisGrapeScore(self, scoreFile, cutoff, result_dir):
         result_dict = {'mutation': [], 'energy': [], 'SD': [], 'position': []}
         with open(scoreFile, 'r') as scorefile:
@@ -149,7 +177,6 @@ class GRAPE:
         CompleteList_df = pd.DataFrame(result_dict)
         CompleteList_SortedByEnergy_df = CompleteList_df.sort_values('energy').reset_index(drop=True)
 
-        @jit(nopython=True)
         def BetsPerPosition(df):
             position_list = []
             length = df.shape[0]
@@ -160,7 +187,6 @@ class GRAPE:
                     position_list.append(df['position'][i])
             return df.reset_index(drop=True)
 
-        @jit(nopython=True)
         def BelowCutOff(df, cutoff):
             # position_list = []
             length = df.shape[0]
@@ -313,7 +339,9 @@ def main1():
                 except FileExistsError:
                     os.chdir("rosetta_jobs")
                 os.system("cp ../rosetta_relax/%s ./" % (relaxed_pdb))
-                rosetta1.pmut_scan(relaxed_pdb)
+                pmut_time = rosetta1.pmut_scan(relaxed_pdb)
+                grape.running_time['rosetta_scan'] = pmut_time
+                print("[INFO]: Rosetta pmut_scan_parallel took %f seconds." %(pmut_time))
                 os.chdir("..")
 
                 try:
@@ -331,7 +359,10 @@ def main1():
                 # grape.Analysis_rosetta(pdb, chain, prot_rosetta)
                 # grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
         if "abacus" in softlist:
-            abacus.run_abacus(pdb)
+            abacus_prepare_time, abacus_scan_time = abacus.run_abacus(pdb)
+            grape.running_time['abacus_prepare'] = abacus_prepare_time
+            grape.running_time['abacus_scan'] = abacus_scan_time
+
             abacus.parse_abacus_out()
             grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
     if mode == "analysis":
@@ -361,13 +392,25 @@ def main1():
             abacus.parse_abacus_out()
             grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
 
-    print('\nFinish calculation of single point mutation ddG.\n')
+    print('\n[INFO]: Finished calculation of single point mutation ddG at %s.\n' %(time.ctime()))
+
 
     if md == "True":
+        md_start = time.time()
         selectpdb4md(pdb, platform, softlist)
+        md_end = time.time()
+        grape.running_time['MD simulations'] = md_end - md_start
+        print("[INFO]: All MDs took %f seconds."%(md_end - md_start))
     else:
         print("No MDs!")
 
+    json_running_time = json.dumps(grape.running_time, indent = 4)
+    with open("timing.json", 'w+') as timing:
+        timing.write(json_running_time)
+        timing.close()
+
 
 if __name__ == '__main__':
+    print("[INFO]: Started at %s" %(time.ctime()))
     main1()
+    print("[INFO]: Ended at %s" %(time.ctime()))

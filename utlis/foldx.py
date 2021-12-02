@@ -4,6 +4,7 @@
 
 import os
 import pandas as pd
+import time
 
 
 class FoldX:
@@ -18,17 +19,10 @@ class FoldX:
         cmd = self.path + 'foldx --command=RepairPDB --pdb=' + self.pdbname
         pdbname = self.pdbname
         # print(cmd)
-        print('==' * 20)
-        print('Stage 1: Repair PDB file using FoldX')
-        print('==' * 20)
-        print('[INFO]: Running FoldX RepairPDB.')
-
         FoldX_out = os.popen(cmd).read()
         with open('.foldx_repair.log', 'w+') as outfile:
             outfile.write(FoldX_out)
             outfile.close()
-
-        print('[INFO]: FoldX RepairPDB Done!')
         return pdbname.replace(".pdb", '_Repair.pdb')
 
     def calScore(self, wild, resNum, mutation, pdbfile, jobID):
@@ -56,6 +50,11 @@ class FoldX:
         os.popen(cmd1)
         cmd2 = self.path + "foldx --command=BuildModel --numberOfRuns=" + numOfRuns + \
                " --mutant-file=individual_list.txt --pdb=" + pdbfile + " 1>/dev/null"
+
+        starttime = time.time()
         os.system(cmd2)
+        finishtime = time.time()
+        print("[DEBUG]: FoldX mutation %s_%s_%s took %f seconds." %(wild, resNum, mutation, finishtime-starttime))
+
         os.chdir("../../")
         # return self.calScore(self, pdbfile)  # need self?

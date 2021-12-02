@@ -1,25 +1,37 @@
 #!/usr/bin/env python
 import os
+import time
 
 
 def run_abacus(pdbfilename):
     try:
         os.mkdir("abacus_jobs")
         os.chdir("abacus_jobs")
+        start_time = time.time()
+        print("[INFO]: ABACUS started at %s" %(time.ctime()))
         os.system("cp ../%s ./" % (pdbfilename))
-        print("[INFO: ] Running ABACUS_prepare.")
+        print("[INFO]: Running ABACUS_prepare.")
         os.system("ABACUS_prepare %s" % (pdbfilename))
-        print("[INFO: ] Running ABACUS_S1S2.")
+        print("[INFO]: Running ABACUS_S1S2.")
         os.system("ABACUS_S1S2 %s" % (pdbfilename))
-        print("[INFO: ] Running ABACUS_singleMutationScan.")
+        prepare_end = time.time()
+        prepare_time = prepare_end - start_time
+        print("[INFO]: ABAUCS prepare took %f seconds." %(prepare_time))
+        print("[INFO]: Running ABACUS_singleMutationScan.")
+
         os.system("ABACUS_singleMutationScan %s abacus_output.txt" % (pdbfilename))
+        scan_end = time.time()
+        scan_time = scan_end - prepare_end
+        print("[INFO]: ABAUCS scan took %f seconds." %(scan_time))
+        os.chdir("../")
+        return prepare_time, scan_time
     except FileExistsError:
         os.chdir("abacus_jobs")
         if os.path.exists("./abacus_output.txt"):
-            print("==" * 2)
-            print("[INFO: ] ABACUS results found. Skipping.")
-            print("==" * 2)
-    os.chdir("../")
+            print("[INFO]: ABACUS results found. Skipping.")
+        os.chdir("../")
+        return 0, 0
+
 
 
 def parse_abacus_out():
