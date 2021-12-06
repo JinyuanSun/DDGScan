@@ -70,12 +70,12 @@ class Parser:
             "-fill", "--fill_break_in_pdb", help="Use modeller to fill missing residues in your pdb file. Use this option with caution!", default=False
         )
         parser.add_argument(
-            "-seq", "--sequence", help="The exact sequence of protein you want to design. All mutation will be named according to this sequence."
+            "-seq", "--sequence", help="The exact sequence of protein you want to design. All mutation will be named according to this sequence.", default=""
         )
         parser.add_argument(
             "-cpu",
             "--threads",
-            help="Number of threads to run FoldX, Rosetta and HHblits",
+            help="Number of threads to run FoldX, Rosetta",
             default=16,
         )
 
@@ -106,22 +106,19 @@ class Parser:
             "-sl",
             "--softlist",
             help="List of Software to be used in ddg calculations",
-            default="FoldX,Rosetta",
+            default="FoldX,Rosetta,abacus",
         )
-        parser.add_argument("-mode", "--mode", help="Run, Rerun or analysis")
-        parser.add_argument("-preset", "--preset", help="Fast or Slow")
+        parser.add_argument("-mode", "--mode", help="Run, Rerun or analysis", default='run')
+        parser.add_argument("-preset", "--preset", help="Fast or Slow", default='slow')
         parser.add_argument(
             "-md",
             "--molecular_dynamics",
             help="Run 1ns molecular dynamics simulations for each mutation using openmm.",
-            default=True,
+            default=False,
         )
         parser.add_argument(
-            "-platform", "--platform", help="CUDA or CPU", default="CPU"
+            "-platform", "--platform", help="CUDA or CPU", default="CUDA"
         )
-
-
-
 
         args = parser.parse_args()
 
