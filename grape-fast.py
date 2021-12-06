@@ -415,7 +415,7 @@ def main1():
 
     mode = args.mode
 
-    pdb = checkpdb(pdb, chain, seqfile)
+
 
     grape = GRAPE()
     foldx1 = foldx.FoldX(pdb, foldx_exe, threads)
@@ -430,7 +430,7 @@ def main1():
 
     if mode == "run":
         if fillloop:
-            pdb = modeller_loop.main(pdb, chain, seq)
+            pdb = checkpdb(pdb, chain, seqfile)
 
         # FoldX
         if "foldx" in softlist:
