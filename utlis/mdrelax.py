@@ -7,6 +7,7 @@ from pdbfixer import PDBFixer
 from simtk.openmm.app import PDBFile
 import mdtraj as mt
 
+
 def fix(pdbfile):
     fixed = pdbfile.replace(".pdb", "_fixed.pdb")
     fixer = PDBFixer(pdbfile)
@@ -27,37 +28,48 @@ def fix(pdbfile):
     fixer.findMissingAtoms()
     fixer.addMissingAtoms()
 
-    PDBFile.writeFile(fixer.topology, fixer.positions, open(pdbfile.replace(".pdb", "_fixed.pdb"), 'w'))
+    PDBFile.writeFile(
+        fixer.topology,
+        fixer.positions,
+        open(pdbfile.replace(".pdb", "_fixed.pdb"), "w"),
+    )
     return fixed
 
 
 def produciton(pdbfilename, platform="CUDA"):
 
-
     # load in input PDB file and force field XML files
     pdb = app.PDBFile(pdbfilename)
-    forcefield = app.ForceField('amber99sbildn.xml', 'tip3p.xml')
+    forcefield = app.ForceField("amber99sbildn.xml", "tip3p.xml")
 
     # use app.Modeller to add hydrogens and solvent
     modeller = app.Modeller(pdb.topology, pdb.positions)
     modeller.addHydrogens(forcefield)
-    modeller.addSolvent(forcefield, model='tip3p', padding=1.0 * unit.nanometers)
+    modeller.addSolvent(forcefield, model="tip3p", padding=1.0 * unit.nanometers)
     topname = pdbfilename.replace("fixed", "modeller_tip3p")
-    app.PDBFile.writeFile(modeller.topology, modeller.positions, open(topname, 'w'))
+    app.PDBFile.writeFile(modeller.topology, modeller.positions, open(topname, "w"))
 
     # prepare system and integrator
-    system = forcefield.createSystem(modeller.topology, nonbondedMethod=app.PME,
-                                     nonbondedCutoff=1.0 * unit.nanometers, constraints=app.HBonds, rigidWater=True,
-                                     ewaldErrorTolerance=0.0005)
-    integrator = mm.LangevinIntegrator(300 * unit.kelvin, 1.0 / unit.picoseconds,
-                                       2.0 * unit.femtoseconds)
+    system = forcefield.createSystem(
+        modeller.topology,
+        nonbondedMethod=app.PME,
+        nonbondedCutoff=1.0 * unit.nanometers,
+        constraints=app.HBonds,
+        rigidWater=True,
+        ewaldErrorTolerance=0.0005,
+    )
+    integrator = mm.LangevinIntegrator(
+        300 * unit.kelvin, 1.0 / unit.picoseconds, 2.0 * unit.femtoseconds
+    )
     integrator.setConstraintTolerance(0.00001)
 
     # prepare simulation
     if platform == "CUDA":
         platform = mm.Platform.getPlatformByName(platform)
-        properties = {'CudaPrecision': 'mixed'}
-        simulation = app.Simulation(modeller.topology, system, integrator, platform, properties)
+        properties = {"CudaPrecision": "mixed"}
+        simulation = app.Simulation(
+            modeller.topology, system, integrator, platform, properties
+        )
     else:
         platform = mm.Platform.getPlatformByName("CPU")
         simulation = app.Simulation(modeller.topology, system, integrator, platform)
@@ -65,27 +77,38 @@ def produciton(pdbfilename, platform="CUDA"):
     simulation.context.setPositions(modeller.positions)
 
     # minimize
-    print('Minimizing...')
+    print("Minimizing...")
     simulation.minimizeEnergy()
 
     # equilibrate for 100 steps
     simulation.context.setVelocitiesToTemperature(300 * unit.kelvin)
-    print('Equilibrating...')
+    print("Equilibrating...")
     simulation.step(100)
 
     # append reporters
     dcdname = pdbfilename.replace("fixed.pdb", "_tip3p.dcd")
     simulation.reporters.append(app.DCDReporter(dcdname, 1000))
-    simulation.reporters.append(app.StateDataReporter(stdout, 1000, step=True,
-                                                      potentialEnergy=True, temperature=True, progress=True,
-                                                      remainingTime=True,
-                                                      speed=True, totalSteps=500000, separator='\t'))
+    simulation.reporters.append(
+        app.StateDataReporter(
+            stdout,
+            1000,
+            step=True,
+            potentialEnergy=True,
+            temperature=True,
+            progress=True,
+            remainingTime=True,
+            speed=True,
+            totalSteps=500000,
+            separator="\t",
+        )
+    )
 
     # run 1 ns of production simulation
-    print('Running Production...')
+    print("Running Production...")
     simulation.step(500000)
-    print('Done!')
+    print("Done!")
     return topname, dcdname
+
 
 def dcd2pdb(dcd_file, topol_file, out_file, stride=100, noWater=True, superimpose=True):
 
@@ -106,6 +129,7 @@ def dcd2pdb(dcd_file, topol_file, out_file, stride=100, noWater=True, superimpos
 
     return None
 
+
 def main(pdbfile, out_file, platform):
     fixed = fix(pdbfile)
     topname, dcdname = produciton(fixed, platform)
@@ -114,6 +138,6 @@ def main(pdbfile, out_file, platform):
 
 if __name__ == "__main__":
     import sys
+
     pdbfile, out_file, platform = sys.argv[1:]
     main(pdbfile, out_file, platform)
-

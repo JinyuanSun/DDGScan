@@ -1,14 +1,21 @@
 # Towards Stable Proteins
 
+#### Warning
+**I am testing this repo with some different input structures, if you encountered any failure please post a issue.** 
+
 ### See [GUI](GUI/) for the GUI plugin of foldx.
 GUIs only work for FoldX.
 
 ### Installation
-**Warning**  
-First of all, please make sure you have added the FoldX executable to your environment! Also, Rosetta is required for 
-cartesian_ddg calculation or pmut_scan (a mpi build is necessary). Also, ABACUS is an outstanding software with great 
-statistical energy function for protein design. Due to their licences, I cannot redistribute them here! To our glad, 
-openmm is open source! So the glass is half full :).
+ 
+First of all, please make sure you have added the **FoldX** executable to your environment! Secondly, **Rosetta** 
+(a mpi build is necessary) is 
+required for cartesian_ddg (`-mode slow`) calculation or pmut_scan(`-mode fast`). 
+Also, **ABACUS** is an outstanding software with great statistical energy function for protein design. 
+Structures downloaded from RCSB could be erroneous. One of the biggest problem will directly affect energy calculation is break in chains. 
+Here I implemented a loop closure module using **modeller** ,a great software with very long history, as backend.   
+Due to their licences, I cannot redistribute them here!  
+To our glad, **openmm** is open source! So the glass is half full :).
   
 To install it, clone this repo and add it to PATH:
 ```bash
@@ -19,20 +26,27 @@ cd DDGScan && export PATH="$(pwd):$PATH"
 ```
 ### Usage
 ```
+usage: grape-fast.py [-h] [-pdb PDB] [-chain CHAIN] [-fill FILL_BREAK_IN_PDB] [-seq SEQUENCE] [-cpu THREADS] [-fc FOLDX_CUTOFF] [-rc ROSETTA_CUTOFF] [-ac ABACUS_CUTOFF] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS]
+                     [-sl SOFTLIST] [-mode MODE] [-preset PRESET] [-md MOLECULAR_DYNAMICS] [-platform PLATFORM]
+
 Run FoldX, Rosetta and ABACUS for in silico deep mutation scan.
 
-arguments:
+optional arguments:
   -h, --help            show this help message and exit
   -pdb PDB, --pdb PDB   Input PDB
   -chain CHAIN, --chain CHAIN
                         Input PDB Chain to do in silico DMS
+  -fill FILL_BREAK_IN_PDB, --fill_break_in_pdb FILL_BREAK_IN_PDB
+                        Use modeller to fill missing residues in your pdb file. Use this option with caution!
+  -seq SEQUENCE, --sequence SEQUENCE
+                        The exact sequence of protein you want to design. All mutation will be named according to this sequence.
   -cpu THREADS, --threads THREADS
                         Number of threads to run FoldX, Rosetta and HHblits
   -fc FOLDX_CUTOFF, --foldx_cutoff FOLDX_CUTOFF
                         Cutoff of FoldX ddg(kcal/mol)
   -rc ROSETTA_CUTOFF, --rosetta_cutoff ROSETTA_CUTOFF
                         Cutoff of Rosetta ddg(R.E.U.)
-  -ac ABACUS_CUTOFF, --ABACUS_cutoff ABACUS_CUTOFF
+  -ac ABACUS_CUTOFF, --abacus_cutoff ABACUS_CUTOFF
                         Cutoff of ABACUS SEF(A.E.U.)
   -nstruct RELAX_NUMBER, --relax_number RELAX_NUMBER
                         Number of how many relaxed structure
@@ -48,7 +62,6 @@ arguments:
                         Run 1ns molecular dynamics simulations for each mutation using openmm.
   -platform PLATFORM, --platform PLATFORM
                         CUDA or CPU
-
 ```
 
 

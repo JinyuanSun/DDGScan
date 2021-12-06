@@ -12,25 +12,25 @@ class FoldX:
         self.pdbname = pdbName
         self.path = path2foldx
         self.threads = numThreads
-        self.cutoff : int
+        self.cutoff: int
         self.result = []
 
     def repairPDB(self):
-        cmd = self.path + 'foldx --command=RepairPDB --pdb=' + self.pdbname
+        cmd = self.path + "foldx --command=RepairPDB --pdb=" + self.pdbname
         pdbname = self.pdbname
         # print(cmd)
         FoldX_out = os.popen(cmd).read()
-        with open('.foldx_repair.log', 'w+') as outfile:
+        with open(".foldx_repair.log", "w+") as outfile:
             outfile.write(FoldX_out)
             outfile.close()
-        return pdbname.replace(".pdb", '_Repair.pdb')
+        return pdbname.replace(".pdb", "_Repair.pdb")
 
     def calScore(self, wild, resNum, mutation, pdbfile, jobID):
-        fxout_name = jobID + "/Dif_" + pdbfile.replace(".pdb", '.fxout')
+        fxout_name = jobID + "/Dif_" + pdbfile.replace(".pdb", ".fxout")
         # print(fxout_name)
-        df = pd.read_table(fxout_name, sep='\t', skiprows=8)
-        score = round(df['total energy'].mean(), 4)
-        sd = round(df['total energy'].std(), 4)
+        df = pd.read_table(fxout_name, sep="\t", skiprows=8)
+        score = round(df["total energy"].mean(), 4)
+        sd = round(df["total energy"].std(), 4)
         self.result.append(["_".join([wild, str(resNum), mutation]), score, sd])
         return ["_".join([wild, str(resNum), mutation]), score, sd]
 
@@ -43,18 +43,27 @@ class FoldX:
         except FileExistsError:
             os.chdir(jobID)
 
-        with open('individual_list.txt', 'w+') as indFile:
+        with open("individual_list.txt", "w+") as indFile:
             indFile.write(wild + chain + str(resNum) + mutation + ";")
             indFile.close()
         cmd1 = "cp ../../" + pdbfile + " ./"
         os.popen(cmd1)
-        cmd2 = self.path + "foldx --command=BuildModel --numberOfRuns=" + numOfRuns + \
-               " --mutant-file=individual_list.txt --pdb=" + pdbfile + " 1>/dev/null"
+        cmd2 = (
+            self.path
+            + "foldx --command=BuildModel --numberOfRuns="
+            + numOfRuns
+            + " --mutant-file=individual_list.txt --pdb="
+            + pdbfile
+            + " 1>/dev/null"
+        )
 
         starttime = time.time()
         os.system(cmd2)
         finishtime = time.time()
-        print("[DEBUG]: FoldX mutation %s_%s_%s took %f seconds." %(wild, resNum, mutation, finishtime-starttime))
+        print(
+            "[DEBUG]: FoldX mutation %s_%s_%s took %f seconds."
+            % (wild, resNum, mutation, finishtime - starttime)
+        )
 
         os.chdir("../../")
         # return self.calScore(self, pdbfile)  # need self?

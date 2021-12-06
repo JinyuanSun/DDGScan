@@ -8,7 +8,7 @@ def run_abacus(pdbfilename):
         os.mkdir("abacus_jobs")
         os.chdir("abacus_jobs")
         start_time = time.time()
-        print("[INFO]: ABACUS started at %s" %(time.ctime()))
+        print("[INFO]: ABACUS started at %s" % (time.ctime()))
         os.system("cp ../%s ./" % (pdbfilename))
         print("[INFO]: Running ABACUS_prepare.")
         os.system("ABACUS_prepare %s" % (pdbfilename))
@@ -16,13 +16,13 @@ def run_abacus(pdbfilename):
         os.system("ABACUS_S1S2 %s" % (pdbfilename))
         prepare_end = time.time()
         prepare_time = prepare_end - start_time
-        print("[INFO]: ABAUCS prepare took %f seconds." %(prepare_time))
+        print("[INFO]: ABAUCS prepare took %f seconds." % (prepare_time))
         print("[INFO]: Running ABACUS_singleMutationScan.")
 
         os.system("ABACUS_singleMutationScan %s abacus_output.txt" % (pdbfilename))
         scan_end = time.time()
         scan_time = scan_end - prepare_end
-        print("[INFO]: ABAUCS scan took %f seconds." %(scan_time))
+        print("[INFO]: ABAUCS scan took %f seconds." % (scan_time))
         os.chdir("../")
         return prepare_time, scan_time
     except FileExistsError:
@@ -33,30 +33,48 @@ def run_abacus(pdbfilename):
         return 0, 0
 
 
-
 def parse_abacus_out():
     try:
         os.mkdir("abacus_results")
     except FileExistsError:
         pass
-    longer_names = {'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D',
-                    'CYS': 'C', 'GLU': 'E', 'GLN': 'Q', 'GLY': 'G',
-                    'HIS': 'H', 'ILE': 'I', 'LEU': 'L', 'LYS': 'K',
-                    'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S',
-                    'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V'}
+    longer_names = {
+        "ALA": "A",
+        "ARG": "R",
+        "ASN": "N",
+        "ASP": "D",
+        "CYS": "C",
+        "GLU": "E",
+        "GLN": "Q",
+        "GLY": "G",
+        "HIS": "H",
+        "ILE": "I",
+        "LEU": "L",
+        "LYS": "K",
+        "MET": "M",
+        "PHE": "F",
+        "PRO": "P",
+        "SER": "S",
+        "THR": "T",
+        "TRP": "W",
+        "TYR": "Y",
+        "VAL": "V",
+    }
 
-    with open('tempfile', 'w') as tem:
+    with open("tempfile", "w") as tem:
         with open("abacus_jobs/abacus_output.txt") as abacusfile:
             for line in abacusfile:
-                if line.startswith('site'):
+                if line.startswith("site"):
                     wildAA = line.strip().split()[4]
                     wildAAnum = line.strip().split()[1]
                 else:
-                    tem.write(wildAA + ' ' + wildAAnum + ' ' + line)
+                    tem.write(wildAA + " " + wildAAnum + " " + line)
 
-    with open('abacus_results/All_ABACUS.score', 'w+') as complete:
-        complete.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
-        with open('tempfile') as abacusfile:
+    with open("abacus_results/All_ABACUS.score", "w+") as complete:
+        complete.write(
+            "#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
+        )
+        with open("tempfile") as abacusfile:
             for line in abacusfile:
                 wildAA1 = line.strip().split()[0]
                 if wildAA1 in longer_names:
@@ -66,12 +84,23 @@ def parse_abacus_out():
                 if mutAA in longer_names:
                     mutAAabr = longer_names[mutAA]
                 sef_energy = line.strip().split()[11]
-                complete.write(wildAAabr + "_" + wildAAnum1 + "_" + mutAAabr + '\t' + sef_energy + "\t" + str(0) + '\n')
+                complete.write(
+                    wildAAabr
+                    + "_"
+                    + wildAAnum1
+                    + "_"
+                    + mutAAabr
+                    + "\t"
+                    + sef_energy
+                    + "\t"
+                    + str(0)
+                    + "\n"
+                )
             tem.close()
         complete.close()
-        os.remove('tempfile')
+        os.remove("tempfile")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("Running")
     parse_abacus_out()

@@ -8,7 +8,9 @@ import utlis.foldx as foldx
 import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
+from utlis import judge
 from utlis import mdrelax
+from utlis import modeller_loop
 import time
 import json
 
@@ -21,30 +23,29 @@ class GRAPE:
             "foldx_repair": 0,
             "foldx_scan": 0,
             "rosetta_relax": 0,
-            'rosetta_scan': 0,
-            'abacus_prepare': 0,
-            'abacus_scan': 0,
-            'MD simulations': 0
+            "rosetta_scan": 0,
+            "abacus_prepare": 0,
+            "abacus_scan": 0,
+            "MD simulations": 0,
         }
         # self.repaired_pdbfile: str
         pass
 
-
     def run_foldx(self, pdb, threads, chain, numOfRuns):
-        print("[INFO]: FoldX started at %s" %(time.ctime()))
-        prot_foldx = foldx.FoldX(pdb, '', threads)
+        print("[INFO]: FoldX started at %s" % (time.ctime()))
+        prot_foldx = foldx.FoldX(pdb, "", threads)
         repair_start = time.time()
         self.repaired_pdbfile = prot_foldx.repairPDB()
         repair_end = time.time()
         repair_time = repair_end - repair_start
-        self.running_time['foldx_repair'] = repair_time
-        print("[INFO]: FoldX Repair took %f seconds." %(repair_time))
+        self.running_time["foldx_repair"] = repair_time
+        print("[INFO]: FoldX Repair took %f seconds." % (repair_time))
 
         prot = io.Protein(self.repaired_pdbfile, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
         try:
-            os.mkdir('foldx_jobs')
+            os.mkdir("foldx_jobs")
         except FileExistsError:
             pass
         all_results = []
@@ -52,38 +53,46 @@ class GRAPE:
         for i, res in enumerate(seq):
             resNum = resNumList[i]
             wild = res
-            for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
                     jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
-                    job_list.append([self.repaired_pdbfile, wild, chain, aa, resNum, jobID, numOfRuns])
+                    job_list.append(
+                        [
+                            self.repaired_pdbfile,
+                            wild,
+                            chain,
+                            aa,
+                            resNum,
+                            jobID,
+                            numOfRuns,
+                        ]
+                    )
         # print("[INFO]: FoldX started at %s" %(time.ctime()))
         scan_start = time.time()
         Parallel(n_jobs=threads)(delayed(prot_foldx.runOneJob)(var) for var in job_list)
         scan_end = time.time()
         scan_time = scan_end - scan_start
-        self.running_time['foldx_scan'] = scan_time
-        print("[INFO]: FoldX Scan took %f seconds." %(scan_time))
-
+        self.running_time["foldx_scan"] = scan_time
+        print("[INFO]: FoldX Scan took %f seconds." % (scan_time))
 
         return all_results
 
-
     def run_rosetta(self, pdb, threads, chain, relax_num):
-        print("[INFO]: Rosetta started at %s" %(time.ctime()))
+        print("[INFO]: Rosetta started at %s" % (time.ctime()))
         # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
         relax_start = time.time()
         relaxed_prot = prot_rosetta.relax()
         relax_end = time.time()
         relax_time = relax_end - relax_start
-        self.running_time['rosetta_relax'] = relax_time
-        print("[INFO]: Rosetta Relax took %f seconds." %(relax_time))
+        self.running_time["rosetta_relax"] = relax_time
+        print("[INFO]: Rosetta Relax took %f seconds." % (relax_time))
 
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
         try:
-            os.mkdir('rosetta_jobs')
+            os.mkdir("rosetta_jobs")
         except FileExistsError:
             pass
         # all_results = []
@@ -92,23 +101,24 @@ class GRAPE:
 
             resNum = resNumList[i]
             wild = res
-            for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
                     jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
                     job_list.append([wild, aa, str(i + 1), jobID])
 
         scan_start = time.time()
-        Parallel(n_jobs=threads)(delayed(prot_rosetta.runOneJob)(var) for var in job_list)
+        Parallel(n_jobs=threads)(
+            delayed(prot_rosetta.runOneJob)(var) for var in job_list
+        )
         scan_end = time.time()
         scan_time = scan_end - scan_start
-        self.running_time['rosetta_scan'] = scan_time
-        print("[INFO]: Rosetta cartesian_ddg Scan took %f seconds." %(scan_time))
+        self.running_time["rosetta_scan"] = scan_time
+        print("[INFO]: Rosetta cartesian_ddg Scan took %f seconds." % (scan_time))
 
         return prot_rosetta
 
-
     def Analysis_foldx(self, pdb, chain, foldx1):
-        self.repaired_pdbfile = pdb.replace(".pdb", '_Repair.pdb')
+        self.repaired_pdbfile = pdb.replace(".pdb", "_Repair.pdb")
         try:
             os.mkdir("foldx_results")
         except FileExistsError:
@@ -120,16 +130,20 @@ class GRAPE:
         for i, res in enumerate(seq):
             resNum = resNumList[i]
             wild = res
-            for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                 if aa != wild:
                     jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
-                    all_results.append(foldx1.calScore(wild, resNum, aa, self.repaired_pdbfile, jobID))
+                    all_results.append(
+                        foldx1.calScore(wild, resNum, aa, self.repaired_pdbfile, jobID)
+                    )
 
-        with open("foldx_results/All_FoldX.score", 'w+') as foldxout:
-            foldxout.write("#Score file formated by GRAPE from FoldX.\n#mutation\tscore\tstd\n")
+        with open("foldx_results/All_FoldX.score", "w+") as foldxout:
+            foldxout.write(
+                "#Score file formated by GRAPE from FoldX.\n#mutation\tscore\tstd\n"
+            )
             for line in all_results:
-                foldxout.write('\t'.join([line[0], str(line[1]), str(line[2])]) + "\n")
+                foldxout.write("\t".join([line[0], str(line[1]), str(line[2])]) + "\n")
             foldxout.close()
 
         return all_results
@@ -146,79 +160,133 @@ class GRAPE:
         for i, res in enumerate(seq):
             resNum = resNumList[i]
             wild = res
-            for j, aa in enumerate('QWERTYIPASDFGHKLCVNM'):
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
-                # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
-                # "_".join([wild, str(resNum), mutation])
-                    rosettaddgfile = "rosetta_jobs/" + "_".join([wild, str(resNum), aa]) + "/mtfile.ddg"
+                    # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
+                    # "_".join([wild, str(resNum), mutation])
+                    rosettaddgfile = (
+                        "rosetta_jobs/"
+                        + "_".join([wild, str(resNum), aa])
+                        + "/mtfile.ddg"
+                    )
                     all_results.append(
-                        ["_".join([wild, str(resNum), aa])] + prot_rosetta.read_rosetta_ddgout(rosettaddgfile))
+                        ["_".join([wild, str(resNum), aa])]
+                        + prot_rosetta.read_rosetta_ddgout(rosettaddgfile)
+                    )
 
-        with open("rosetta_results/All_rosetta.score", 'w+') as rosettaout:
-            rosettaout.write("#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n")
+        with open("rosetta_results/All_rosetta.score", "w+") as rosettaout:
+            rosettaout.write(
+                "#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
+            )
             for line in all_results:
-                rosettaout.write('\t'.join([line[0], str(line[1]), str(line[2])]) + "\n")
+                rosettaout.write(
+                    "\t".join([line[0], str(line[1]), str(line[2])]) + "\n"
+                )
             rosettaout.close()
 
         return all_results
 
     def analysisGrapeScore(self, scoreFile, cutoff, result_dir):
-        result_dict = {'mutation': [], 'energy': [], 'SD': [], 'position': []}
-        with open(scoreFile, 'r') as scorefile:
+        result_dict = {"mutation": [], "energy": [], "SD": [], "position": []}
+        with open(scoreFile, "r") as scorefile:
             for line in scorefile:
                 if line[0] != "#":
                     lst = line.strip().split("\t")
-                    result_dict['mutation'].append(lst[0].replace("_", ""))
-                    result_dict['energy'].append(float(lst[1]))
-                    result_dict['SD'].append(float(lst[2]))
-                    result_dict['position'].append(int(lst[0].split("_")[1]))
+                    result_dict["mutation"].append(lst[0].replace("_", ""))
+                    result_dict["energy"].append(float(lst[1]))
+                    result_dict["SD"].append(float(lst[2]))
+                    result_dict["position"].append(int(lst[0].split("_")[1]))
             scorefile.close()
         # print(result_dict)
         CompleteList_df = pd.DataFrame(result_dict)
-        CompleteList_SortedByEnergy_df = CompleteList_df.sort_values('energy').reset_index(drop=True)
+        CompleteList_SortedByEnergy_df = CompleteList_df.sort_values(
+            "energy"
+        ).reset_index(drop=True)
 
         def BetsPerPosition(df):
             position_list = []
             length = df.shape[0]
             for i in range(length):
-                if df['position'][i] in position_list:
+                if df["position"][i] in position_list:
                     df = df.drop(index=i)
                 else:
-                    position_list.append(df['position'][i])
+                    position_list.append(df["position"][i])
             return df.reset_index(drop=True)
 
         def BelowCutOff(df, cutoff):
             # position_list = []
             length = df.shape[0]
             for i in range(length):
-                if float(df['energy'][i]) > float(cutoff):
+                if float(df["energy"][i]) > float(cutoff):
                     df = df.drop(index=i)
                 else:
                     continue
             return df.reset_index(drop=True)
 
-        BestPerPosition_SortedByEnergy_df = BetsPerPosition(CompleteList_SortedByEnergy_df)
+        BestPerPosition_SortedByEnergy_df = BetsPerPosition(
+            CompleteList_SortedByEnergy_df
+        )
         BestPerPosition_df = BetsPerPosition(CompleteList_SortedByEnergy_df)
         BelowCutOff_df = BelowCutOff(CompleteList_df, cutoff)
-        BelowCutOff_SortedByEnergy_df = BelowCutOff(CompleteList_SortedByEnergy_df, cutoff)
-        BestPerPositionBelowCutOff_SortedByEnergy_df = BelowCutOff(BestPerPosition_SortedByEnergy_df, cutoff)
+        BelowCutOff_SortedByEnergy_df = BelowCutOff(
+            CompleteList_SortedByEnergy_df, cutoff
+        )
+        BestPerPositionBelowCutOff_SortedByEnergy_df = BelowCutOff(
+            BestPerPosition_SortedByEnergy_df, cutoff
+        )
         BestPerPositionBelowCutOff_df = BelowCutOff(BestPerPosition_df, cutoff)
 
         def out_tab_file(df, name, result_dir):
             filename = result_dir + "/MutationsEnergies_" + name[:-3] + ".tab"
             with open(filename, "w+") as of:
-                of.write(df.to_csv(columns=['mutation', 'energy', 'SD'], sep='\t', index=False))
+                of.write(
+                    df.to_csv(
+                        columns=["mutation", "energy", "SD"], sep="\t", index=False
+                    )
+                )
                 of.close()
 
         out_tab_file(CompleteList_df, "CompleteList_df", result_dir)
-        out_tab_file(CompleteList_SortedByEnergy_df, "CompleteList_SortedByEnergy_df", result_dir)
-        out_tab_file(BestPerPosition_SortedByEnergy_df, "BestPerPosition_SortedByEnergy_df", result_dir)
+        out_tab_file(
+            CompleteList_SortedByEnergy_df, "CompleteList_SortedByEnergy_df", result_dir
+        )
+        out_tab_file(
+            BestPerPosition_SortedByEnergy_df,
+            "BestPerPosition_SortedByEnergy_df",
+            result_dir,
+        )
         out_tab_file(BestPerPosition_df, "BestPerPosition_df", result_dir)
         out_tab_file(BelowCutOff_df, "BelowCutOff_df", result_dir)
-        out_tab_file(BelowCutOff_SortedByEnergy_df, "BelowCutOff_SortedByEnergy_df", result_dir)
-        out_tab_file(BestPerPositionBelowCutOff_SortedByEnergy_df, "BestPerPositionBelowCutOff_SortedByEnergy_df",
-                     result_dir)
-        out_tab_file(BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir)
+        out_tab_file(
+            BelowCutOff_SortedByEnergy_df, "BelowCutOff_SortedByEnergy_df", result_dir
+        )
+        out_tab_file(
+            BestPerPositionBelowCutOff_SortedByEnergy_df,
+            "BestPerPositionBelowCutOff_SortedByEnergy_df",
+            result_dir,
+        )
+        out_tab_file(
+            BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir
+        )
+
+def readfasta(fastafile):
+    seq = ''
+    with open(fastafile) as fasta:
+        for line in fasta:
+            if line.startswith(">"):
+                continue
+            else:
+                seq += line.strip()
+        fasta.close()
+    def checkseq(seq):
+        for aa in seq:
+            if aa in "QWERTYIPASDFGHKLCVNM":
+                continue
+            else:
+                print("[ERROR]: Non-canonical amino acids found in sequence!")
+                exit()
+    checkseq(seq)
+    return seq
 
 
 def selectpdb4md(pdb, platform, softlist):
@@ -240,10 +308,12 @@ def selectpdb4md(pdb, platform, softlist):
             scorefile.close()
     selected_df = pd.DataFrame(selected_dict)
     selected_df.to_csv("Selected_Mutation.csv")
-    for mutation in selected_dict['mutation']:
+    for mutation in selected_dict["mutation"]:
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
-        os.system("cp foldx_jobs/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation))
+        os.system(
+            "cp foldx_jobs/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation)
+        )
         os.chdir("selectpdb")
         mutant = mutation + ".pdb"
         mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
@@ -268,44 +338,84 @@ def main1():
     preset = args.preset.lower()
     md = args.molecular_dynamics
     platform = args.platform
+    fillloop = json.loads(args.fill_break_in_pdb.lower())
+    seqfile = args.sequence
 
-    exe_dict = {'foldx': '', 'relax': '', 'cartddg': '', 'pmut': '', 'abacus': ''}
+    def checkpdb(pdb, chain, seqfile):
+        if bool(seqfile) == False:
+            print("[WARNING]: No sequence provided!")
+            pdb = modeller_loop.main(pdb, chain)
+            # exit()
+        else:
+            # print("No sequence provided!")
+            seq = readfasta(seqfile)
+            if judge.main(pdb, chain, seq):
+                if fillloop:
+                    pdb = modeller_loop.main(pdb, chain, seq)
+                    # exit()
+                else:
+                    print("PDB check Failed!")
+                    exit()
+            else:
+                print("PDB check passed!")
+        return pdb
+
+
+    if args.mode == 'test':
+
+        checkpdb(pdb, chain, seqfile)
+        exit()
+
+    exe_dict = {"foldx": "", "relax": "", "cartddg": "", "pmut": "", "abacus": ""}
 
     foldx_exe = os.popen("which foldx").read().replace("\n", "")
-    exe_dict['foldx'] = foldx_exe
-    pmut_scan_parallel_exe = os.popen("which pmut_scan_parallel.mpi.linuxgccrelease").read().replace("\n", "")
+    exe_dict["foldx"] = foldx_exe
+    pmut_scan_parallel_exe = (
+        os.popen("which pmut_scan_parallel.mpi.linuxgccrelease")
+        .read()
+        .replace("\n", "")
+    )
     rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
-    exe_dict['pmut'] = pmut_scan_parallel_exe
-    for release in ['', '.static', '.mpi', '.default']:
-        cartesian_ddg_exe = os.popen("which cartesian_ddg%s.linuxgccrelease" % (release)).read().replace("\n", "")
+    exe_dict["pmut"] = pmut_scan_parallel_exe
+    for release in ["", ".static", ".mpi", ".default"]:
+        cartesian_ddg_exe = (
+            os.popen("which cartesian_ddg%s.linuxgccrelease" % (release))
+            .read()
+            .replace("\n", "")
+        )
         if cartesian_ddg_exe != "":
-            exe_dict['cartddg'] = cartesian_ddg_exe
+            exe_dict["cartddg"] = cartesian_ddg_exe
     relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
-    exe_dict['relax'] = relax_exe
+    exe_dict["relax"] = relax_exe
     abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
 
-    exe_dict['abacus'] = abacus_prep
+    exe_dict["abacus"] = abacus_prep
 
     for soft in softlist:
-        if soft == 'rosetta':
-            if exe_dict['relax'] == '':
+        if soft == "rosetta":
+            if exe_dict["relax"] == "":
                 print("[Error:] Cannot find Rosetta: relax.mpi.linuxgccrelease!")
                 exit()
-            if preset == 'slow':
-                if exe_dict['cartddg'] == '':
+            if preset == "slow":
+                if exe_dict["cartddg"] == "":
                     print(
-                        "[Error:] Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
+                        "[Error:] Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!"
+                    )
                     exit()
-            if preset == 'fast':
-                if exe_dict['pmut'] == '':
-                    print("[Error:] Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!")
+            if preset == "fast":
+                if exe_dict["pmut"] == "":
+                    print(
+                        "[Error:] Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!"
+                    )
                     exit()
         else:
-            if exe_dict[soft] == '':
+            if exe_dict[soft] == "":
                 print("[Error:] Cannot find %s!" % (soft))
                 exit()
 
     mode = args.mode
+
+    pdb = checkpdb(pdb, chain, seqfile)
 
     grape = GRAPE()
     foldx1 = foldx.FoldX(pdb, foldx_exe, threads)
@@ -316,19 +426,28 @@ def main1():
         os.system("rm -rf *_results")
         os.system("rm -rf *_relax")
         os.system("rm -rf selectpdb")
-        mode = 'run'
+        mode = "run"
 
     if mode == "run":
+        if fillloop:
+            pdb = modeller_loop.main(pdb, chain, seq)
+
         # FoldX
         if "foldx" in softlist:
             grape.run_foldx(pdb, threads, chain, numOfRuns)
             grape.Analysis_foldx(pdb, chain, foldx1)
-            grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff, "foldx_results/")
+            grape.analysisGrapeScore(
+                "foldx_results/All_FoldX.score", foldx_cutoff, "foldx_results/"
+            )
         if preset == "slow":
             if "rosetta" in softlist:
                 prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
                 grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+                grape.analysisGrapeScore(
+                    "rosetta_results/All_rosetta.score",
+                    rosetta_cutoff,
+                    "rosetta_results/",
+                )
         if preset == "fast":
             if "rosetta" in softlist:
                 relaxed_pdb = rosetta1.relax()
@@ -340,8 +459,10 @@ def main1():
                     os.chdir("rosetta_jobs")
                 os.system("cp ../rosetta_relax/%s ./" % (relaxed_pdb))
                 pmut_time = rosetta1.pmut_scan(relaxed_pdb)
-                grape.running_time['rosetta_scan'] = pmut_time
-                print("[INFO]: Rosetta pmut_scan_parallel took %f seconds." %(pmut_time))
+                grape.running_time["rosetta_scan"] = pmut_time
+                print(
+                    "[INFO]: Rosetta pmut_scan_parallel took %f seconds." % (pmut_time)
+                )
                 os.chdir("..")
 
                 try:
@@ -353,29 +474,41 @@ def main1():
                 rosetta1.pmut_scan_analysis("../rosetta_jobs/pmut.out")
                 os.chdir("..")
 
-                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+                grape.analysisGrapeScore(
+                    "rosetta_results/All_rosetta.score",
+                    rosetta_cutoff,
+                    "rosetta_results/",
+                )
 
                 # prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
                 # grape.Analysis_rosetta(pdb, chain, prot_rosetta)
                 # grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
         if "abacus" in softlist:
             abacus_prepare_time, abacus_scan_time = abacus.run_abacus(pdb)
-            grape.running_time['abacus_prepare'] = abacus_prepare_time
-            grape.running_time['abacus_scan'] = abacus_scan_time
+            grape.running_time["abacus_prepare"] = abacus_prepare_time
+            grape.running_time["abacus_scan"] = abacus_scan_time
 
             abacus.parse_abacus_out()
-            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
+            grape.analysisGrapeScore(
+                "abacus_results/All_ABACUS.score", abacus_cutoff, "abacus_results/"
+            )
     if mode == "analysis":
         # FoldX
         if "foldx" in softlist:
             # pdb = pdb.replace(".pdb", "_Repair.pdb")
             grape.Analysis_foldx(pdb, chain, foldx1)
-            grape.analysisGrapeScore('foldx_results/All_FoldX.score', foldx_cutoff, "foldx_results/")
+            grape.analysisGrapeScore(
+                "foldx_results/All_FoldX.score", foldx_cutoff, "foldx_results/"
+            )
         if preset == "slow":
             if "rosetta" in softlist:
                 prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
                 grape.Analysis_rosetta(pdb, chain, prot_rosetta)
-                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+                grape.analysisGrapeScore(
+                    "rosetta_results/All_rosetta.score",
+                    rosetta_cutoff,
+                    "rosetta_results/",
+                )
         if preset == "fast":
             if "rosetta" in softlist:
                 try:
@@ -386,31 +519,39 @@ def main1():
                     os.system("rm *")
                 rosetta1.pmut_scan_analysis("../rosetta_jobs/pmut.out")
                 os.chdir("..")
-                grape.analysisGrapeScore('rosetta_results/All_rosetta.score', rosetta_cutoff, "rosetta_results/")
+                grape.analysisGrapeScore(
+                    "rosetta_results/All_rosetta.score",
+                    rosetta_cutoff,
+                    "rosetta_results/",
+                )
         if "abacus" in softlist:
             # abacus.run_abacus(pdb)
             abacus.parse_abacus_out()
-            grape.analysisGrapeScore('abacus_results/All_ABACUS.score', abacus_cutoff, "abacus_results/")
+            grape.analysisGrapeScore(
+                "abacus_results/All_ABACUS.score", abacus_cutoff, "abacus_results/"
+            )
 
-    print('\n[INFO]: Finished calculation of single point mutation ddG at %s.\n' %(time.ctime()))
-
+    print(
+        "\n[INFO]: Finished calculation of single point mutation ddG at %s.\n"
+        % (time.ctime())
+    )
 
     if md == "True":
         md_start = time.time()
         selectpdb4md(pdb, platform, softlist)
         md_end = time.time()
-        grape.running_time['MD simulations'] = md_end - md_start
-        print("[INFO]: All MDs took %f seconds."%(md_end - md_start))
+        grape.running_time["MD simulations"] = md_end - md_start
+        print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
     else:
         print("No MDs!")
 
-    json_running_time = json.dumps(grape.running_time, indent = 4)
-    with open("timing.json", 'w+') as timing:
+    json_running_time = json.dumps(grape.running_time, indent=4)
+    with open("timing.json", "w+") as timing:
         timing.write(json_running_time)
         timing.close()
 
 
-if __name__ == '__main__':
-    print("[INFO]: Started at %s" %(time.ctime()))
+if __name__ == "__main__":
+    print("[INFO]: Started at %s" % (time.ctime()))
     main1()
-    print("[INFO]: Ended at %s" %(time.ctime()))
+    print("[INFO]: Ended at %s" % (time.ctime()))
