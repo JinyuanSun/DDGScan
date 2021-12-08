@@ -151,6 +151,6 @@ git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 ```
 
 ### Changelog
-2021.10: Restart this project.
-2021.11: Added `openmm` for MDs.
-2021.12: Added `modeller` for loop modelling and args was rewritten.
+2021.10: Restart this project.  
+2021.11: Added `openmm` for MDs.  
+2021.12: Added `modeller` for loop modelling and args was rewritten.  
