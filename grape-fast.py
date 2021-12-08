@@ -117,6 +117,54 @@ class GRAPE:
 
         return prot_rosetta
 
+    def run_abacus2(self, pdb, threads, chain):
+
+        print("[INFO]: ABACUS2 started at %s" % (time.ctime()))
+        try:
+            os.mkdir("abaucs2_results")
+        except FileExistsError:
+            pass
+
+        prot = io.Protein(pdb, chain)
+        seq, resNumList = io.Protein.pdb2seq(prot)
+
+        all_results = {}
+        job_list = []
+        for i, res in enumerate(seq):
+            resNum = resNumList[i]
+            wild = res
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
+                if aa != wild:
+                    mutationName = "_".join([wild, str(resNum), aa])
+                    all_results[mutationName] = 0
+                    job_list.append(
+                        [
+                            pdb,
+                            wild,
+                            chain,
+                            aa,
+                            resNum,
+                            all_results
+                        ]
+                    )
+        # print("[INFO]: FoldX started at %s" %(time.ctime()))
+        scan_start = time.time()
+        Parallel(n_jobs=threads)(delayed(abacus.runOneJob)(var) for var in job_list)
+        scan_end = time.time()
+        scan_time = scan_end - scan_start
+        self.running_time["abacus2_scan"] = scan_time
+        print("[INFO]: ABAUCS2 Scan took %f seconds." % (scan_time))
+
+        with open("abacus2_results/All_ABACUS2.score", "w+") as complete:
+            complete.write(
+                "#Score file formated by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
+            )
+            for mutation in all_results:
+                complete.write("\t".join([mutation, str(round(all_results[mutation], 4)), "0"] + "\n"))
+            complete.close()
+
+        return all_results
+
     def Analysis_foldx(self, pdb, chain, foldx1):
         self.repaired_pdbfile = pdb.replace(".pdb", "_Repair.pdb")
         try:
@@ -339,6 +387,7 @@ def main1():
     foldx_cutoff = -float(args.foldx_cutoff)
     rosetta_cutoff = -float(args.rosetta_cutoff)
     abacus_cutoff = -float(args.abacus_cutoff)
+    abacus2_cutoff = -float(args.abacus2_cutoff)
     softlist = args.engine
     preset = args.preset
     md = args.molecular_dynamics
@@ -376,7 +425,7 @@ def main1():
         checkpdb(pdb, chain, seqfile)
         exit()
 
-    exe_dict = {"foldx": "", "relax": "", "cartddg": "", "pmut": "", "abacus": ""}
+    exe_dict = {"foldx": "", "relax": "", "cartddg": "", "pmut": "", "abacus": "", "abacus2": ""}
 
     foldx_exe = os.popen("which foldx").read().replace("\n", "")
     exe_dict["foldx"] = foldx_exe
@@ -400,6 +449,9 @@ def main1():
     abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
 
     exe_dict["abacus"] = abacus_prep
+
+    singleMutation = os.popen("which singleMutation").read().replace("\n", "")
+    exe_dict["abacus2"] = singleMutation
 
     for soft in softlist:
         if soft == "rosetta":
@@ -500,6 +552,13 @@ def main1():
             grape.analysisGrapeScore(
                 "abacus_results/All_ABACUS.score", abacus_cutoff, "abacus_results/"
             )
+
+        if "abacus2" in softlist:
+            grape.run_abacus2(pdb, threads, chain)
+            grape.analysisGrapeScore(
+                "abacus2_results/All_ABACUS2.score", abacus2_cutoff, "abacus2_results/"
+            )
+
     if mode == "analysis":
         # FoldX
         if "foldx" in softlist:
@@ -537,6 +596,10 @@ def main1():
             abacus.parse_abacus_out()
             grape.analysisGrapeScore(
                 "abacus_results/All_ABACUS.score", abacus_cutoff, "abacus_results/"
+            )
+        if "abacus2" in softlist:
+            grape.analysisGrapeScore(
+                "abacus2_results/All_ABACUS2.score", abacus2_cutoff, "abacus2_results/"
             )
 
     print(

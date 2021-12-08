@@ -108,6 +108,13 @@ class Parser:
             type=float,
         )
         parser.add_argument(
+            "-a2c",
+            "--abacus2_cutoff",
+            help="Cutoff of ABACUS2 SEF(A.E.U.)",
+            default=3,
+            type=float,
+        )
+        parser.add_argument(
             "-nstruct",
             "--relax_number",
             help="Number of how many relaxed structure",
@@ -122,7 +129,7 @@ class Parser:
             type=int,
         )
         parser.add_argument(
-            "-E", "--engine", nargs="+", choices=["abacus", "foldx", "rosetta"]
+            "-E", "--engine", nargs="+", choices=["abacus", "foldx", "rosetta", "abacus2"]
         )
         parser.add_argument(
             "-M",
