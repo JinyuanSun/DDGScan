@@ -90,7 +90,7 @@ This is a very good crystal structure solved by X-ray, so I did not pass any val
 Using `-S slow` to get more accuracy!
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-grape-fast.py 1PGA.pdb A -E "FoldX,Rosetta,ABACUS" -M run -T 40 -S slow -MD -P CUDA
+grape-fast.py 1PGA.pdb A -E foldx abaucs rosetta -M run -T 40 -S slow -MD -P CUDA
 ```
 You should expecting outputs like:  
 A folder named `foldx_results` containing:

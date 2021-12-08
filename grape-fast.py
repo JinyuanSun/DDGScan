@@ -339,7 +339,7 @@ def main1():
     foldx_cutoff = -float(args.foldx_cutoff)
     rosetta_cutoff = -float(args.rosetta_cutoff)
     abacus_cutoff = -float(args.abacus_cutoff)
-    softlist = args.softlist
+    softlist = args.engine
     preset = args.preset
     md = args.molecular_dynamics
     platform = args.platform
