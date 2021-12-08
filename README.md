@@ -43,7 +43,7 @@ Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu
  downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.  
  
  <p align="center">
-  <img width="80%" src="./fast-grape.png" alt="Workflow of DDGScan">
+  <img width="80%" src="./img/fast-grape.png" alt="Workflow of DDGScan">
 </p>
 
 ```
@@ -67,11 +67,13 @@ optional arguments:
                         Cutoff of Rosetta ddg(R.E.U.)
   -ac ABACUS_CUTOFF, --abacus_cutoff ABACUS_CUTOFF
                         Cutoff of ABACUS SEF(A.E.U.)
+  -a2c ABACUS2_CUTOFF, --abacus2_cutoff ABACUS_CUTOFF
+                        Cutoff of ABACUS2 SEF(A.E.U.)
   -nstruct RELAX_NUMBER, --relax_number RELAX_NUMBER
                         Number of how many relaxed structure
   -nruns NUMOFRUNS, --numofruns NUMOFRUNS
                         Number of runs in FoldX BuildModel
-  -E {abacus,foldx,rosetta} [{abacus,foldx,rosetta} ...], --engine {abacus,foldx,rosetta} [{abacus,foldx,rosetta} ...]
+  -E {abacus,foldx,rosetta} [{abacus,foldx,rosetta,abacus2} ...], --engine {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...]
   -M {run,rerun,analysis,test}, --mode {run,rerun,analysis,test}
                         Run, Rerun or analysis
   -S {fast,slow}, --preset {fast,slow}
