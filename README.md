@@ -41,7 +41,11 @@ Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu
  preset, but I do know it can be faster in about two orders of magnitude.  
  If using `-fill` flag, input structure will be automatically fixed using information from SEQRES record in native PDB 
  downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.  
- ![Work flow of DDGScan](fast-grape.png)
+ 
+ <p align="center">
+  <img width="200" src="./fast-grape.png" alt="Workflow of DDGScan">
+</p>
+
 ```
 Run FoldX, Rosetta and ABACUS for in silico deep mutation scan.
 
