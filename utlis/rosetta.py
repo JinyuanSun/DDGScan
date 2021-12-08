@@ -15,8 +15,8 @@ class Rosetta:
         pdbName,
         relax_num,
         numThreads,
-        exe="cartesian_ddg.static.linuxgccrelease",
-        rosettadb="/opt/rosetta_bin_linux_2021.16.61629_bundle/main/database",
+        exe,
+        rosettadb,
     ):
         self.exe = exe
         self.pdbname = pdbName
