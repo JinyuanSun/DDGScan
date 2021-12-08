@@ -65,55 +65,94 @@ class Parser:
         parser.add_argument("pdb", help="Input PDB")
         parser.add_argument("chain", help="Input PDB Chain to do in silico DMS")
         parser.add_argument(
-            "-fill", "--fill_break_in_pdb", help="Use modeller to fill missing residues in your pdb file. Use this option with caution!", action="store_true"
+            "-fill",
+            "--fill_break_in_pdb",
+            help="Use modeller to fill missing residues in your pdb file. Use this option with caution!",
+            action="store_true",
         )
         parser.add_argument(
-            "-seq", "--sequence", help="The exact sequence of protein you want to design. All mutation will be named according to this sequence.", default=""
+            "-seq",
+            "--sequence",
+            help="The exact sequence of protein you want to design. All mutation will be named according to this sequence.",
+            default="",
         )
         parser.add_argument(
             "-T",
             "--threads",
             help="Number of threads to run FoldX, Rosetta",
             default=16,
-            type=int
+            type=int,
         )
 
         # parser.add_argument("-r", '--ratio', help="Select by ratio mode",default=False)
 
         parser.add_argument(
-            "-fc", "--foldx_cutoff", help="Cutoff of FoldX ddg(kcal/mol)", default=1.5, type=float
+            "-fc",
+            "--foldx_cutoff",
+            help="Cutoff of FoldX ddg(kcal/mol)",
+            default=1.5,
+            type=float,
         )
         parser.add_argument(
-            "-rc", "--rosetta_cutoff", help="Cutoff of Rosetta ddg(R.E.U.)", default=5, type=float
+            "-rc",
+            "--rosetta_cutoff",
+            help="Cutoff of Rosetta ddg(R.E.U.)",
+            default=5,
+            type=float,
         )
         parser.add_argument(
-            "-ac", "--abacus_cutoff", help="Cutoff of ABACUS SEF(A.E.U.)", default=3, type=float
+            "-ac",
+            "--abacus_cutoff",
+            help="Cutoff of ABACUS SEF(A.E.U.)",
+            default=3,
+            type=float,
         )
         parser.add_argument(
             "-nstruct",
             "--relax_number",
             help="Number of how many relaxed structure",
             default=50,
-            type=int
+            type=int,
         )
         parser.add_argument(
             "-nruns",
             "--numofruns",
             help="Number of runs in FoldX BuildModel",
             default=5,
-            type=int
+            type=int,
         )
-        parser.add_argument('-E', '--engine', nargs='+', choices=["abacus", "foldx", "rosetta"])
-        parser.add_argument("-M", "--mode", help="Run, Rerun or analysis", type=str, choices=["run", "rerun", "analysis", "test"], default='run')
-        parser.add_argument("-S", "--preset", help="Fast or Slow", type=str, choices=["fast", "slow"], default='slow')
+        parser.add_argument(
+            "-E", "--engine", nargs="+", choices=["abacus", "foldx", "rosetta"]
+        )
+        parser.add_argument(
+            "-M",
+            "--mode",
+            help="Run, Rerun or analysis",
+            type=str,
+            choices=["run", "rerun", "analysis", "test"],
+            default="run",
+        )
+        parser.add_argument(
+            "-S",
+            "--preset",
+            help="Fast or Slow",
+            type=str,
+            choices=["fast", "slow"],
+            default="slow",
+        )
         parser.add_argument(
             "-MD",
             "--molecular_dynamics",
             help="Run 1ns molecular dynamics simulations for each mutation using openmm.",
-            action="store_true"
+            action="store_true",
         )
         parser.add_argument(
-            "-P", "--platform", help="CUDA or CPU", type=str, choices=["CUDA", "CPU"], default="CUDA"
+            "-P",
+            "--platform",
+            help="CUDA or CPU",
+            type=str,
+            choices=["CUDA", "CPU"],
+            default="CUDA",
         )
 
         args = parser.parse_args()

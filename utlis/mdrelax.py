@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+# https://htmlpreview.github.io/?https://github.com/openmm/pdbfixer/blob/master/Manual.html
+# http://docs.openmm.org/latest/userguide/application/02_running_sims.html
+# Thanks Dr. Zheng Liangzhen for help will MDs.
+
 from __future__ import print_function
 from simtk.openmm import app
 import simtk.openmm as mm

@@ -269,8 +269,9 @@ class GRAPE:
             BestPerPositionBelowCutOff_df, "BestPerPositionBelowCutOff_df", result_dir
         )
 
+
 def readfasta(fastafile):
-    seq = ''
+    seq = ""
     with open(fastafile) as fasta:
         for line in fasta:
             if line.startswith(">"):
@@ -278,6 +279,7 @@ def readfasta(fastafile):
             else:
                 seq += line.strip()
         fasta.close()
+
     def checkseq(seq):
         for aa in seq:
             if aa in "QWERTYIPASDFGHKLCVNM":
@@ -285,12 +287,14 @@ def readfasta(fastafile):
             else:
                 print("[ERROR]: Non-canonical amino acids found in sequence!")
                 exit()
+
     checkseq(seq)
     return seq
 
 
 def selectpdb4md(pdb, platform, softlist):
     from utlis import mdrelax
+
     try:
         os.mkdir("selectpdb")
     except FileExistsError:
@@ -347,6 +351,7 @@ def main1():
 
         if bool(seqfile) == False:
             from utlis import modeller_loop
+
             print("[WARNING]: No sequence provided!")
             pdb = modeller_loop.main(pdb, chain)
             # exit()
@@ -356,6 +361,7 @@ def main1():
             if judge.main(pdb, chain, seq):
                 if fillloop:
                     from utlis import modeller_loop
+
                     pdb = modeller_loop.main(pdb, chain, seq)
                     # exit()
                 else:
@@ -365,8 +371,7 @@ def main1():
                 print("PDB check passed!")
         return pdb
 
-
-    if args.mode == 'test':
+    if args.mode == "test":
 
         checkpdb(pdb, chain, seqfile)
         exit()
@@ -419,8 +424,6 @@ def main1():
                 exit()
 
     mode = args.mode
-
-
 
     grape = GRAPE()
     foldx1 = foldx.FoldX(pdb, foldx_exe, threads)

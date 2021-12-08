@@ -60,10 +60,10 @@ def judge(userSeq, seq, resNumList):
     else:
         return 0
 
+
 def main(pdb, chain, userSeq):
     userPdb = Protein(pdb, chain)
     return judge(userSeq, userPdb.seq, userPdb.resNumList)
-
 
 
 if __name__ == "__main__":

@@ -34,27 +34,27 @@ cd DDGScan && export PATH="$(pwd):$PATH"
 ```
 ### Usage
 I provide many options for users especially those know what they want. I really tried to make this package light and also 
-be well functional. Here are some quick walk-through. `-pdb` is the only positional argument but really you need to set 
-`-sl` according to the software you have in your OS. `-chain` and `seq` are strongly recommended to be set by the user. 
-Also, I highly recommend turning the `-md` as `True` and using `CUDA` into `-platform` if a good gpu is available (better
- than RTX2060 well be much faster than 48 core cpu). Also, I did not test how much precision dropped to use the `fast` 
- mode, but I do know it can be faster in about two orders of magnitude.
+be well functional. Here are some quick walk-through. `pdb` and `chain` are positional but really you need to set 
+`-E` according to the software you have in your OS. `-seq` are strongly recommended to be set by the user. 
+Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu is available (better
+ than RTX2060 well be much faster than 48 core cpu). Also, I did not test how much precision dropped to use the `-S fast` 
+ preset, but I do know it can be faster in about two orders of magnitude.  
+ If using `-fill` flag, input structure will be automatically fixed using information from SEQRES record in native PDB 
+ downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.
 ```
-usage: grape-fast.py [-h] [-pdb PDB] [-chain CHAIN] [-fill FILL_BREAK_IN_PDB] [-seq SEQUENCE] [-cpu THREADS] [-fc FOLDX_CUTOFF] [-rc ROSETTA_CUTOFF] [-ac ABACUS_CUTOFF] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS]
-                     [-sl SOFTLIST] [-mode MODE] [-preset PRESET] [-md MOLECULAR_DYNAMICS] [-platform PLATFORM]
-
 Run FoldX, Rosetta and ABACUS for in silico deep mutation scan.
+
+positional arguments:
+  pdb                   Input PDB
+  chain                 Input PDB Chain to do in silico DMS
 
 optional arguments:
   -h, --help            show this help message and exit
-  -pdb PDB, --pdb PDB   Input PDB
-  -chain CHAIN, --chain CHAIN
-                        Input PDB Chain to do in silico DMS
-  -fill FILL_BREAK_IN_PDB, --fill_break_in_pdb FILL_BREAK_IN_PDB
+  -fill, --fill_break_in_pdb
                         Use modeller to fill missing residues in your pdb file. Use this option with caution!
   -seq SEQUENCE, --sequence SEQUENCE
                         The exact sequence of protein you want to design. All mutation will be named according to this sequence.
-  -cpu THREADS, --threads THREADS
+  -T THREADS, --threads THREADS
                         Number of threads to run FoldX, Rosetta
   -fc FOLDX_CUTOFF, --foldx_cutoff FOLDX_CUTOFF
                         Cutoff of FoldX ddg(kcal/mol)
@@ -66,26 +66,26 @@ optional arguments:
                         Number of how many relaxed structure
   -nruns NUMOFRUNS, --numofruns NUMOFRUNS
                         Number of runs in FoldX BuildModel
-  -sl SOFTLIST, --softlist SOFTLIST
-                        List of Software to be used in ddg calculations
-  -mode MODE, --mode MODE
+  -E {abacus,foldx,rosetta} [{abacus,foldx,rosetta} ...], --engine {abacus,foldx,rosetta} [{abacus,foldx,rosetta} ...]
+  -M {run,rerun,analysis,test}, --mode {run,rerun,analysis,test}
                         Run, Rerun or analysis
-  -preset PRESET, --preset PRESET
+  -S {fast,slow}, --preset {fast,slow}
                         Fast or Slow
-  -md MOLECULAR_DYNAMICS, --molecular_dynamics MOLECULAR_DYNAMICS
+  -MD, --molecular_dynamics
                         Run 1ns molecular dynamics simulations for each mutation using openmm.
-  -platform PLATFORM, --platform PLATFORM
+  -P {CUDA,CPU}, --platform {CUDA,CPU}
                         CUDA or CPU
 ```
 
 
 ### QuickStart
 You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):  
-I will recommend using the `fast` mode with `-md` turned on `True` and using `CUDA` to accelerate molecular dynamics simulations. 
-This is a very good crystal structure solved by X-ray, so I did not pass any value about fixing the PDB file!
+I will recommend using the `-S fast` with `-MD` flag, and using `CUDA` to accelerate molecular dynamics simulations. 
+This is a very good crystal structure solved by X-ray, so I did not pass any value about fixing the PDB file!  
+Using `-S slow` to get more accuracy!
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-grape-fast.py -pdb 1PGA.pdb -chain A -sl "FoldX,Rosetta,ABACUS" -mode run -cpu 40 -preset fast -md True -platform CUDA
+grape-fast.py 1PGA.pdb A -E "FoldX,Rosetta,ABACUS" -M run -T 40 -S slow -MD -P CUDA
 ```
 You should expecting outputs like:  
 A folder named `foldx_results` containing:
@@ -149,3 +149,8 @@ or try this:
 ```bash
 git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 ```
+
+### Changelog
+2021.10: Restart this project.
+2021.11: Added `openmm` for MDs.
+2021.12: Added `modeller` for loop modelling and args was rewritten.

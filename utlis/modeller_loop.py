@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# https://salilab.org/modeller/manual/node34.html
+
 from modeller import *
 import os
 
@@ -42,7 +44,6 @@ def getPdbRes(code):
 
 
 def generateFillSeq(code, chain, seq=""):
-
     def outAliFile(seq):
         with open("seqfill.ali", "w+") as seqfill:
             seqfill.write(">P1;seqfill\nsequence:::::::::\n")
@@ -57,7 +58,7 @@ def generateFillSeq(code, chain, seq=""):
             seqfill.close()
 
     def extractSeqFromPDB(code, chain):
-        seq = ''
+        seq = ""
         with open(code + ".pdb", "r") as pdbfile:
             for line in pdbfile:
                 if line.startswith("SEQRES"):
@@ -72,7 +73,9 @@ def generateFillSeq(code, chain, seq=""):
     if bool(seq):
         outAliFile(seq)
     else:
-        print("[WARNING]: SEQRES information may not exactly match your sequence of you target protein!")
+        print(
+            "[WARNING]: SEQRES information may not exactly match your sequence of you target protein!"
+        )
         seq = extractSeqFromPDB(code, chain)
         outAliFile(seq)
 
@@ -143,5 +146,5 @@ def main(pdb, chain, seq=""):
 if __name__ == "__main__":
     code = "4R21"
     chain = "A"
-    seq = ''
+    seq = ""
     main(code, chain, seq)
