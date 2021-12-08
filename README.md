@@ -22,8 +22,8 @@ required for cartesian_ddg (`-mode slow`) calculation or pmut_scan(`-mode fast`)
 Also, **ABACUS** is an outstanding software with great statistical energy function for protein design. 
 Structures downloaded from RCSB could be erroneous. One of the biggest problems that will directly affect energy calculation is breaks in chains. 
 Here I implemented a loop closure module using **modeller**, a great software with a very long history, as backend.   
-Due to their licenses, I cannot redistribute them here!  
-To our glad, **openmm** is open source! So the glass is half full :).
+Due to their licenses, I cannot redistribute them here :worried: !  
+To our glad, **openmm** is open source! So the glass is half full :smiley: .
   
 To install it, clone this repo and add it to PATH:
 ```bash
@@ -150,7 +150,8 @@ or try this:
 git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 ```
 
-### Changelog
+### Develop Information
 2021.10: Restart this project.  
 2021.11: Added `openmm` for MDs.  
 2021.12: Added `modeller` for loop modelling and args was rewritten.  
+Developed this in every day 20:00 - 02:00 :cat: . Continuing...
