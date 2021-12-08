@@ -40,7 +40,8 @@ Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu
  than RTX2060 well be much faster than 48 core cpu). Also, I did not test how much precision dropped to use the `-S fast` 
  preset, but I do know it can be faster in about two orders of magnitude.  
  If using `-fill` flag, input structure will be automatically fixed using information from SEQRES record in native PDB 
- downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.
+ downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.  
+ ![Work flow of DDGScan](fast-grape.png)
 ```
 Run FoldX, Rosetta and ABACUS for in silico deep mutation scan.
 
