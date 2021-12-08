@@ -26,6 +26,7 @@ class GRAPE:
             "rosetta_scan": 0,
             "abacus_prepare": 0,
             "abacus_scan": 0,
+            "abacus2": 0,
             "MD simulations": 0,
         }
         # self.repaired_pdbfile: str
@@ -121,7 +122,7 @@ class GRAPE:
 
         print("[INFO]: ABACUS2 started at %s" % (time.ctime()))
         try:
-            os.mkdir("abaucs2_results")
+            os.mkdir("abacus2_results")
         except FileExistsError:
             pass
 
@@ -152,8 +153,8 @@ class GRAPE:
         Parallel(n_jobs=threads)(delayed(abacus.runOneJob)(var) for var in job_list)
         scan_end = time.time()
         scan_time = scan_end - scan_start
-        self.running_time["abacus2_scan"] = scan_time
-        print("[INFO]: ABAUCS2 Scan took %f seconds." % (scan_time))
+        self.running_time["abacus2"] = scan_time
+        print("[INFO]: ABACUS2 Scan took %f seconds." % (scan_time))
 
         with open("abacus2_results/All_ABACUS2.score", "w+") as complete:
             complete.write(
