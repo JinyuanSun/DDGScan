@@ -161,7 +161,7 @@ class GRAPE:
                 "#Score file formated by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
             )
             for mutation in all_results:
-                complete.write("\t".join([mutation, str(round(all_results[mutation], 4)), "0"] + "\n"))
+                complete.write("\t".join([mutation, str(round(all_results[mutation], 4)), "0"]) + "\n")
             complete.close()
 
         return all_results
