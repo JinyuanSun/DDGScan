@@ -9,8 +9,8 @@ import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
 from utlis import judge
-from utlis import mdrelax
-from utlis import modeller_loop
+
+# from utlis import modeller_loop
 import time
 import json
 
@@ -290,6 +290,7 @@ def readfasta(fastafile):
 
 
 def selectpdb4md(pdb, platform, softlist):
+    from utlis import mdrelax
     try:
         os.mkdir("selectpdb")
     except FileExistsError:
@@ -334,15 +335,18 @@ def main1():
     foldx_cutoff = -float(args.foldx_cutoff)
     rosetta_cutoff = -float(args.rosetta_cutoff)
     abacus_cutoff = -float(args.abacus_cutoff)
-    softlist = args.softlist.lower().split(",")
-    preset = args.preset.lower()
+    softlist = args.softlist
+    preset = args.preset
     md = args.molecular_dynamics
     platform = args.platform
-    fillloop = json.loads(args.fill_break_in_pdb.lower())
+    fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
+    print("[INFO]: Started at %s" % (time.ctime()))
 
     def checkpdb(pdb, chain, seqfile):
+
         if bool(seqfile) == False:
+            from utlis import modeller_loop
             print("[WARNING]: No sequence provided!")
             pdb = modeller_loop.main(pdb, chain)
             # exit()
@@ -351,6 +355,7 @@ def main1():
             seq = readfasta(seqfile)
             if judge.main(pdb, chain, seq):
                 if fillloop:
+                    from utlis import modeller_loop
                     pdb = modeller_loop.main(pdb, chain, seq)
                     # exit()
                 else:
@@ -536,7 +541,8 @@ def main1():
         % (time.ctime())
     )
 
-    if md == "True":
+    if md:
+        # from utlis import mdrelax
         md_start = time.time()
         selectpdb4md(pdb, platform, softlist)
         md_end = time.time()
@@ -552,6 +558,6 @@ def main1():
 
 
 if __name__ == "__main__":
-    print("[INFO]: Started at %s" % (time.ctime()))
+
     main1()
     print("[INFO]: Ended at %s" % (time.ctime()))
