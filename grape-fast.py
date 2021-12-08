@@ -77,10 +77,10 @@ class GRAPE:
 
         return all_results
 
-    def run_rosetta(self, pdb, threads, chain, relax_num):
+    def run_rosetta(self, pdb, threads, chain, relax_num, exe, rosettadb):
         print("[INFO]: Rosetta started at %s" % (time.ctime()))
         # relax_num = 200
-        prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
+        prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads, exe, rosettadb)
         relax_start = time.time()
         relaxed_prot = prot_rosetta.relax()
         relax_end = time.time()
@@ -449,7 +449,7 @@ def main1():
             )
         if preset == "slow":
             if "rosetta" in softlist:
-                prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
+                prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num, cartesian_ddg_exe, rosettadb)
                 grape.Analysis_rosetta(pdb, chain, prot_rosetta)
                 grape.analysisGrapeScore(
                     "rosetta_results/All_rosetta.score",
@@ -510,7 +510,7 @@ def main1():
             )
         if preset == "slow":
             if "rosetta" in softlist:
-                prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads)
+                prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads, cartesian_ddg_exe, rosettadb)
                 grape.Analysis_rosetta(pdb, chain, prot_rosetta)
                 grape.analysisGrapeScore(
                     "rosetta_results/All_rosetta.score",
