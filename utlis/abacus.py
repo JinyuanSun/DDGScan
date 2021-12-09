@@ -67,7 +67,7 @@ def runOneJob(varlist):
     pack = float(output[10])
     total = s1 + s2 + pack
     all_results["_".join([wild, str(resNum), aa])] = total
-    print(all_results)
+    # print(all_results)
     # A   42 GLU->TRP SAI: 0.966 S1:  1.748 S2:  0.212 PACK:  -0.009 HB:   0.000
     return total
 

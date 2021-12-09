@@ -155,7 +155,7 @@ class GRAPE:
         scan_time = scan_end - scan_start
         self.running_time["abacus2"] = scan_time
         print("[INFO]: ABACUS2 Scan took %f seconds." % (scan_time))
-
+        print(all_results)
         with open("abacus2_results/All_ABACUS2.score", "w+") as complete:
             complete.write(
                 "#Score file formated by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
