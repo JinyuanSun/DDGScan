@@ -32,6 +32,46 @@ def run_abacus(pdbfilename):
         os.chdir("../")
         return 0, 0
 
+def runOneJob(varlist):
+    def _1_2_3(x):
+        d = {
+             "C": "CYS",
+             "D": "ASP",
+             "S": "SER",
+             "Q": "GLN",
+             "K": "LYS",
+             "I": "ILE",
+             "P": "PRO",
+             "T": "THR",
+             "F": "PHE",
+             "N": "ASN",
+             "G": "GLY",
+             "H": "HIS",
+             "L": "LEU",
+             "R": "ARG",
+             "W": "TRP",
+             "A": "ALA",
+             "V": "VAL",
+             "E": "GLU",
+             "Y": "TYR",
+             "M": "MET",
+        }
+        return d[x]
+    # me varlist as foldx.runOneJob
+    pdb, wild, chain, aa, resNum = varlist
+    MUT = _1_2_3(aa)
+    output = os.popen("singleMutation %s %s %s %s" %(pdb, chain, str(resNum), MUT)).read().split()
+    # print(output)
+    s1 = float(output[6])
+    s2 = float(output[8])
+    pack = float(output[10])
+    total = s1 + s2 + pack
+    # self.abacus2_results["_".join([wild, str(resNum), aa])] = total
+    # print(all_results)
+    # A   42 GLU->TRP SAI: 0.966 S1:  1.748 S2:  0.212 PACK:  -0.009 HB:   0.000
+    return "_".join([wild, str(resNum), aa]), total
+
+
 
 
 def parse_abacus_out():
