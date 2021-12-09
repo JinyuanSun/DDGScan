@@ -123,7 +123,7 @@ class GRAPE:
 
         def runOneJob(varlist):
     # same varlist as foldx.runOneJob
-            pdb, wild, chain, aa, resNum, all_results = varlist
+            pdb, wild, chain, aa, resNum = varlist
             def _1_2_3(x):
                 d = {
                      "C": "CYS",
@@ -155,7 +155,7 @@ class GRAPE:
             s2 = float(output[8])
             pack = float(output[10])
             total = s1 + s2 + pack
-            all_results["_".join([wild, str(resNum), aa])] = total
+            self.abacus2_results["_".join([wild, str(resNum), aa])] = total
             # print(all_results)
             # A   42 GLU->TRP SAI: 0.966 S1:  1.748 S2:  0.212 PACK:  -0.009 HB:   0.000
             return total
@@ -176,7 +176,7 @@ class GRAPE:
             wild = res
             for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
-                    mutationName = "_".join([wild, str(resNum), aa])
+                    # mutationName = "_".join([wild, str(resNum), aa])
                     # all_results[mutationName] = 0
                     job_list.append(
                         [
@@ -184,8 +184,7 @@ class GRAPE:
                             wild,
                             chain,
                             aa,
-                            resNum,
-                            self.abacus2_results
+                            resNum
                         ]
                     )
         # print("[INFO]: FoldX started at %s" %(time.ctime()))
@@ -195,7 +194,7 @@ class GRAPE:
         scan_time = scan_end - scan_start
         self.running_time["abacus2"] = scan_time
         print("[INFO]: ABACUS2 Scan took %f seconds." % (scan_time))
-        print(self.abacus2_results)
+        # print(self.abacus2_results)
         with open("abacus2_results/All_ABACUS2.score", "w+") as complete:
             complete.write(
                 "#Score file formated by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
