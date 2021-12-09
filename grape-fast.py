@@ -137,7 +137,7 @@ class GRAPE:
             for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
                     mutationName = "_".join([wild, str(resNum), aa])
-                    all_results[mutationName] = 0
+                    # all_results[mutationName] = 0
                     job_list.append(
                         [
                             pdb,
