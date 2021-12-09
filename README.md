@@ -161,5 +161,5 @@ git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 2021.10: Restart this project.  
 2021.11: Added `openmm` for MDs.  
 2021.12: Added `modeller` for loop modelling and args was rewritten.  
-Developed this in every day 20:00 - 02:00 :cat: . Continuing...  
-If you are using it for "professional purpose", *maybe* buy me a cup of coffee. [:heart: Sponsor](https://github.com/JinyuanSun/jinyuansun/blob/main/img/readme.md)
+Developed this in every day 20:00 - 02:00 :cat: . Continuing...   
+Feel free to contact with me if you have any further questions on computational enzyme designfeel free to get in touch with me: <jinyuansun98@gmail.com>.
