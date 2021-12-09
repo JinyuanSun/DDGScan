@@ -29,6 +29,7 @@ class GRAPE:
             "abacus2": 0,
             "MD simulations": 0,
         }
+        self.abacus2_results = {}
         # self.repaired_pdbfile: str
         pass
 
@@ -129,7 +130,7 @@ class GRAPE:
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
-        all_results = {}
+        # all_results = {}
         job_list = []
         for i, res in enumerate(seq):
             resNum = resNumList[i]
@@ -145,7 +146,7 @@ class GRAPE:
                             chain,
                             aa,
                             resNum,
-                            all_results
+                            self.abacus2_results
                         ]
                     )
         # print("[INFO]: FoldX started at %s" %(time.ctime()))
@@ -155,16 +156,16 @@ class GRAPE:
         scan_time = scan_end - scan_start
         self.running_time["abacus2"] = scan_time
         print("[INFO]: ABACUS2 Scan took %f seconds." % (scan_time))
-        print(all_results)
+        print(self.abacus2_results)
         with open("abacus2_results/All_ABACUS2.score", "w+") as complete:
             complete.write(
                 "#Score file formated by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
             )
-            for mutation in all_results:
-                complete.write("\t".join([mutation, str(round(all_results[mutation], 4)), "0"]) + "\n")
+            for mutation in self.abacus2_results:
+                complete.write("\t".join([mutation, str(round(self.abacus2_results[mutation], 4)), "0"]) + "\n")
             complete.close()
 
-        return all_results
+        return self.abacus2_results
 
     def Analysis_foldx(self, pdb, chain, foldx1):
         self.repaired_pdbfile = pdb.replace(".pdb", "_Repair.pdb")
