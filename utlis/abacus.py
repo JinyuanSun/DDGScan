@@ -61,12 +61,13 @@ def runOneJob(varlist):
         return d[x]
     MUT = _1_2_3(aa)
     output = os.popen("singleMutation %s %s %s %s" %(pdb, chain, str(resNum), MUT)).read().split()
-    print(output)
+    # print(output)
     s1 = float(output[6])
     s2 = float(output[8])
     pack = float(output[10])
     total = s1 + s2 + pack
     all_results["_".join([wild, str(resNum), aa])] = total
+    print(all_results)
     # A   42 GLU->TRP SAI: 0.966 S1:  1.748 S2:  0.212 PACK:  -0.009 HB:   0.000
     return total
 
