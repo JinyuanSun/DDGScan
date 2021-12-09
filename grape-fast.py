@@ -342,8 +342,7 @@ def readfasta(fastafile):
     return seq
 
 
-def selectpdb4md(pdb, platform, softlist):
-    from utlis import mdrelax
+def selectpdb4md(softlist):
 
     try:
         os.mkdir("selectpdb")
@@ -363,7 +362,11 @@ def selectpdb4md(pdb, platform, softlist):
             scorefile.close()
     selected_df = pd.DataFrame(selected_dict)
     selected_df.to_csv("Selected_Mutation.csv")
-    for mutation in selected_dict["mutation"]:
+    return selected_dict
+
+def runMD(pdb, platform, selected_dict):
+    from utlis import mdrelax
+    for mutation in set(selected_dict["mutation"]):
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
         os.system(
@@ -608,11 +611,11 @@ def main1():
         "\n[INFO]: Finished calculation of single point mutation ddG at %s.\n"
         % (time.ctime())
     )
-
+    selected_dict = selectpdb4md(softlist)
     if md:
         # from utlis import mdrelax
         md_start = time.time()
-        selectpdb4md(pdb, platform, softlist)
+        runMD(pdb, platform, selected_dict)
         md_end = time.time()
         grape.running_time["MD simulations"] = md_end - md_start
         print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
