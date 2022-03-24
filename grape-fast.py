@@ -451,7 +451,9 @@ def main1():
             exe_dict["cartddg"] = cartesian_ddg_exe
             break
     relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
-    rosettadb = "/".join(relax_exe.split("/")[:-3]) + "/database/"
+    rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
+    if not rosettadb:
+        rosettadb = "/".join(relax_exe.split("/")[:-4]) + "/database/"
     exe_dict["relax"] = relax_exe
     abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
 
