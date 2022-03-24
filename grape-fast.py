@@ -439,7 +439,7 @@ def main1():
         .read()
         .replace("\n", "")
     )
-    rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
+#     rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
     exe_dict["pmut"] = pmut_scan_parallel_exe
     for release in ["", ".static", ".mpi", ".default"]:
         cartesian_ddg_exe = (
@@ -450,6 +450,7 @@ def main1():
         if cartesian_ddg_exe != "":
             exe_dict["cartddg"] = cartesian_ddg_exe
     relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
+    rosettadb = "/".join(relax_exe.split("/")[:-3]) + "/database/"
     exe_dict["relax"] = relax_exe
     abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
 
