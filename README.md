@@ -23,7 +23,7 @@ Also, **ABACUS** is an outstanding software with great statistical energy functi
 Structures downloaded from RCSB could be erroneous. One of the biggest problems that will directly affect energy calculation is breaks in chains. 
 Here I implemented a loop closure module using **modeller**, a great software with a very long history, as backend.   
 Due to their licenses, I cannot redistribute them here :worried: !  
-To our glad, **openmm** is open source! So the glass is half full :smiley: . Here is a good news, the ABACUS2 is now available at https://zenodo.org/record/4533424.
+To our glad, **openmm** is open source! So the glass is half full :smiley: . Here is a good news, the **ABACUS2** is now available at https://zenodo.org/record/4533424.
   
 To install it, clone this repo and add it to PATH:
 ```bash
@@ -31,6 +31,10 @@ conda install -c conda-forge openmm pdbfixer
 pip install mdtraj pandas numpy joblib
 git clone https://github.com/JinyuanSun/DDGScan.git &&
 cd DDGScan && export PATH="$(pwd):$PATH"
+```
+I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by appending this into `~/.bashrc`:
+```
+export ROSETTADB="/path/to/rosetta/database"
 ```
 ### Usage
 I provide many options for users especially those know what they want. I really tried to make this package light and also 
@@ -142,7 +146,7 @@ If you find the models useful in your research, we ask that you cite the relevan
 }
 @article {cui2022,
     Title = {GRAPE-web: A web server for automated design of thermostable proteins. (in prep.)},
-    Author = {Cui, Yinglu and Wu, Bian}
+    Author = {Cui YL, Shi WY, Sun JY, ..., Ma JC and Wu B}
 }
 ```
 
@@ -161,5 +165,6 @@ git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 2021.10: Restart this project.  
 2021.11: Added `openmm` for MDs.  
 2021.12: Added `modeller` for loop modelling and args was rewritten.  
+2022.03: Fixed few bugs and working on possible docker image.  
 Developed this in every day 20:00 - 02:00 :cat: . Continuing...   
 Feel free to contact with me if you have any further questions on computational enzyme designfeel free to get in touch with me: <jinyuansun98@gmail.com>.
