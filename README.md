@@ -168,3 +168,7 @@ git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 2022.03: Fixed few bugs and working on possible docker image.  
 Developed this in every day 20:00 - 02:00 :cat: . Continuing...   
 Feel free to contact with me if you have any further questions on computational enzyme designfeel free to get in touch with me: <jinyuansun98@gmail.com>.
+
+### Known bugs
+- MainChain Atoms O missing for a residue. FoldX will create a gap.
+- 

@@ -364,20 +364,20 @@ def selectpdb4md(softlist):
     selected_df.to_csv("Selected_Mutation.csv")
     return selected_dict
 
-def runMD(pdb, platform, selected_dict, md_threads=None):
+def runMD(pdb, platform, selected_dict, WORKING_DIR, md_threads=None):
     from utlis import mdrelax
 
     def one_md(mutation):
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
         os.system(
-            "cp foldx_jobs/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation)
+            "cp %s/foldx_jobs/%s/%s selectpdb/%s.pdb" % (WORKING_DIR, mutation, mut_pdb, mutation)
         )
-        os.chdir("selectpdb")
+        os.chdir("%s/selectpdb"%WORKING_DIR)
         mutant = mutation + ".pdb"
         mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
         os.system("rm *dcd")
-        os.chdir("..")
+        os.chdir(WORKING_DIR)
 
     if platform == "CUDA":
         for mutation in set(selected_dict["mutation"]):
@@ -410,6 +410,8 @@ def main1():
     seqfile = args.sequence
     print("[INFO]: Started at %s" % (time.ctime()))
 
+    WORKING_DIR = os.getcwd()
+
     def checkpdb(pdb, chain, seqfile):
 
         if bool(seqfile) == False:
@@ -424,7 +426,6 @@ def main1():
             if judge.main(pdb, chain, seq):
                 if fillloop:
                     from utlis import modeller_loop
-
                     pdb = modeller_loop.main(pdb, chain, seq)
                     # exit()
                 else:
