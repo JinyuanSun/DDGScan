@@ -2,9 +2,13 @@
 
 # https://htmlpreview.github.io/?https://github.com/openmm/pdbfixer/blob/master/Manual.html
 # http://docs.openmm.org/latest/userguide/application/02_running_sims.html
-# Thanks Dr. Zheng Liangzhen for help will MDs.
+# Thanks Dr. Zheng Liangzhen for help with MDs.
 
 from __future__ import print_function
+
+import os
+os.environ["OPENMM_CPU_THREADS"] = "4"
+
 from simtk.openmm import app
 import simtk.openmm as mm
 from simtk import unit
