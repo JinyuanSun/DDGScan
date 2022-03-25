@@ -30,7 +30,7 @@ To our glad, **openmm** is open source! So the glass is half full :smiley: . Her
 **Conda**:
 ```bash
 # create a new conda env
-conda create -n grape -c conda-forge python=3.8 openmm pdbfixer
+conda create -n grape -c conda-forge python=3.8 openmm pdbfixer mdtraj
 # activate new env
 conda activate grape
 # clone repo and install
