@@ -1,13 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-install_requires = [
-    'mdtraj',
-    'pandas',
-    'numpy',
-    'joblib',
-    'sklearn'
-    ]
+
 
 setup(
     name="GRAPE",
@@ -17,5 +11,11 @@ setup(
     description="A powerful package for GRAPE",
     url="https://github.com/JinyuanSun/DDGScan",
     packages=find_packages(),
-    scripts=['grape-fast.py', 'gluster.py']
+    scripts=['grape-fast.py', 'gluster.py'],
+    install_requires=['mdtraj',
+                      'pandas',
+                      'numpy',
+                      'joblib',
+                      'sklearn'
+    ]
 )
