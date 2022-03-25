@@ -73,6 +73,7 @@ class AminoAcid:
 
 
 if __name__ == '__main__':
+    pass
     # record = "ATOM     10  CA  THR A   2      28.716  29.848  34.951  1.00 13.11           C              "
     # CA2 = Atom(record)
     # print(CA2.get_coord())

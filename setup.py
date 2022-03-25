@@ -10,8 +10,7 @@ setup(
     url="https://github.com/JinyuanSun/DDGScan",
     packages=find_packages(),
     scripts=['grape-fast.py', 'gluster.py'],
-    install_requires=['mdtraj',
-                      'pandas',
+    install_requires=['pandas',
                       'numpy',
                       'joblib',
                       'sklearn'

@@ -20,14 +20,14 @@ class GRAPE:
         self.repaired_pdbfile: str
         self.relaxed_prot: str
         self.running_time = {
-            "foldx_repair": 0,
-            "foldx_scan": 0,
-            "rosetta_relax": 0,
-            "rosetta_scan": 0,
-            "abacus_prepare": 0,
-            "abacus_scan": 0,
-            "abacus2": 0,
-            "MD simulations": 0,
+            "foldx_repair": 0.0,
+            "foldx_scan": 0.0,
+            "rosetta_relax": 0.0,
+            "rosetta_scan": 0.0,
+            "abacus_prepare": 0.0,
+            "abacus_scan": 0.0,
+            "abacus2": 0.0,
+            "MD simulations": 0.0,
         }
         self.abacus2_results = {}
         # self.repaired_pdbfile: str
@@ -342,7 +342,7 @@ def readfasta(fastafile):
     return seq
 
 
-def selectpdb4md(softlist):
+def selectpdb4md(pdb, softlist):
 
     try:
         os.mkdir("selectpdb")
@@ -362,25 +362,29 @@ def selectpdb4md(softlist):
             scorefile.close()
     selected_df = pd.DataFrame(selected_dict)
     selected_df.to_csv("Selected_Mutation.csv")
-    return selected_dict
 
-def runMD(pdb, platform, selected_dict, md_threads=None):
-    from utlis import mdrelax
-    # WORKING_DIR = os.getcwd()
-    def one_md(mutation):
+    for mutation in set(selected_dict["mutation"]):
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
-        WORKING_DIR = os.getcwd()
-        print(WORKING_DIR)
-        print("%s/selectpdb"%WORKING_DIR)
+        # WORKING_DIR = os.getcwd()
+        # print(WORKING_DIR)
+        # print("%s/selectpdb"%WORKING_DIR)
         os.system(
-            "cp %s/foldx_jobs/%s/%s selectpdb/%s.pdb" % (WORKING_DIR, mutation, mut_pdb, mutation)
+            "cp foldx_jobs/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation)
         )
-        os.chdir("%s/selectpdb"%WORKING_DIR)
+        # os.chdir("%s/selectpdb"%WORKING_DIR)
+
+    return selected_dict
+
+
+def runMD(platform, selected_dict, md_threads=None):
+    from utlis import mdrelax
+
+    def one_md(mutation):
+        mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mutant = mutation + ".pdb"
         mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
         os.system("rm *dcd")
-        os.chdir(WORKING_DIR)
 
     if platform == "CUDA":
         for mutation in set(selected_dict["mutation"]):
@@ -412,9 +416,9 @@ def main1():
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
     print("[INFO]: Started at %s" % (time.ctime()))
-
-    WORKING_DIR = os.getcwd()
-    print(WORKING_DIR)
+    #
+    # WORKING_DIR = os.getcwd()
+    # print(WORKING_DIR)
 
     def checkpdb(pdb, chain, seqfile):
 
@@ -629,19 +633,21 @@ def main1():
         "\n[INFO]: Finished calculation of single point mutation ddG at %s.\n"
         % (time.ctime())
     )
-    selected_dict = selectpdb4md(softlist)
+    selected_dict = selectpdb4md(pdb, softlist)
     if md:
         # from utlis import mdrelax
         md_start = time.time()
 
         if platform == "CUDA":
-            runMD(pdb, platform, selected_dict)
-            md_end = time.time()
-            grape.running_time["MD simulations"] = md_end - md_start
-            print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
+            runMD(platform, selected_dict)
+
         if platform == 'CPU':
             md_job_num = int(threads) // 4
-            runMD(pdb, platform, selected_dict, md_job_num)
+            runMD(platform, selected_dict, md_job_num)
+
+        md_end = time.time()
+        grape.running_time["MD simulations"] = md_end - md_start
+        print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
 
     else:
         print("No MDs!")
