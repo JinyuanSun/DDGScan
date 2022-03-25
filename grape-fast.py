@@ -364,9 +364,10 @@ def selectpdb4md(softlist):
     selected_df.to_csv("Selected_Mutation.csv")
     return selected_dict
 
-def runMD(pdb, platform, selected_dict):
+def runMD(pdb, platform, selected_dict, md_threads=None):
     from utlis import mdrelax
-    for mutation in set(selected_dict["mutation"]):
+
+    def one_md(mutation):
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
         os.system(
@@ -377,6 +378,14 @@ def runMD(pdb, platform, selected_dict):
         mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
         os.system("rm *dcd")
         os.chdir("..")
+
+    if platform == "CUDA":
+        for mutation in set(selected_dict["mutation"]):
+            one_md(mutation)
+    if platform == "CPU":
+        Parallel(n_jobs=md_threads)(delayed(one_md)(mutation) for mutation in set(selected_dict["mutation"]))
+
+
 
 
 def main1():
@@ -619,10 +628,16 @@ def main1():
     if md:
         # from utlis import mdrelax
         md_start = time.time()
-        runMD(pdb, platform, selected_dict)
-        md_end = time.time()
-        grape.running_time["MD simulations"] = md_end - md_start
-        print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
+
+        if platform == "CUDA":
+            runMD(pdb, platform, selected_dict)
+            md_end = time.time()
+            grape.running_time["MD simulations"] = md_end - md_start
+            print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
+        if platform == 'CPU':
+            md_job_num = int(threads) // 4
+            runMD(pdb, platform, selected_dict, md_job_num)
+
     else:
         print("No MDs!")
 
