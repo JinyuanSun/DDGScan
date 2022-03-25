@@ -6,7 +6,7 @@ from modeller import *
 import os
 
 
-def _3_2_1(x):
+def _3_2_1(self, x):
     d = {
         "CYS": "C",
         "ASP": "D",
@@ -29,8 +29,11 @@ def _3_2_1(x):
         "TYR": "Y",
         "MET": "M",
     }
-    y = d[x]
-    return y
+    try:
+        y = d[x]
+        return y
+    except KeyError:
+        return "A"
 
 
 def getPdbRes(code):

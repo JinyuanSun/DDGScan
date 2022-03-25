@@ -33,6 +33,7 @@ class Protein:
         y = d[x]
         return y
 
+
     def pdb2seq(self):
         seq = ""
         resNumList = []

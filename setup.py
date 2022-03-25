@@ -11,5 +11,6 @@ setup(
     url="https://github.com/JinyuanSun/DDGScan", 
 
     # 你要安装的包，通过 setuptools.find_packages 找到当前目录下有哪些包
-    packages=find_packages()
+    packages=find_packages(),
+    scripts=['grape-fast.py','gluster.py']
 )
