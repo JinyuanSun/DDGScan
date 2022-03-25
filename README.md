@@ -8,6 +8,8 @@
     + [Inspect structures](#inspect-structures)
     + [Citations](#citations)
     + [Others](#others)
+    + [Develop Information](#develop-information)
+    + [Known Issues](#known-issues)
 
 **I am testing this repo with some different input structures, if you encountered any failure please post a issue.** 
 
@@ -119,6 +121,7 @@ Using `scripts/inspectmutation.py` to inspect mutations in pymol:
 ```bash
 pymol inspectmutation.py $Wildtype_structure $Mutation_structure $Mutation_position $Chain
 ```
+About principles for protein physics, refer to  [this book](https://u1lib.org/book/2801005/141419).
 ### Citations
 If you find the models useful in your research, we ask that you cite the relevant paper:
 
@@ -150,10 +153,28 @@ If you find the models useful in your research, we ask that you cite the relevan
 }
 ```
 
+### Develop Information
+2019.04: Developed GUI and single mutation scan for FoldX.  
+2021.10: Restart this project to implement GRAPE.  
+2021.11: Added `openmm` for MDs.  
+2021.12: Added `modeller` for loop modelling and args was rewritten.  
+2022.03: Fixed few bugs and working on possible docker image.  
+Developed this in every day 20:00 - 02:00 :cat: . Continuing...   
+Feel free to contact with me if you have any further questions on computational enzyme designfeel free to get in touch with me: <jinyuansun98@gmail.com>.
+
+### Known Issues
+To avoid issues caused by pdb file, it is recommended to carefully exam your input file. One can 
+use `/path/to/rosetta/main/tools/protein_tools/scripts/clean_pdb.py`
+to clean pdb. However, this script will also renumber pdb file.
+During test, some cases failed because of the following problems:
+- MainChain Atoms missing for a residue. FoldX will create a gap.
+- Non-canonical amino acid in pdb will cause failure due to lack parameters in all predictors, therefore is not accepted.   
+- Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold.
 
 ### Others
-如果你在中国大陆地区，可以使用
+如果你在中国大陆地区，可以使用：
 ```bash
+# 可能会落后此仓库一段时间
 git clone https://gitee.com/puzhunanlu30/Codes_for_FoldX.git
 ```
 or try this:
@@ -161,14 +182,3 @@ or try this:
 git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 ```
 
-### Develop Information
-2021.10: Restart this project.  
-2021.11: Added `openmm` for MDs.  
-2021.12: Added `modeller` for loop modelling and args was rewritten.  
-2022.03: Fixed few bugs and working on possible docker image.  
-Developed this in every day 20:00 - 02:00 :cat: . Continuing...   
-Feel free to contact with me if you have any further questions on computational enzyme designfeel free to get in touch with me: <jinyuansun98@gmail.com>.
-
-### Known bugs
-- MainChain Atoms O missing for a residue. FoldX will create a gap.
-- 
