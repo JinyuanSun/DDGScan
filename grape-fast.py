@@ -379,7 +379,7 @@ def selectpdb4md(pdb, softlist):
 
 def runMD(platform, selected_dict, md_threads=None):
     from utlis import mdrelax
-
+    os.chdir("selectpdb")
     def one_md(mutation):
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mutant = mutation + ".pdb"
