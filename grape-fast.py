@@ -364,12 +364,15 @@ def selectpdb4md(softlist):
     selected_df.to_csv("Selected_Mutation.csv")
     return selected_dict
 
-def runMD(pdb, platform, selected_dict, WORKING_DIR, md_threads=None):
+def runMD(pdb, platform, selected_dict, md_threads=None):
     from utlis import mdrelax
-
+    # WORKING_DIR = os.getcwd()
     def one_md(mutation):
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
+        WORKING_DIR = os.getcwd()
+        print(WORKING_DIR)
+        print("%s/selectpdb"%WORKING_DIR)
         os.system(
             "cp %s/foldx_jobs/%s/%s selectpdb/%s.pdb" % (WORKING_DIR, mutation, mut_pdb, mutation)
         )
@@ -411,6 +414,7 @@ def main1():
     print("[INFO]: Started at %s" % (time.ctime()))
 
     WORKING_DIR = os.getcwd()
+    print(WORKING_DIR)
 
     def checkpdb(pdb, chain, seqfile):
 
