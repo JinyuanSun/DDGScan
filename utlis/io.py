@@ -34,8 +34,11 @@ class Protein:
             "TYR": "Y",
             "MET": "M",
         }
-        y = d[x]
-        return y
+        try:
+            y = d[x]
+            return y
+        except KeyError:
+            return "A"
 
     def pdb2seq(self):
         with open(self.pdbname) as pdbfile:
@@ -97,14 +100,14 @@ class Parser:
             "-rc",
             "--rosetta_cutoff",
             help="Cutoff of Rosetta ddg(R.E.U.)",
-            default=5,
+            default=1,
             type=float,
         )
         parser.add_argument(
             "-ac",
             "--abacus_cutoff",
             help="Cutoff of ABACUS SEF(A.E.U.)",
-            default=3,
+            default=2.5,
             type=float,
         )
         parser.add_argument(
@@ -129,7 +132,10 @@ class Parser:
             type=int,
         )
         parser.add_argument(
-            "-E", "--engine", nargs="+", choices=["abacus", "foldx", "rosetta", "abacus2"]
+            "-E",
+            "--engine",
+            nargs="+",
+            choices=["abacus", "foldx", "rosetta", "abacus2"],
         )
         parser.add_argument(
             "-M",
