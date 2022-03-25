@@ -128,30 +128,24 @@ About principles for protein physics, refer to  [this book](https://u1lib.org/bo
 If you find the models useful in your research, we ask that you cite the relevant paper:
 
 ```bibtex
-@article {cui2021cascatal,
-    author = {Cui YL, Chen YC, Liu XY, Dong SJ, Tian YE, Qiao YX, Mitra R, Han J, Li CL, Han X, Liu WD, Chen Q, Wei WQ, Wang X, Du, Tang SY, Xiang H, Liu HY, Liang Y, Houk KN, Wu B},
-    title = {Computational Redesign of a PETase for Plastic Biodegradation under Ambient Condition by the GRAPE Strategy},
-    journal = {ACS Catalysis},
-    volume = {11},
-    number = {3},
-    pages = {1340-1350},
-    year = {2021},
-    doi = {10.1021/acscatal.0c05126}
+@article{cui2021computational,
+  title={Computational redesign of a PETase for plastic biodegradation under ambient condition by the GRAPE strategy},
+  author={Cui, Yinglu and Chen, Yanchun and Liu, Xinyue and Dong, Saijun and Tian, Yu’e and Qiao, Yuxin and Mitra, Ruchira and Han, Jing and Li, Chunli and Han, Xu and others},
+  journal={ACS Catalysis},
+  volume={11},
+  number={3},
+  pages={1340--1350},
+  year={2021},
+  publisher={ACS Publications}
 }
-@article {sun2021mie,
-    Title = {GRAPE, a greedy accumulated strategy for computational protein engineering},
-    Author = {Sun JY and Cui YL and Wu B},
-    DOI = {10.1016/bs.mie.2020.12.026},
-    Volume = {648},
-    Year = {2021},
-    Journal = {Methods in enzymology},
-    ISSN = {0076-6879},
-    Pages = {207—230},
-    URL = {https://doi.org/10.1016/bs.mie.2020.12.026}
-}
-@article {cui2022,
-    Title = {GRAPE-web: A web server for automated design of thermostable proteins. (in prep.)},
-    Author = {Cui YL, Shi WY, Sun JY, ..., Ma JC and Wu B}
+@incollection{sun2021grape,
+  title={GRAPE, a greedy accumulated strategy for computational protein engineering},
+  author={Sun, Jinyuan and Cui, Yinglu and Wu, Bian},
+  booktitle={Methods in Enzymology},
+  volume={648},
+  pages={207--230},
+  year={2021},
+  publisher={Elsevier}
 }
 ```
 
