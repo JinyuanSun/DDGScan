@@ -27,12 +27,14 @@ Here I implemented a loop closure module using **modeller**, a great software wi
 Due to their licenses, I cannot redistribute them here :worried: !  
 To our glad, **openmm** is open source! So the glass is half full :smiley: . Here is a good news, the **ABACUS2** is now available at https://zenodo.org/record/4533424.
   
-To install it, clone this repo and add it to PATH:
+**Conda**:
 ```bash
-conda install -c conda-forge openmm pdbfixer
-pip install mdtraj pandas numpy joblib
-git clone https://github.com/JinyuanSun/DDGScan.git &&
-cd DDGScan && export PATH="$(pwd):$PATH"
+# create a new conda env
+conda create -n grape -c conda-forge python=3.8 openmm pdbfixer
+# activate new env
+conda activate grape
+# clone repo and install
+git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py install
 ```
 I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by appending this into `~/.bashrc`:
 ```
