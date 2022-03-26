@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
+import json
 import os
+# from utlis import modeller_loop
+import time
 
 import pandas as pd
 from joblib import Parallel, delayed
+
 import utlis.foldx as foldx
 import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
 from utlis import judge
-
-# from utlis import modeller_loop
-import time
-import json
 
 
 class GRAPE:
@@ -215,9 +215,9 @@ class GRAPE:
                     # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                     # "_".join([wild, str(resNum), mutation])
                     rosettaddgfile = (
-                        "rosetta_jobs/"
-                        + "_".join([wild, str(resNum), aa])
-                        + "/mtfile.ddg"
+                            "rosetta_jobs/"
+                            + "_".join([wild, str(resNum), aa])
+                            + "/mtfile.ddg"
                     )
                     all_results.append(
                         ["_".join([wild, str(resNum), aa])]
@@ -343,7 +343,6 @@ def readfasta(fastafile):
 
 
 def selectpdb4md(pdb, softlist):
-
     try:
         os.mkdir("selectpdb")
     except FileExistsError:
@@ -380,19 +379,19 @@ def selectpdb4md(pdb, softlist):
 def runMD(platform, selected_dict, md_threads=None):
     from utlis import mdrelax
     os.chdir("selectpdb")
+
     def one_md(mutation):
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mutant = mutation + ".pdb"
         mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
-        os.system("rm *dcd")
 
     if platform == "CUDA":
         for mutation in set(selected_dict["mutation"]):
             one_md(mutation)
     if platform == "CPU":
         Parallel(n_jobs=md_threads)(delayed(one_md)(mutation) for mutation in set(selected_dict["mutation"]))
-
-
+    os.system("rm *dcd")
+    os.chdir("../")
 
 
 def main1():
@@ -416,6 +415,7 @@ def main1():
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
     print("[INFO]: Started at %s" % (time.ctime()))
+
     #
     # WORKING_DIR = os.getcwd()
     # print(WORKING_DIR)
@@ -444,7 +444,6 @@ def main1():
         return pdb
 
     if args.mode == "test":
-
         checkpdb(pdb, chain, seqfile)
         exit()
 
@@ -454,16 +453,16 @@ def main1():
     exe_dict["foldx"] = foldx_exe
     pmut_scan_parallel_exe = (
         os.popen("which pmut_scan_parallel.mpi.linuxgccrelease")
-        .read()
-        .replace("\n", "")
+            .read()
+            .replace("\n", "")
     )
-#     rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
+    #     rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
     exe_dict["pmut"] = pmut_scan_parallel_exe
     for release in ["", ".static", ".mpi", ".default"]:
         cartesian_ddg_exe = (
             os.popen("which cartesian_ddg%s.linuxgccrelease" % (release))
-            .read()
-            .replace("\n", "")
+                .read()
+                .replace("\n", "")
         )
         if cartesian_ddg_exe != "":
             exe_dict["cartddg"] = cartesian_ddg_exe
@@ -659,6 +658,5 @@ def main1():
 
 
 if __name__ == "__main__":
-
     main1()
     print("[INFO]: Ended at %s" % (time.ctime()))
