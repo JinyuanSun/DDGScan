@@ -124,30 +124,6 @@ Using `scripts/inspectmutation.py` to inspect mutations in pymol:
 pymol inspectmutation.py $Wildtype_structure $Mutation_structure $Mutation_position $Chain
 ```
 About principles for protein physics, refer to  [this book](https://u1lib.org/book/2801005/141419).
-### Citations
-If you find the models useful in your research, we ask that you cite the relevant paper:
-
-```bibtex
-@article{cui2021computational,
-  title={Computational redesign of a PETase for plastic biodegradation under ambient condition by the GRAPE strategy},
-  author={Cui, Yinglu and Chen, Yanchun and Liu, Xinyue and Dong, Saijun and Tian, Yu’e and Qiao, Yuxin and Mitra, Ruchira and Han, Jing and Li, Chunli and Han, Xu and others},
-  journal={ACS Catalysis},
-  volume={11},
-  number={3},
-  pages={1340--1350},
-  year={2021},
-  publisher={ACS Publications}
-}
-@incollection{sun2021grape,
-  title={GRAPE, a greedy accumulated strategy for computational protein engineering},
-  author={Sun, Jinyuan and Cui, Yinglu and Wu, Bian},
-  booktitle={Methods in Enzymology},
-  volume={648},
-  pages={207--230},
-  year={2021},
-  publisher={Elsevier}
-}
-```
 
 ### Develop Information
 2019.04: Developed GUI and single mutation scan for FoldX.  
