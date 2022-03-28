@@ -13,10 +13,6 @@ setup(
     install_requires=['pandas',
                       'numpy',
                       'joblib',
-                      'sklearn',
-                      'seaborn',
-                      'matplotlib',
-                      'venn',
-                      'logomaker'
+                      'sklearn'
     ]
 )

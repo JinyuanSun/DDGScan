@@ -16,13 +16,13 @@ def run_abacus(pdbfilename):
         os.system("ABACUS_S1S2 %s" % (pdbfilename))
         prepare_end = time.time()
         prepare_time = prepare_end - start_time
-        print("[INFO]: ABACUS prepare took %f seconds." % (prepare_time))
+        print("[INFO]: ABAUCS prepare took %f seconds." % (prepare_time))
         print("[INFO]: Running ABACUS_singleMutationScan.")
 
         os.system("ABACUS_singleMutationScan %s abacus_output.txt" % (pdbfilename))
         scan_end = time.time()
         scan_time = scan_end - prepare_end
-        print("[INFO]: ABACUS scan took %f seconds." % (scan_time))
+        print("[INFO]: ABAUCS scan took %f seconds." % (scan_time))
         os.chdir("../")
         return prepare_time, scan_time
     except FileExistsError:
@@ -117,7 +117,7 @@ def parse_abacus_out():
 
     with open("abacus_results/All_ABACUS.score", "w+") as complete:
         complete.write(
-            "#Score file formatted by GRAPE from ABACUS.\n#mutation\tscore\tstd\n"
+            "#Score file formated by GRAPE from ABACUS.\n#mutation\tscore\tstd\n"
         )
         with open("tempfile") as abacusfile:
             for line in abacusfile:
