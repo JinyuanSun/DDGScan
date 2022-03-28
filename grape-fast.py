@@ -159,7 +159,7 @@ class GRAPE:
         # print(self.abacus2_results)
         with open("abacus2_results/All_ABACUS2.score", "w+") as complete:
             complete.write(
-                "#Score file formated by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
+                "#Score file formatted by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
             )
             for pair in abacus2_results:
                 complete.write("\t".join([pair[0], str(round(pair[1], 4)), "0"]) + "\n")
@@ -190,7 +190,7 @@ class GRAPE:
 
         with open("foldx_results/All_FoldX.score", "w+") as foldxout:
             foldxout.write(
-                "#Score file formated by GRAPE from FoldX.\n#mutation\tscore\tstd\n"
+                "#Score file formatted by GRAPE from FoldX.\n#mutation\tscore\tstd\n"
             )
             for line in all_results:
                 foldxout.write("\t".join([line[0], str(line[1]), str(line[2])]) + "\n")
@@ -224,9 +224,9 @@ class GRAPE:
                         + prot_rosetta.read_rosetta_ddgout(rosettaddgfile)
                     )
 
-        with open("rosetta_results/All_rosetta.score", "w+") as rosettaout:
+        with open("rosetta_results/All_Rosetta.score", "w+") as rosettaout:
             rosettaout.write(
-                "#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
+                "#Score file formatted by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
             )
             for line in all_results:
                 rosettaout.write(
@@ -414,6 +414,7 @@ def main1():
     platform = args.platform
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
+    autofix = args.fix_mainchain_missing
     print("[INFO]: Started at %s" % (time.ctime()))
 
     #
@@ -517,6 +518,10 @@ def main1():
     if mode == "run":
         if fillloop:
             pdb = checkpdb(pdb, chain, seqfile)
+
+        if autofix:
+            pdb = checkpdb(pdb, [chain])
+
 
         # FoldX
         if "foldx" in softlist:
