@@ -92,19 +92,20 @@ class foldx_binder:
         min_score = round(df["total energy"].min(), 4)
         sd = round(df["total energy"].std(), 4)
         # result.append(["_".join([wild, str(resNum), mutation]), score, sd])
-        return ["_".join([wild, str(resNum), mutation]), str(score), str(min_score), sd]
+        return ["_".join([wild, str(resNum), mutation]), str(score), str(min_score), str(sd)]
 
     @staticmethod
     def cp_files(job_id, pdb, num_of_runs):
         pdb_id = pdb.replace(".pdb", "")
         distutils.dir_util.mkpath('../inspection')
         names = [pdb]
+        os.system(f"cp {pdb} ../inspection")
         for i in range(int(num_of_runs)):
             fxout_pdb_name = pdb_id + "_1_" + str(i) + ".pdb"
             os.system(f"cp {fxout_pdb_name} ../inspection/{pdb_id}_{job_id}_{i}.pdb")
             names.append(f'{pdb_id}_{job_id}_{i}.pdb')
         with open(f'../inspection/{job_id}.pml', 'w+') as pml:
-            pml.write(f'load {" ".join(names)}\n')
+            pml.write(f'{"load ".join(names)}\n')
             pml.write(f'select mutation, resi {job_id.split("_")[1]}\n')
             pml.write("select br. all within 6 of mutation\n")
             pml.write("show sticks, sele\n")

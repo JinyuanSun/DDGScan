@@ -14,18 +14,6 @@ import pandas as pd
 from joblib import Parallel, delayed
 import argparse
 from utlis.foldx import foldx_binder
-import logging
-import sys
-
-
-logger = logging.getLogger()
-fileHandler = logging.FileHandler("logfile.log")
-streamHandler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-streamHandler.setFormatter(formatter)
-fileHandler.setFormatter(formatter)
-logger.addHandler(streamHandler)
-logger.addHandler(fileHandler)
 
 
 class_type_dict = {
@@ -173,4 +161,5 @@ if __name__ == '__main__':
     if repair:
         pdb_file = foldx_binder.repair_pdb(pdb_file)
     results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
+    print(results)
     dump_score_file(results)
