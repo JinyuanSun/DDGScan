@@ -12,8 +12,20 @@ import time
 
 import pandas as pd
 from joblib import Parallel, delayed
-
+import argparse
 from utlis.foldx import foldx_binder
+import logging
+import sys
+
+
+logger = logging.getLogger()
+fileHandler = logging.FileHandler("logfile.log")
+streamHandler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+streamHandler.setFormatter(formatter)
+fileHandler.setFormatter(formatter)
+logger.addHandler(streamHandler)
+logger.addHandler(fileHandler)
 
 
 class_type_dict = {
@@ -72,14 +84,92 @@ def dump_score_file(results):
         print("\t".join(result))
 
 
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="Run FoldX, Rosetta and ABACUS for in silico deep mutation scan."
+    )
+    parser.add_argument("pdb", help="Input PDB")
+    parser.add_argument('mutation_list_file', help='Mutation list file, see README for details')
+    parser.add_argument(
+        "-fill",
+        "--fill_break_in_pdb",
+        help="Use modeller to fill missing residues in your pdb file. Use this option with caution!",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-fix_mm",
+        "--fix_mainchain_missing",
+        help="fixing missing backbone bone using pdbfixer",
+        action='store_true',
+    )
+    parser.add_argument(
+        "-T",
+        "--threads",
+        help="Number of threads to run FoldX, Rosetta or ABACUS2",
+        default=16,
+        type=int,
+    )
+    parser.add_argument(
+        "-nstruct",
+        "--relax_number",
+        help="Number of how many relaxed structure",
+        default=50,
+        type=int,
+    )
+    parser.add_argument(
+        "-nruns",
+        "--numofruns",
+        help="Number of runs in FoldX BuildModel",
+        default=5,
+        type=int,
+    )
+    parser.add_argument(
+        "-E",
+        "--engine",
+        nargs="+",
+        choices=["foldx", "rosetta", "abacus2"],
+    )
+    parser.add_argument(
+        "-repair",
+        "--foldx_repair",
+        help="Run Repair before ddG calculation",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-MD",
+        "--molecular_dynamics",
+        help="Run 1ns molecular dynamics simulations for each mutation using openmm.",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-P",
+        "--platform",
+        help="CUDA or CPU",
+        type=str,
+        choices=["CUDA", "CPU"],
+        default="CUDA",
+    )
+
+    args = parser.parse_args()
+
+    return args
+
+
+
+
+
 if __name__ == '__main__':
-    threads = 8
-    numOfRuns = 5
-    mutation_list_file = 'test_file.txt'
-    pdb_file = '1pga.pdb'
+    args = get_args()
+    threads = args.threads
+    pdb_file = args.pdb
+    numOfRuns = args.numofruns
+    repair = args.foldx_repair
+    mutation_list_file = args.mutation_list_file
+    # threads = 8
+    # numOfRuns = 5
+    # pdb_file = '1pga.pdb'
     mutation_list = read_list(mutation_list_file)
     job_list = mk_job_list(pdb_file, numOfRuns, mutation_list)
-    repair = False
     if repair:
         pdb_file = foldx_binder.repair_pdb(pdb_file)
     results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
