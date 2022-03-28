@@ -1,6 +1,5 @@
 1lve.cif
 1LVE_modfixed.pdb
 test.py
-test
+test/*
 post_analysis_and_plot.py
-grape-fast.py
