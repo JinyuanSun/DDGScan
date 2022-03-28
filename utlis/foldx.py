@@ -113,9 +113,9 @@ class foldx_binder:
             + pdb_file
             + " 1>/dev/null"
         )
-        results = foldx_binder.cal_score(wild, position, mutation, pdb_file)
         starttime = time.time()
         os.system(cmd2)
+        results = foldx_binder.cal_score(wild, position, mutation, pdb_file)
         finishtime = time.time()
         logging.info(
             "FoldX mutation %s_%s_%s took %f seconds."
