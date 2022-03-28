@@ -1,6 +1,7 @@
 1lve.cif
 1LVE_modfixed.pdb
 test.py
-test
-post_analysis_and_plot.py
-grape-fast.py
+test/pypro/1PGA.pdb
+test/pypro/3MX3.pdb
+test/pypro/3WZM.pdb
+test/pypro/4R21.pdb
