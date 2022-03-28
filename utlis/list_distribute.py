@@ -67,9 +67,13 @@ def mk_job_list(pdb_file, numOfRuns, mutation_list):
     return job_list
 
 
-def dump_score_file(results):
-    for index, result in enumerate(results):
-        print("\t".join(result))
+def dump_score_file(results, pdb):
+    pdb_id = pdb.replace(".pdb", "")
+    with open(pdb_id+"_foldx.score", 'w+') as outfile:
+        outfile.write('\t'.join(['mutation', 'mean', 'min', 'std'])+'\n')
+        for index, result in enumerate(results):
+            outfile.write("\t".join(result)+'\n')
+        outfile.close()
 
 
 def get_args():
@@ -78,6 +82,12 @@ def get_args():
     )
     parser.add_argument("pdb", help="Input PDB")
     parser.add_argument('mutation_list_file', help='Mutation list file, see README for details')
+    parser.add_argument(
+        "-msaddg",
+        "--output_of_MSAddg",
+        help="The format of MSAddg *.scan.txt, and there may be mismatch between your pdb and sequence",
+        action='store_true',
+    )
     parser.add_argument(
         "-fill",
         "--fill_break_in_pdb",
@@ -143,7 +153,14 @@ def get_args():
     return args
 
 
-
+def read_msaddg(msaddg_out, top=80, chain='A'):
+    mutation_list = []
+    df = pd.read_csv(msaddg_out, sep='\t', header=0, index_col=None)
+    selected = df.sort_values('score', ascending=False).head(top)
+    for mutation in selected['mutation'].values:
+        wildtype, position, mutation = mutation
+        mutation_list.append("_".join([wildtype, chain, position, mutation]))
+    return mutation_list
 
 
 if __name__ == '__main__':
@@ -153,13 +170,13 @@ if __name__ == '__main__':
     numOfRuns = args.numofruns
     repair = args.foldx_repair
     mutation_list_file = args.mutation_list_file
-    # threads = 8
-    # numOfRuns = 5
-    # pdb_file = '1pga.pdb'
-    mutation_list = read_list(mutation_list_file)
+    output_of_MSAddg = args.output_of_MSAddg
+    if output_of_MSAddg:
+        mutation_list = output_of_MSAddg(mutation_list_file)
+    else:
+        mutation_list = read_list(mutation_list_file)
     job_list = mk_job_list(pdb_file, numOfRuns, mutation_list)
     if repair:
         pdb_file = foldx_binder.repair_pdb(pdb_file)
     results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
-    print(results)
-    dump_score_file(results)
+    dump_score_file(results, args.pdb)

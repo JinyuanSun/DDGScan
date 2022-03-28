@@ -95,25 +95,6 @@ class foldx_binder:
         return ["_".join([wild, str(resNum), mutation]), str(score), str(min_score), str(sd)]
 
     @staticmethod
-    def cp_files(job_id, pdb, num_of_runs):
-        pdb_id = pdb.replace(".pdb", "")
-        distutils.dir_util.mkpath('../inspection')
-        names = [pdb]
-        os.system(f"cp {pdb} ../inspection")
-        for i in range(int(num_of_runs)):
-            fxout_pdb_name = pdb_id + "_1_" + str(i) + ".pdb"
-            os.system(f"cp {fxout_pdb_name} ../inspection/{pdb_id}_{job_id}_{i}.pdb")
-            names.append(f'{pdb_id}_{job_id}_{i}.pdb')
-        with open(f'../inspection/{job_id}.pml', 'w+') as pml:
-            pml.write(f'{"load ".join(names)}\n')
-            pml.write(f'select mutation, resi {job_id.split("_")[1]}\n')
-            pml.write("select br. all within 6 of mutation\n")
-            pml.write("show sticks, sele\n")
-            pml.write('color indium, mutation AND elem C AND sc.')
-            pml.close()
-
-
-    @staticmethod
     def run_one_job(varlist: list):
         pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
         # mutation_name = "_".join([wild, str(resNum), mutation])
@@ -135,12 +116,31 @@ class foldx_binder:
         starttime = time.time()
         os.system(cmd2)
         results = foldx_binder.cal_score(wild, position, mutation, pdb_file)
-        foldx_binder.cp_files(job_id, pdb_file, numOfRuns)
+        cp_files(job_id, pdb_file, numOfRuns)
         finishtime = time.time()
-        logging.info(
+        print(
             "FoldX mutation %s_%s_%s took %f seconds."
             % (wild, position, mutation, finishtime - starttime)
         )
 
         os.chdir("../../")
         return results
+
+
+def cp_files(job_id, pdb, num_of_runs):
+    pdb_id = pdb.replace(".pdb", "")
+    distutils.dir_util.mkpath('../inspection')
+    names = [pdb]
+    os.system(f"cp {pdb} ../inspection")
+    for i in range(int(num_of_runs)):
+        fxout_pdb_name = pdb_id + "_1_" + str(i) + ".pdb"
+        os.system(f"cp {fxout_pdb_name} ../inspection/{pdb_id}_{job_id}_{i}.pdb")
+        names.append(f'{pdb_id}_{job_id}_{i}.pdb')
+    with open(f'../inspection/{job_id}.pml', 'w+') as pml:
+        for name in names:
+            pml.write(f'load {name}\n')
+        pml.write(f'select mutation, resi {job_id.split("_")[1]}\n')
+        pml.write("select br. all within 6 of mutation\n")
+        pml.write("show sticks, sele\n")
+        pml.write('color indium, mutation AND elem C AND sc.')
+        pml.close()
