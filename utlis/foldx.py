@@ -5,7 +5,8 @@
 import os
 import pandas as pd
 import time
-
+import distutils.dir_util
+import logging
 
 class FoldX:
     def __init__(self, pdbName, path2foldx, numThreads):
@@ -67,3 +68,59 @@ class FoldX:
 
         os.chdir("../../")
         # return self.calScore(self, pdbfile)  # need self?
+
+
+class foldx_binder:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def repair_pdb(pdb_file):
+        cmd = "foldx --command=RepairPDB --pdb=" + pdb_file
+        repair_out = os.popen(cmd).read()
+        with open(".foldx_repair.log", "w+") as outfile:
+            outfile.write(repair_out)
+            outfile.close()
+        return pdb_file.replace(".pdb", "_Repair.pdb")
+
+    @staticmethod
+    def cal_score(wild, resNum, mutation, pdbfile):
+        fxout_name = "Dif_" + pdbfile.replace(".pdb", ".fxout")
+        # print(fxout_name)
+        df = pd.read_table(fxout_name, sep="\t", skiprows=8)
+        score = round(df["total energy"].mean(), 4)
+        min_score = round(df["total energy"].min(), 4)
+        sd = round(df["total energy"].std(), 4)
+        # result.append(["_".join([wild, str(resNum), mutation]), score, sd])
+        return ["_".join([wild, str(resNum), mutation]), score, min_score, sd]
+
+    @staticmethod
+    def run_one_job(varlist: list):
+        pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
+        # mutation_name = "_".join([wild, str(resNum), mutation])
+        path_job_id = 'foldx_jobs/' + job_id
+        distutils.dir_util.mkpath(path_job_id)
+        os.chdir(path_job_id)
+        with open("individual_list.txt", "w+") as indFile:
+            indFile.write(wild + chain + str(position) + mutation + ";")
+            indFile.close()
+        cmd1 = "cp ../../" + pdb_file + " ./"
+        os.popen(cmd1)
+        cmd2 = (
+            "foldx --command=BuildModel --numberOfRuns="
+            + numOfRuns
+            + " --mutant-file=individual_list.txt --pdb="
+            + pdb_file
+            + " 1>/dev/null"
+        )
+        results = foldx_binder.cal_score(wild, position, mutation, pdb_file)
+        starttime = time.time()
+        os.system(cmd2)
+        finishtime = time.time()
+        logging.info(
+            "FoldX mutation %s_%s_%s took %f seconds."
+            % (wild, position, mutation, finishtime - starttime)
+        )
+
+        os.chdir("../../")
+        return results
