@@ -108,7 +108,7 @@ class foldx_binder:
         os.popen(cmd1)
         cmd2 = (
             "foldx --command=BuildModel --numberOfRuns="
-            + numOfRuns
+            + str(numOfRuns)
             + " --mutant-file=individual_list.txt --pdb="
             + pdb_file
             + " 1>/dev/null"

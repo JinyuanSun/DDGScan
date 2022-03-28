@@ -34,17 +34,17 @@ def read_list(mutation_list_file):
     """
     param: mutation_list_file: a space-seperated text file
            wildtype chain position mutation
-           A A 12 P
-           A A 12 ILV
-           A A 13 _polar
+           A A 26 P
+           A A 26 ILV
+           A A 26 _polar
     return mutation_list
     """
     mutation_list = []
     with open(mutation_list_file, 'r') as mutation_list_file:
         for line in mutation_list_file:
-            wildtype, chain, position, mutation = line.replace("\n", "").split(" ")
-            if mutation[0] == "_":
-                mutations = class_type_dict[mutation]
+            wildtype, chain, position, mutations = line.replace("\n", "").split(" ")
+            if mutations[0] == "_":
+                mutations = class_type_dict[mutations]
             for _, aa in enumerate(list(mutations)):
                 if aa != wildtype:
                     mutation_list.append("_".join([wildtype,
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     threads = 8
     numOfRuns = 5
     mutation_list_file = 'test_file.txt'
-    pdb_file = '../test/1pga.pdb'
+    pdb_file = '1pga.pdb'
     mutation_list = read_list(mutation_list_file)
     job_list = mk_job_list(pdb_file, numOfRuns, mutation_list)
     repair = False
