@@ -7,6 +7,7 @@
 
 # TODO: venn, heatmap, position_avg, write scaled avg ddg to b factor
 
+import argparse
 import distutils.dir_util
 
 import logomaker as lm
@@ -65,6 +66,7 @@ def energy2logo(arr, resnum_list, index_list, method):
     param: energy_array: (20,)
     p_mut/p_ref = exp( beta * -ddG)
     """
+    plt.figure(figsize=(arr.shape[1] / 5, arr.shape[0] / 5), dpi=150)
     p_ratio = np.exp(-arr.T / 0.6)
     z = np.sum(p_ratio, axis=0)
     p_ref = 1 / z
@@ -74,12 +76,13 @@ def energy2logo(arr, resnum_list, index_list, method):
                         data=pesudo_pssm / np.sum(pesudo_pssm, axis=1).reshape(-1, 1),
                         columns=list("ARNDCQEGHILKMFPSTWYV"))
     res_logo = lm.Logo(data,
-                      fade_probabilities=True,
-                      stack_order='small_on_top',
-                      font_name='Arial Rounded MT Bold')
+                       fade_probabilities=True,
+                       stack_order='small_on_top',
+                       font_name='Arial Rounded MT Bold')
     res_logo.ax.set_xticks(np.array(index_list))
+    res_logo.ax.set_title(f"{method}")
     res_logo.ax.set_xticklabels(resnum_list, rotation='vertical')
-    plt.savefig(f'plots/{method}_Logo.png')
+    plt.savefig(f'plots/{method}_Logo.png', bbox_inches='tight')
     # p_else.shape
     # np.sum(p_else, axis=0) + p_ref
     # return data
@@ -112,7 +115,7 @@ def position_avg(arr, resnum_list, index_list, method):
     data = pd.DataFrame(index=indexes, data={'position': position, 'ddg': arr})
     data = data.dropna()
     ax = sns.boxplot(x=data["position"], y=data["ddg"], palette="Greys")
-    ax.set_xticks(np.array(index_list) + .5)
+    ax.set_xticks(np.array(index_list))
     ax.set_xticklabels(resnum_list, rotation='vertical')
     ax.set_title(f"{method}")
     plt.savefig(f'plots/{method}_boxplot.png', bbox_inches='tight')
@@ -138,7 +141,7 @@ def posistion_variance(arr, resnum_list, index_list, method):
     variance = np.std(arr, axis=0)
 
     ax = sns.lineplot(x=index_list, y=variance, label="Variances", marker='o')
-    ax.set_xticks(np.array(index_list) + .5)
+    ax.set_xticks(np.array(index_list))
     # ax.legend()
     ax.set_xticklabels(resnum_list, rotation='vertical')
     ax.set_xlim(index_list[0], index_list[-1])
@@ -210,6 +213,7 @@ def residue_bar(engine_cutoff_dict, residue_position):
     ax.set_xlabel('Mutations')
     plt.savefig(f'plots/{wild_type}{residue_position}_histogram.png', bbox_inches='tight')
 
+
 def write_variance2ca(arr, method, pdb):
     variance = np.mean(arr, axis=0)
     variance = (100 * (variance - np.min(variance)) / np.ptp(variance)).astype(int)
@@ -226,26 +230,68 @@ def write_variance2ca(arr, method, pdb):
         # cmdfile.write("as cartoon\ncartoon putty\nset cartoon_putty_radius, 1")
 
 
+def main(args):
+    residue_position = args.residue_position  # = 26
+    distutils.dir_util.mkpath('plots')
+    engine_cutoff_dict = args.engine_cutoff_dict  # = {'rosetta': 0, 'FoldX': 0, 'ABACUS': 0}
+    pdb = args.pdb  # '1pga.pdb'
+    plot_type = args.plot_type
+    for engine in engine_cutoff_dict:
+        all_score_file = f"{engine.lower()}_results/All_{engine}.score"
+        arr, std, resnum_list, index_list, method, wild_type_dict = score_file2array(all_score_file)
+        if plot_type == 'all':
+            write_variance2ca(arr, method, pdb)
+            heatmap(arr, resnum_list, index_list, method)
+            position_avg(arr, resnum_list, index_list, method)
+            posistion_variance(arr, resnum_list, index_list, method)
+            kde_plot(arr, method)
+            energy2logo(arr, resnum_list, index_list, method)
+        if 'venn' in plot_type:
+            venn_plot(engine_cutoff_dict)
+        if 'residue_bar' in plot_type and residue_position:
+            residue_bar(engine_cutoff_dict, residue_position)
+        if 'heatmap' in plot_type:
+            heatmap(arr, resnum_list, index_list, method)
+        if 'position_avg_boxplot' in plot_type:
+            position_avg(arr, resnum_list, index_list, method)
+        if 'variance_lineplot' in plot_type:
+            posistion_variance(arr, resnum_list, index_list, method)
+        if 'kde_plot' in plot_type:
+            kde_plot(arr, method)
+        if 'residue_logo' in plot_type:
+            energy2logo(arr, resnum_list, index_list, method)
+
+
+def get_args():
+    parser = argparse.ArgumentParser(
+        description="analysis and plot results from grape_phaseI result"
+    )
+    parser.add_argument("pdb", help="your target pdb file")
+    parser.add_argument("results_dir", help="directory of results of grape_phase_I or list_distribute")
+    parser.add_argument("--residue_position", help="residue position, if you asked for a barplot at residue level")
+    parser.add_argument("--plot_type",
+                        help="plots you want to make",
+                        choices=["all",
+                                 "venn",
+                                 'residue_bar',
+                                 'heatmap',
+                                 'position_avg_boxplot',
+                                 'variance_lineplot',
+                                 'kde_plot',
+                                 'residue_logo'
+                                 ]
+                        )
+
+    args = parser.parse_args()
+    return args
+
 
 if __name__ == '__main__':
+    args = get_args()
+    main(args)
     # all_score_file = '../test/foldx_results/All_FoldX.score'
     # abaucs_arr, abaucs_std, resnum_list, index_list, method, wild_type_dict = score_file2array(all_score_file)
     # data = energy2p(abaucs_arr, resnum_list, index_list, method, wild_type_dict)
     # heatmap(abaucs_arr, resnum_list, index_list, method)
     # position_avg(abaucs_arr, resnum_list, index_list, method)
     # posistion_variance(abaucs_arr, resnum_list, index_list, method)
-    # residue_position = 26
-    # distutils.dir_util.mkpath('plots')
-    engine_cutoff_dict = {'rosetta': 0, 'FoldX': 0, 'ABACUS': 0}
-    pdb = '1pga.pdb'
-    # venn_plot(engine_cutoff_dict)
-    # residue_bar(engine_cutoff_dict, residue_position)
-    for engine in engine_cutoff_dict:
-        all_score_file = f"{engine.lower()}_results/All_{engine}.score"
-        arr, std, resnum_list, index_list, method, wild_type_dict = score_file2array(all_score_file)
-        write_variance2ca(arr, method, pdb)
-        # heatmap(arr, resnum_list, index_list, method)
-        # position_avg(arr, resnum_list, index_list, method)
-        # posistion_variance(arr, resnum_list, index_list, method)
-        # kde_plot(arr, method)
-        # energy2logo(arr, resnum_list, index_list, method)

@@ -395,7 +395,7 @@ def runMD(platform, selected_dict, md_threads=None):
 
 
 def main1(args):
-
+    # args = io.Parser().get_args()
     # print(args)
 
     pdb = args.pdb
@@ -663,6 +663,6 @@ def main1(args):
 
 
 if __name__ == "__main__":
-    args = io.Parser().get_args()
-    main1(args)
+    # args = io.Parser().get_args()
+    main1()
     print("[INFO]: Ended at %s" % (time.ctime()))

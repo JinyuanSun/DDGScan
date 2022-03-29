@@ -1,0 +1,220 @@
+#!/usr/bin/env python     
+# -*- coding: utf-8 -*-
+# @Author  : Jinyuan Sun
+# @Time    : 2022/3/29 2:43 AM
+# @File    : DDGScan.py
+# @annotation    :
+import argparse
+
+from utlis import list_distribute, grape_phaseI, post_analysis_and_plot
+
+parser = argparse.ArgumentParser()
+subparsers = parser.add_subparsers(help='commands', title="commands", dest="command")
+
+grape_phaseI_parser = subparsers.add_parser('grape_phaseI',
+                                            help='process phaseI of grape protocol, a in silico deep mutation scan')
+grape_phaseI_parser.add_argument("pdb", help="Input PDB")
+grape_phaseI_parser.add_argument("chain", help="Input PDB Chain to do in silico DMS")
+grape_phaseI_parser.add_argument(
+    "-fill",
+    "--fill_break_in_pdb",
+    help="Use modeller to fill missing residues in your pdb file. Use this option with caution!",
+    action="store_true",
+)
+grape_phaseI_parser.add_argument(
+    "-seq",
+    "--sequence",
+    help="The exact sequence of protein you want to design. All mutation will be named according to this sequence.",
+    default="",
+)
+grape_phaseI_parser.add_argument(
+    "-T",
+    "--threads",
+    help="Number of threads to run FoldX, Rosetta",
+    default=16,
+    type=int
+)
+
+grape_phaseI_parser.add_argument(
+    "-fc",
+    "--foldx_cutoff",
+    help="Cutoff of FoldX ddg(kcal/mol)",
+    default=1.5,
+    type=float
+)
+grape_phaseI_parser.add_argument(
+    "-rc",
+    "--rosetta_cutoff",
+    help="Cutoff of Rosetta ddg(R.E.U.)",
+    default=1,
+    type=float,
+)
+grape_phaseI_parser.add_argument(
+    "-ac",
+    "--abacus_cutoff",
+    help="Cutoff of ABACUS SEF(A.E.U.)",
+    default=2.5,
+    type=float,
+)
+grape_phaseI_parser.add_argument(
+    "-a2c",
+    "--abacus2_cutoff",
+    help="Cutoff of ABACUS2 SEF(A.E.U.)",
+    default=3,
+    type=float,
+)
+grape_phaseI_parser.add_argument(
+    "-nstruct",
+    "--relax_number",
+    help="Number of how many relaxed structure",
+    default=50,
+    type=int,
+)
+grape_phaseI_parser.add_argument(
+    "-nruns",
+    "--numofruns",
+    help="Number of runs in FoldX BuildModel",
+    default=5,
+    type=int,
+)
+grape_phaseI_parser.add_argument(
+    "-E",
+    "--engine",
+    nargs="+",
+    choices=["abacus", "foldx", "rosetta", "abacus2"],
+)
+grape_phaseI_parser.add_argument(
+    "-M",
+    "--mode",
+    help="Run, Rerun or analysis",
+    type=str,
+    choices=["run", "rerun", "analysis", "test"],
+    default="run",
+)
+grape_phaseI_parser.add_argument(
+    "-S",
+    "--preset",
+    help="Fast or Slow",
+    type=str,
+    choices=["fast", "slow"],
+    default="slow",
+)
+grape_phaseI_parser.add_argument(
+    "-MD",
+    "--molecular_dynamics",
+    help="Run 1ns molecular dynamics simulations for each mutation using openmm.",
+    action="store_true",
+)
+grape_phaseI_parser.add_argument(
+    "-P",
+    "--platform",
+    help="CUDA or CPU",
+    type=str,
+    choices=["CUDA", "CPU"],
+    default="CUDA",
+)
+grape_phaseI_parser.add_argument(
+    "-fix_mm",
+    "--fix_mainchain_missing",
+    help="fixing missing backbone bone using pdbfixer",
+    action='store_true',
+)
+
+list_distribute_parser = subparsers.add_parser('list_distribute',
+                                               help='process single point mutation according to given list file in a distributed manner')
+list_distribute_parser.add_argument("pdb", help="Input PDB")
+list_distribute_parser.add_argument('mutation_list_file', help='Mutation list file, see README for details')
+list_distribute_parser.add_argument(
+    "-msaddg",
+    "--output_of_MSAddg",
+    help="The format of MSAddg *.scan.txt, and there may be mismatch between your pdb and sequence",
+    action='store_true',
+)
+list_distribute_parser.add_argument(
+    "-fill",
+    "--fill_break_in_pdb",
+    help="Use modeller to fill missing residues in your pdb file. Use this option with caution!",
+    action="store_true",
+)
+list_distribute_parser.add_argument(
+    "-fix_mm",
+    "--fix_mainchain_missing",
+    help="fixing missing backbone bone using pdbfixer",
+    action='store_true',
+)
+list_distribute_parser.add_argument(
+    "-T",
+    "--threads",
+    help="Number of threads to run FoldX, Rosetta or ABACUS2",
+    default=16,
+    type=int,
+)
+list_distribute_parser.add_argument(
+    "-nstruct",
+    "--relax_number",
+    help="Number of how many relaxed structure",
+    default=50,
+    type=int,
+)
+list_distribute_parser.add_argument(
+    "-nruns",
+    "--numofruns",
+    help="Number of runs in FoldX BuildModel",
+    default=5,
+    type=int,
+)
+list_distribute_parser.add_argument(
+    "-E",
+    "--engine",
+    nargs="+",
+    choices=["foldx", "rosetta", "abacus2"],
+)
+list_distribute_parser.add_argument(
+    "-repair",
+    "--foldx_repair",
+    help="Run Repair before ddG calculation",
+    action="store_true",
+)
+list_distribute_parser.add_argument(
+    "-MD",
+    "--molecular_dynamics",
+    help="Run 1ns molecular dynamics simulations for each mutation using openmm.",
+    action="store_true",
+)
+list_distribute_parser.add_argument(
+    "-P",
+    "--platform",
+    help="CUDA or CPU",
+    type=str,
+    choices=["CUDA", "CPU"],
+    default="CUDA",
+)
+
+analysis_and_plot_parser = subparsers.add_parser('analysis_and_plot',
+                                                 help='analysis and plot results from grape_phaseI result')
+analysis_and_plot_parser.add_argument("pdb", help="your target pdb file")
+analysis_and_plot_parser.add_argument("results_dir", help="directory of results of grape_phase_I or list_distribute")
+analysis_and_plot_parser.add_argument("--residue_position",
+                                      help="residue position, if you asked for a barplot at residue level")
+analysis_and_plot_parser.add_argument("--plot_type",
+                                      help="plots you want to make",
+                                      nargs="+",
+                                      choices=["all",
+                                               "venn",
+                                               'residue_bar',
+                                               'heatmap',
+                                               'position_avg_boxplot',
+                                               'variance_lineplot',
+                                               'kde_plot',
+                                               'residue_logo'
+                                               ]
+                                      )
+
+args = parser.parse_args()
+
+if args.command == 'grape_phaseI':
+    grape_phaseI.main1(args)
+if args.command == 'list_distribute':
+    list_distribute.main(args)
+if args.command == 'analysis_and_plot':
+    post_analysis_and_plot.main(args)

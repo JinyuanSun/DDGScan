@@ -162,9 +162,9 @@ def read_msaddg(msaddg_out, top=80, chain='A'):
         mutation_list.append("_".join([wildtype, chain, position, mutation]))
     return mutation_list
 
-
-if __name__ == '__main__':
-    args = get_args()
+def main(args=None):
+    if not args:
+        args = get_args()
     threads = args.threads
     pdb_file = args.pdb
     numOfRuns = args.numofruns
@@ -175,8 +175,11 @@ if __name__ == '__main__':
         mutation_list = output_of_MSAddg(mutation_list_file)
     else:
         mutation_list = read_list(mutation_list_file)
-    job_list = mk_job_list(pdb_file, numOfRuns, mutation_list)
     if repair:
         pdb_file = foldx_binder.repair_pdb(pdb_file)
+    job_list = mk_job_list(pdb_file, numOfRuns, mutation_list)
     results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
     dump_score_file(results, args.pdb)
+
+if __name__ == '__main__':
+    main()
