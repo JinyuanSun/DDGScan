@@ -9,7 +9,7 @@ setup(
     description="A powerful package for GRAPE",
     url="https://github.com/JinyuanSun/DDGScan",
     packages=find_packages(),
-    scripts=['grape-fast.py', 'gluster.py'],
+    scripts=['DDGScan'],
     install_requires=['pandas',
                       'numpy',
                       'joblib',
