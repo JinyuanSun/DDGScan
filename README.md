@@ -105,7 +105,7 @@ optional arguments:
 
 ```
 #### List distribute
-```bash
+```
 usage: DDGScan list_distribute [-h] [-msaddg] [-fill] [-fix_mm] [-T THREADS] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS] [-E {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...]] [-repair]
                                [-MD] [-P {CUDA,CPU}]
                                pdb mutation_list_file
@@ -137,7 +137,7 @@ optional arguments:
                         CUDA or CPU
 ```
 #### Analysis and plot
-```bash
+```
 usage: DDGScan analysis_and_plot [-h] [--residue_position RESIDUE_POSITION]
                                  [--plot_type {all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} [{all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} ...]]
                                  pdb results_dir
@@ -194,8 +194,8 @@ About principles for protein physics, refer to  [this book](https://u1lib.org/bo
 2021.11: Added `openmm` for MDs.  
 2021.12: Added `modeller` for loop modelling and args was rewritten.  
 2022.03: Fixed few bugs and working on possible docker image.  
-Developed this in every day 20:00 - 02:00 :cat: . Continuing...   
-Feel free to contact with me if you have any further questions on computational enzyme designfeel free to get in touch with me: <jinyuansun98@gmail.com>.
+2022.03: Released a few more codes on plotting and interface update.  
+Continuing...
 
 ### Known Issues
 To avoid issues caused by pdb file, it is recommended to carefully exam your input file. One can 
@@ -216,3 +216,30 @@ or try this:
 git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
 ```
 
+### Lisense
+```
+MIT License
+
+Copyright (c) 2022 jinyuan sun
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+SCRIPTS IN THIS REPO ARE FREELY AVAILABLE TO COMMERCIAL USAGE. I WOULD LIKE TO ENCOURAGE THAT ALL COMMERCIAL USAGE OF THIS INTERFACE TO OBTAIN A 
+PROPER LISENSE OF BACKEND ENGINES (Rosetta, FoldC, ABACUS1/2, and modeller).  
+本项目没有任何使用限制，但是我强烈希望所有商业用途能遵守后端软件（Rosetta, FoldC, ABACUS1/2, and modeller）的许可证！我的初衷是方便合理的使用，不是让侵犯知识产权更容易
