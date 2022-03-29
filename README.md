@@ -1,7 +1,6 @@
 # Towards Stable Proteins
 
 ```diff
-```diff
 @@ Under extensisvly development! @@
 ! Please use previous released version or clone the master branch! The default has been set as dev.
 ```
@@ -36,9 +35,10 @@ To our glad, **openmm** is open source! So the glass is half full :smiley: . Her
 **Conda**:
 ```bash
 # create a new conda env
-conda create -n grape -c conda-forge python=3.8 openmm pdbfixer mdtraj
+conda create -n ddgscan -c conda-forge python=3.8 \
+openmm pdbfixer mdtraj venn logomaker matplotlib seaborn joblib pandas numpy
 # activate new env
-conda activate grape
+conda activate ddgscan
 # clone repo and install
 git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py install
 ```
@@ -47,6 +47,7 @@ I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by 
 export ROSETTADB="/path/to/rosetta/database"
 ```
 ### Usage
+#### Grape phase I
 I provide many options for users especially those know what they want. I really tried to make this package light and also 
 be well functional. Here are some quick walk-through. `pdb` and `chain` are positional but really you need to set 
 `-E` according to the software you have in your OS. `-seq` are strongly recommended to be set by the user. 
@@ -61,7 +62,10 @@ Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu
 </p>
 
 ```
-Run FoldX, Rosetta and ABACUS for in silico deep mutation scan.
+usage: DDGScan grape_phaseI [-h] [-fill] [-seq SEQUENCE] [-T THREADS] [-fc FOLDX_CUTOFF] [-rc ROSETTA_CUTOFF] [-ac ABACUS_CUTOFF] [-a2c ABACUS2_CUTOFF] [-nstruct RELAX_NUMBER]
+                            [-nruns NUMOFRUNS] [-E {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...]] [-M {run,rerun,analysis,test}] [-S {fast,slow}] [-MD] [-P {CUDA,CPU}]
+                            [-fix_mm]
+                            pdb chain
 
 positional arguments:
   pdb                   Input PDB
@@ -81,13 +85,13 @@ optional arguments:
                         Cutoff of Rosetta ddg(R.E.U.)
   -ac ABACUS_CUTOFF, --abacus_cutoff ABACUS_CUTOFF
                         Cutoff of ABACUS SEF(A.E.U.)
-  -a2c ABACUS2_CUTOFF, --abacus2_cutoff ABACUS_CUTOFF
+  -a2c ABACUS2_CUTOFF, --abacus2_cutoff ABACUS2_CUTOFF
                         Cutoff of ABACUS2 SEF(A.E.U.)
   -nstruct RELAX_NUMBER, --relax_number RELAX_NUMBER
                         Number of how many relaxed structure
   -nruns NUMOFRUNS, --numofruns NUMOFRUNS
                         Number of runs in FoldX BuildModel
-  -E {abacus,foldx,rosetta} [{abacus,foldx,rosetta,abacus2} ...], --engine {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...]
+  -E {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...], --engine {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...]
   -M {run,rerun,analysis,test}, --mode {run,rerun,analysis,test}
                         Run, Rerun or analysis
   -S {fast,slow}, --preset {fast,slow}
@@ -96,17 +100,70 @@ optional arguments:
                         Run 1ns molecular dynamics simulations for each mutation using openmm.
   -P {CUDA,CPU}, --platform {CUDA,CPU}
                         CUDA or CPU
+  -fix_mm, --fix_mainchain_missing
+                        fixing missing backbone bone using pdbfixer
+
+```
+#### List distribute
+```bash
+usage: DDGScan list_distribute [-h] [-msaddg] [-fill] [-fix_mm] [-T THREADS] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS] [-E {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...]] [-repair]
+                               [-MD] [-P {CUDA,CPU}]
+                               pdb mutation_list_file
+
+positional arguments:
+  pdb                   Input PDB
+  mutation_list_file    Mutation list file, see README for details
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -msaddg, --output_of_MSAddg
+                        The format of MSAddg *.scan.txt, and there may be mismatch between your pdb and sequence
+  -fill, --fill_break_in_pdb
+                        Use modeller to fill missing residues in your pdb file. Use this option with caution!
+  -fix_mm, --fix_mainchain_missing
+                        fixing missing backbone bone using pdbfixer
+  -T THREADS, --threads THREADS
+                        Number of threads to run FoldX, Rosetta or ABACUS2
+  -nstruct RELAX_NUMBER, --relax_number RELAX_NUMBER
+                        Number of how many relaxed structure
+  -nruns NUMOFRUNS, --numofruns NUMOFRUNS
+                        Number of runs in FoldX BuildModel
+  -E {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...], --engine {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...]
+  -repair, --foldx_repair
+                        Run Repair before ddG calculation
+  -MD, --molecular_dynamics
+                        Run 1ns molecular dynamics simulations for each mutation using openmm.
+  -P {CUDA,CPU}, --platform {CUDA,CPU}
+                        CUDA or CPU
+```
+#### Analysis and plot
+```bash
+usage: DDGScan analysis_and_plot [-h] [--residue_position RESIDUE_POSITION]
+                                 [--plot_type {all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} [{all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} ...]]
+                                 pdb results_dir
+
+positional arguments:
+  pdb                   your target pdb file
+  results_dir           directory of results of grape_phase_I or list_distribute
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --residue_position RESIDUE_POSITION
+                        residue position, if you asked for a barplot at residue level
+  --plot_type {all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} [{all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} ...]
+                        plots you want to make
+
 ```
 
-
 ### QuickStart
+#### Grape phaseI
 You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):  
 I will recommend using the `-S fast` with `-MD` flag, and using `CUDA` to accelerate molecular dynamics simulations. 
 This is a very good crystal structure solved by X-ray, so I did not pass any value about fixing the PDB file!  
 Using `-S slow` to get more accuracy!
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-grape-fast.py 1PGA.pdb A -E foldx abaucs rosetta -M run -T 40 -S slow -MD -P CUDA
+DDGScan grape_phaseI  1PGA.pdb A -E foldx abaucs rosetta -M run -T 40 -S slow -MD -P CUDA
 ```
 You should expecting outputs like:  
 A folder named `foldx_results` containing:
@@ -145,7 +202,6 @@ To avoid issues caused by pdb file, it is recommended to carefully exam your inp
 use `/path/to/rosetta/main/tools/protein_tools/scripts/clean_pdb.py`
 to clean pdb. However, this script will also renumber pdb file.
 During test, some cases failed because of the following problems:
-- MainChain Atoms missing for a residue. FoldX will create a gap.
 - Non-canonical amino acid in pdb will cause failure due to lack parameters in all predictors, therefore is not accepted.   
 - Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold.
 
