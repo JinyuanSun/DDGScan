@@ -1,8 +1,9 @@
 # Towards Stable Proteins
 
 ```diff
-@@ Under extensisvly development! 
-Please use previous released version or clone the master branch! The default has been set as dev@@
+```diff
+@@ Under extensisvly development! @@
+! Please use previous released version or clone the master branch! The default has been set as dev.
 ```
 
 - [Towards Stable Proteins](#towards-stable-proteins)
