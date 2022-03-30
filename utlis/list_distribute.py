@@ -251,7 +251,7 @@ def main(args):
     engines = args.engine
     relax_num = args.relax_number
     if output_of_MSAddg:
-        mutation_list = output_of_MSAddg(mutation_list_file)
+        mutation_list = read_msaddg(mutation_list_file)
     else:
         mutation_list = read_list(mutation_list_file)
     if 'foldx' in engines:
@@ -268,6 +268,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-
     args = get_args()
     main(args)
