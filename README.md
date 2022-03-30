@@ -242,4 +242,4 @@ SOFTWARE.
 ```
 SCRIPTS IN THIS REPO ARE FREELY AVAILABLE TO COMMERCIAL USAGE. I WOULD LIKE TO ENCOURAGE THAT ALL COMMERCIAL USAGE OF THIS INTERFACE TO OBTAIN A 
 PROPER LISENSE OF BACKEND ENGINES (Rosetta, FoldC, ABACUS1/2, and modeller).  
-本项目没有任何使用限制，但是我强烈希望所有商业用途能遵守后端软件（Rosetta, FoldC, ABACUS1/2, and modeller）的许可证！我的初衷是方便合理的使用，不是让侵犯知识产权更容易
+本项目没有任何使用限制，但是我强烈希望所有商业用途能遵守后端软件（Rosetta, FoldX, ABACUS1/2, and modeller）的许可证！我的初衷是方便合理的使用，不是让侵犯知识产权更容易

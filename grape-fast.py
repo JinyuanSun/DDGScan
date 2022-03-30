@@ -13,6 +13,7 @@ import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
 from utlis import judge
+from utlis import autofix
 
 
 class GRAPE:
@@ -398,7 +399,7 @@ def main1(args):
     platform = args.platform
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
-    autofix = args.fix_mainchain_missing
+    auto_fix = args.fix_mainchain_missing
     print("[INFO]: Started at %s" % (time.ctime()))
 
     #
@@ -503,8 +504,8 @@ def main1(args):
         if fillloop:
             pdb = checkpdb(pdb, chain, seqfile)
 
-        if autofix:
-            pdb = autofix(pdb, [chain])
+        if auto_fix:
+            pdb = autofix.autofix(pdb, [chain])
 
 
         # FoldX
