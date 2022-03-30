@@ -31,7 +31,7 @@ class Rosetta:
 
     def relax(self):
         distutils.dir_util.mkpath(ROSETTA_RELAX_DIR)
-        os.system("cp  " + self.pdbname + ROSETTA_RELAX_DIR)
+        os.system("cp  " + self.pdbname + " " + ROSETTA_RELAX_DIR)
         os.chdir(ROSETTA_RELAX_DIR)
         # try:
         #     os.mkdir("rosetta_relax")
@@ -242,7 +242,7 @@ class rosetta_binder:
     @staticmethod
     def relax(pdbname, threads, relax_num):
         distutils.dir_util.mkpath(ROSETTA_RELAX_DIR)
-        os.system("cp  " + pdbname + ROSETTA_RELAX_DIR)
+        os.system("cp  " + pdbname + " " + ROSETTA_RELAX_DIR)
         os.chdir(ROSETTA_RELAX_DIR)
 
         with open("cart2.script", "w+") as cart2:
