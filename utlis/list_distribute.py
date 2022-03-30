@@ -241,9 +241,7 @@ def read_msaddg(msaddg_out, top=80, chain='A'):
     return mutation_list
 
 
-def main(args=None):
-    if not args:
-        args = get_args()
+def main(args):
     threads = args.threads
     pdb_file = args.pdb
     numOfRuns = args.numofruns
@@ -270,4 +268,6 @@ def main(args=None):
 
 
 if __name__ == '__main__':
-    main()
+
+    args = get_args()
+    main(args)
