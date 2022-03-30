@@ -236,7 +236,7 @@ def read_msaddg(msaddg_out, top=80, chain='A'):
     df = pd.read_csv(msaddg_out, sep='\t', header=0, index_col=None)
     selected = df.sort_values('score', ascending=False).head(top)
     for mutation in selected['mutation'].values:
-        wildtype, position, mutation = mutation
+        wildtype, position, mutation = mutation.split('_')
         mutation_list.append("_".join([wildtype, chain, position, mutation]))
     return mutation_list
 
