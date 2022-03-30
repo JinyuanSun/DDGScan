@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import logging
 import os
 from utlis.common import *
 import time
@@ -14,7 +15,13 @@ import utlis.rosetta as rosetta
 from utlis import abacus
 from utlis import judge
 from utlis import autofix
+import logging
 
+FORMAT = '%(asctime)s %(clientip)-15s %(user)-8s %(message)s'
+logging.basicConfig(format=FORMAT)
+d = {'clientip': '192.168.0.1', 'user': 'grape-fast'}
+logger = logging.getLogger('tcpserver')
+# logger.warning('Protocol problem: %s', 'connection reset', extra=d)
 
 class GRAPE:
     def __init__(self):
@@ -35,14 +42,14 @@ class GRAPE:
         pass
 
     def run_foldx(self, pdb, threads, chain, numOfRuns):
-        print("[INFO]: FoldX started at %s" % (time.ctime()))
+        logger.info("FoldX started at %s" % (time.ctime()))
         prot_foldx = foldx.FoldX(pdb, "", threads)
         repair_start = time.time()
         self.repaired_pdbfile = prot_foldx.repairPDB()
         repair_end = time.time()
         repair_time = repair_end - repair_start
         self.running_time["foldx_repair"] = repair_time
-        print("[INFO]: FoldX Repair took %f seconds." % (repair_time))
+        logger.info("FoldX Repair took %f seconds." % (repair_time))
 
         prot = io.Protein(self.repaired_pdbfile, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
@@ -72,12 +79,12 @@ class GRAPE:
         scan_end = time.time()
         scan_time = scan_end - scan_start
         self.running_time["foldx_scan"] = scan_time
-        print("[INFO]: FoldX Scan took %f seconds." % (scan_time))
+        logger.info("FoldX Scan took %f seconds." % (scan_time))
 
         return all_results
 
     def run_rosetta(self, pdb, threads, chain, relax_num, exe, rosettadb):
-        print("[INFO]: Rosetta started at %s" % (time.ctime()))
+        logger.info("Rosetta started at %s" % (time.ctime()))
         # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads, exe, rosettadb)
         relax_start = time.time()
@@ -85,7 +92,7 @@ class GRAPE:
         relax_end = time.time()
         relax_time = relax_end - relax_start
         self.running_time["rosetta_relax"] = relax_time
-        print("[INFO]: Rosetta Relax took %f seconds." % (relax_time))
+        logger.info("Rosetta Relax took %f seconds." % (relax_time))
 
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
@@ -108,13 +115,13 @@ class GRAPE:
         scan_end = time.time()
         scan_time = scan_end - scan_start
         self.running_time["rosetta_scan"] = scan_time
-        print("[INFO]: Rosetta cartesian_ddg Scan took %f seconds." % (scan_time))
+        logger.info("Rosetta cartesian_ddg Scan took %f seconds." % (scan_time))
 
         return prot_rosetta
 
     def run_abacus2(self, pdb, threads, chain):
 
-        print("[INFO]: ABACUS2 started at %s" % (time.ctime()))
+        logger.info("ABACUS2 started at %s" % (time.ctime()))
         distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
@@ -144,7 +151,7 @@ class GRAPE:
         scan_end = time.time()
         scan_time = scan_end - scan_start
         self.running_time["abacus2"] = scan_time
-        print("[INFO]: ABACUS2 Scan took %f seconds." % (scan_time))
+        logger.info("ABACUS2 Scan took %f seconds." % (scan_time))
         # print(self.abacus2_results)
         # ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE
         with open(ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, "w+") as complete:
@@ -319,7 +326,7 @@ def readfasta(fastafile):
             if aa in "QWERTYIPASDFGHKLCVNM":
                 continue
             else:
-                print("[ERROR]: Non-canonical amino acids found in sequence!")
+                logger.error("Non-canonical amino acids found in sequence!")
                 exit()
 
     checkseq(seq)
@@ -403,7 +410,7 @@ def main1(args):
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
     auto_fix = args.fix_mainchain_missing
-    print("[INFO]: Started at %s" % (time.ctime()))
+    logger.info("Started at %s" % (time.ctime()))
 
     #
     # WORKING_DIR = os.getcwd()
@@ -414,22 +421,23 @@ def main1(args):
         if bool(seqfile) == False:
             from utlis import modeller_loop
 
-            print("[WARNING]: No sequence provided!")
+            logger.warning("No sequence provided!")
             pdb = modeller_loop.main(pdb, chain)
             # exit()
         else:
             # print("No sequence provided!")
             seq = readfasta(seqfile)
-            if judge.main(pdb, chain, seq):
+            if judge.main(pdb, chain, seq):  # break found
                 if fillloop:
                     from utlis import modeller_loop
                     pdb = modeller_loop.main(pdb, chain, seq)
                     # exit()
                 else:
-                    print("PDB check Failed!")
-                    exit()
+                    # print("PDB check Failed!")
+                    logger.warning("Gaps found in your pdb file. PDB check failed. However, the job will continue.")
+                    # exit()
             else:
-                print("PDB check passed!")
+                logger.info("PDB check passed!")
         return pdb
 
     if args.mode == "test":
@@ -471,23 +479,19 @@ def main1(args):
     for soft in softlist:
         if soft == "rosetta":
             if exe_dict["relax"] == "":
-                print("[Error:] Cannot find Rosetta: relax.mpi.linuxgccrelease!")
+                logger.error("Cannot find Rosetta: relax.mpi.linuxgccrelease!")
                 exit()
             if preset == "slow":
                 if exe_dict["cartddg"] == "":
-                    print(
-                        "[Error:] Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!"
-                    )
+                    logger.error("Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
                     exit()
             if preset == "fast":
                 if exe_dict["pmut"] == "":
-                    print(
-                        "[Error:] Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!"
-                    )
+                    logger.error("Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!")
                     exit()
         else:
             if exe_dict[soft] == "":
-                print("[Error:] Cannot find %s!" % (soft))
+                logger.error("Cannot find %s!" % (soft))
                 exit()
 
     mode = args.mode
@@ -504,8 +508,8 @@ def main1(args):
         mode = "run"
 
     if mode == "run":
-        if fillloop:
-            pdb = checkpdb(pdb, chain, seqfile)
+
+        pdb = checkpdb(pdb, chain, seqfile)
 
         if auto_fix:
             pdb = autofix.autofix(pdb, [chain])
@@ -541,9 +545,7 @@ def main1(args):
                 os.system("cp ../%s/%s ./" % (ROSETTA_RELAX_DIR, relaxed_pdb))
                 pmut_time = rosetta1.pmut_scan(relaxed_pdb)
                 grape.running_time["rosetta_scan"] = pmut_time
-                print(
-                    "[INFO]: Rosetta pmut_scan_parallel took %f seconds." % (pmut_time)
-                )
+                logger.info("Rosetta pmut_scan_parallel took %f seconds." % (pmut_time))
                 os.chdir("..")
                 distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
                 os.chdir(ROSETTA_RESULTS_DIR)
@@ -620,10 +622,7 @@ def main1(args):
                 ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, abacus2_cutoff, ABACUS2_RESULTS_DIR
             )
 
-    print(
-        "\n[INFO]: Finished calculation of single point mutation ddG at %s.\n"
-        % (time.ctime())
-    )
+    logger.info(f"Finished calculation in {mode} mode of grape-fast in {time.ctime()}.\n")
     selected_dict = selectpdb4md(pdb, softlist)
     if md:
         # from utlis import mdrelax
@@ -638,10 +637,10 @@ def main1(args):
 
         md_end = time.time()
         grape.running_time["MD simulations"] = md_end - md_start
-        print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
+        logger.info("All MDs took %f seconds." % (md_end - md_start))
 
     else:
-        print("No MDs!")
+        logger.info("No MDs!")
 
     json_running_time = json.dumps(grape.running_time, indent=4)
     with open("timing.json", "w+") as timing:
@@ -652,4 +651,4 @@ def main1(args):
 if __name__ == "__main__":
     args = io.Parser().get_args()
     main1(args)
-    print("[INFO]: Ended at %s" % (time.ctime()))
+    logger.info("Ended at %s" % (time.ctime()))

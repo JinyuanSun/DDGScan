@@ -306,8 +306,9 @@ class rosetta_binder:
     @staticmethod
     def run_one_job(varlist: list):
         wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb = varlist
-        distutils.dir_util.mkpath(jobID)
-        os.chdir(jobID)
+        path_job_id = ROSETTA_JOBS_DIR + jobID
+        distutils.dir_util.mkpath(path_job_id)
+        os.chdir(path_job_id)
         # try:
         #     os.mkdir(jobID)
         #     os.chdir(jobID)

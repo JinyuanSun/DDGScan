@@ -113,7 +113,7 @@ def produciton(pdbfilename, platform="CUDA"):
         )
     )
 
-    # run 1 ns of production simulation
+    # run 100 ps of production simulation
     print("Running Production...")
     simulation.step(50000)
     print("Done!")

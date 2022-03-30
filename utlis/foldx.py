@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import time
 import distutils.dir_util
+from .common import *
 import logging
 
 class FoldX:
@@ -98,7 +99,7 @@ class foldx_binder:
     def run_one_job(varlist: list):
         pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
         # mutation_name = "_".join([wild, str(resNum), mutation])
-        path_job_id = 'foldx_jobs/' + job_id
+        path_job_id = FOLDX_JOBS_DIR + job_id
         distutils.dir_util.mkpath(path_job_id)
         os.chdir(path_job_id)
         with open("individual_list.txt", "w+") as indFile:

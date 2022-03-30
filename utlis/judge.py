@@ -7,7 +7,8 @@ class Protein:
         self.chain = chain
         self.seq, self.resNumList = self.pdb2seq()
 
-    def _3_2_1(self, x):
+    @staticmethod
+    def _3_2_1(x):
         d = {
             "CYS": "C",
             "ASP": "D",
@@ -30,7 +31,8 @@ class Protein:
             "TYR": "Y",
             "MET": "M",
         }
-        y = d[x]
+        y = d.get(x)
+        assert y, f"{x} dose not belong to 20 canonical animo acids!"
         return y
 
 
@@ -46,7 +48,7 @@ class Protein:
                                 # print(line)
                                 continue
                             else:
-                                seq += self._3_2_1(line[17:20].replace(" ", ""))
+                                seq += Protein._3_2_1(line[17:20].replace(" ", ""))
                                 resNumList.append(int(line[22:26].replace(" ", "")))
         pdbfile.close()
         return seq, resNumList
@@ -59,7 +61,7 @@ def judge(userSeq, seq, resNumList):
     if listLen != resLen:
         return userSeq
     else:
-        return 0
+        return 0  # no ncAA and gap found
 
 
 def main(pdb, chain, userSeq):
