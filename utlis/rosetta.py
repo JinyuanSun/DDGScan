@@ -6,7 +6,7 @@ import os
 import numpy as np
 import time
 import distutils.dir_util
-from common import *
+from .common import *
 
 
 class Rosetta:
