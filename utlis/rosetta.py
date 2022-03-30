@@ -52,10 +52,12 @@ class Rosetta:
             cart2.write("accept_to_best\n")
             cart2.write("endrepeat")
             cart2.close()
+
+        relax_threads = min([int(self.threads), int(self.relax_num)])
         relax_cmd = "".join(
             [
                 "mpirun -n "
-                + str(self.threads)
+                + str(relax_threads)
                 + " relax.mpi.linuxgccrelease -s "
                 + self.pdbname
                 + " -use_input_sc",
