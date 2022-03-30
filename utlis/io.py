@@ -65,10 +65,6 @@ class Parser:
         parser = argparse.ArgumentParser(
             description="Run FoldX, Rosetta and ABACUS for in silico deep mutation scan."
         )
-        parser.add_argument("module",
-                            help="app to run",
-                            type=str,
-                            choices=["grape_phaseI", "list_distribute"])
         parser.add_argument("pdb", help="Input PDB")
         parser.add_argument("chain", help="Input PDB Chain to do in silico DMS")
         parser.add_argument(
