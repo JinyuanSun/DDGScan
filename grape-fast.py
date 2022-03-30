@@ -366,9 +366,12 @@ def runMD(platform, selected_dict, md_threads=None):
     os.chdir("selectpdb")
 
     def one_md(mutation):
+        # repeat 5 100ps mds
         mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
         mutant = mutation + ".pdb"
-        mdrelax.main(mutant, mutation + "_afterMD.pdb", platform)
+        for i in range(5):
+            mdrelax.main(mutant, mutation + f"_sample_{i}.pdb", platform)
+            os.system(f"rm {mutation}__tip3p.dcd")
 
     if platform == "CUDA":
         for mutation in set(selected_dict["mutation"]):
@@ -630,7 +633,7 @@ def main1(args):
             runMD(platform, selected_dict)
 
         if platform == 'CPU':
-            md_job_num = int(threads) // 4
+            md_job_num = int(threads) // 2
             runMD(platform, selected_dict, md_job_num)
 
         md_end = time.time()

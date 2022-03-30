@@ -7,15 +7,15 @@
 from __future__ import print_function
 
 import os
-os.environ["OPENMM_CPU_THREADS"] = "4"
+os.environ["OPENMM_CPU_THREADS"] = "2"
 
-from simtk.openmm import app
-import simtk.openmm as mm
-from simtk import unit
-from sys import stdout
+from openmm import app
+import openmm as mm
+from openmm import unit
 from pdbfixer import PDBFixer
-from simtk.openmm.app import PDBFile
+from openmm.app import PDBFile
 import mdtraj as mt
+from sys import stdout
 
 
 def fix(pdbfile):
@@ -108,16 +108,17 @@ def produciton(pdbfilename, platform="CUDA"):
             progress=True,
             remainingTime=True,
             speed=True,
-            totalSteps=500000,
+            totalSteps=50000,
             separator="\t",
         )
     )
 
     # run 1 ns of production simulation
     print("Running Production...")
-    simulation.step(500000)
+    simulation.step(50000)
     print("Done!")
     return topname, dcdname
+
 
 
 def dcd2pdb(dcd_file, topol_file, out_file, stride=100, noWater=True, superimpose=True):
@@ -135,7 +136,9 @@ def dcd2pdb(dcd_file, topol_file, out_file, stride=100, noWater=True, superimpos
         CA_indices = top.topology.select("protein and name CA")
         traj.superpose(top, ref_atom_indices=CA_indices, atom_indices=CA_indices)
 
-    traj.save_pdb(out_file)
+    no_hydrogen_indices = traj.topology.select("protein and symbol != H")
+    no_hydrogen = traj.atom_slice(no_hydrogen_indices)
+    no_hydrogen.save_pdb(out_file)
 
     return None
 
@@ -148,6 +151,5 @@ def main(pdbfile, out_file, platform):
 
 if __name__ == "__main__":
     import sys
-
     pdbfile, out_file, platform = sys.argv[1:]
     main(pdbfile, out_file, platform)
