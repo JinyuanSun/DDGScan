@@ -6,15 +6,16 @@
 # @annotation    :
 # TODO: select mutation by relative properties
 
+import argparse
 import os
-# from utlis import modeller_loop
-import time
 
 import pandas as pd
 from joblib import Parallel, delayed
-import argparse
-from utlis.foldx import foldx_binder
 
+from utlis.foldx import foldx_binder
+from utlis.rosetta import rosetta_binder
+
+# from utlis import modeller_loop
 
 class_type_dict = {
     '_small': 'GAVSTC',
@@ -56,24 +57,101 @@ def read_list(mutation_list_file):
         return mutation_list
 
 
-def mk_job_list(pdb_file, numOfRuns, mutation_list):
-    job_list = []
-    for mutation in mutation_list:
-        wild, chain, position, mutation = mutation.split("_")
-        job_id = "_".join([wild, position, mutation])
-        var_list = [pdb_file, wild, chain, mutation, position, job_id, numOfRuns]
-        # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
-        job_list.append(var_list)
-    return job_list
+class FoldX:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def mk_job_list(pdb_file, numOfRuns, mutation_list):
+        job_list = []
+        for mutation in mutation_list:
+            wild, chain, position, mutation = mutation.split("_")
+            job_id = "_".join([wild, position, mutation])
+            var_list = [pdb_file, wild, chain, mutation, position, job_id, numOfRuns]
+            # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
+            job_list.append(var_list)
+        return job_list
+
+    @staticmethod
+    def dump_score_file(results, pdb):
+        pdb_id = pdb.replace(".pdb", "")
+        with open(pdb_id + "_FoldX.score", 'w+') as outfile:
+            outfile.write('\t'.join(['mutation', 'mean', 'min', 'std']) + '\n')
+            for index, result in enumerate(results):
+                outfile.write("\t".join(result) + '\n')
+            outfile.close()
 
 
-def dump_score_file(results, pdb):
-    pdb_id = pdb.replace(".pdb", "")
-    with open(pdb_id+"_foldx.score", 'w+') as outfile:
-        outfile.write('\t'.join(['mutation', 'mean', 'min', 'std'])+'\n')
-        for index, result in enumerate(results):
-            outfile.write("\t".join(result)+'\n')
-        outfile.close()
+class Rosetta:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def hash_rosettaRes_PdbRes(pdb, chain):
+        '''Most PDB file adopted the biological residue numbering,
+        Rosetta using a more numerical numbering begin from 1
+        input: a opened pdbfile or a pdbfile name
+        output: hashmap(bio_res, index)'''
+        resNumList = list()
+        if type(pdb) == str:
+            pdb = open(pdb)
+
+        for line in pdb:
+            if "ATOM" == line[0:6].replace(" ", ""):
+                if chain == line[21].replace(" ", ""):
+                    if line[12:16].replace(" ", "") == "CA":
+                        if line[16] == "B":
+                            # print(line)
+                            continue
+                        else:
+                            resNumList.append(int(line[22:26].replace(" ", "")))
+        pdb.close()
+
+        res_dict = {}
+        for i, res in enumerate(resNumList):
+            res_dict[res] = i + 1
+
+        return res_dict
+
+    @staticmethod
+    def mk_job_list(pdb, relaxedpdb, mutation_list):
+
+        def get_exe_db():
+            relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
+            rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
+            if not rosettadb:
+                rosettadb = "/".join(relax_exe.split("/")[:-4]) + "/database/"
+            for release in ["", ".static", ".mpi", ".default"]:
+                cartesian_ddg_exe = (
+                    os.popen("which cartesian_ddg%s.linuxgccrelease" % (release))
+                        .read()
+                        .replace("\n", "")
+                )
+                if cartesian_ddg_exe != "":
+                    # exe_dict["cartddg"] = cartesian_ddg_exe
+                    return cartesian_ddg_exe, rosettadb
+
+        exe, rosettadb = get_exe_db()
+
+        job_list = []
+        for mutation in mutation_list:
+            wild, chain, position, mutation = mutation.split("_")
+            res_dict = Rosetta.hash_rosettaRes_PdbRes(pdb, chain)
+            resNum = res_dict[int(position)]
+            job_id = "_".join([wild, position, mutation])
+            var_list = [wild, mutation, resNum, job_id, relaxedpdb, exe, rosettadb]
+            # wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb
+            job_list.append(var_list)
+        return job_list
+
+    @staticmethod
+    def dump_score_file(results, pdb):
+        pdb_id = pdb.replace(".pdb", "")
+        with open(pdb_id + "_Rosetta.score", 'w+') as outfile:
+            outfile.write('\t'.join(['mutation', 'mean', 'min', 'std']) + '\n')
+            for index, result in enumerate(results):
+                outfile.write("\t".join(result) + '\n')
+            outfile.close()
 
 
 def get_args():
@@ -162,6 +240,7 @@ def read_msaddg(msaddg_out, top=80, chain='A'):
         mutation_list.append("_".join([wildtype, chain, position, mutation]))
     return mutation_list
 
+
 def main(args=None):
     if not args:
         args = get_args()
@@ -171,15 +250,24 @@ def main(args=None):
     repair = args.foldx_repair
     mutation_list_file = args.mutation_list_file
     output_of_MSAddg = args.output_of_MSAddg
+    engines = args.engine
+    relax_num = args.relax_number
     if output_of_MSAddg:
         mutation_list = output_of_MSAddg(mutation_list_file)
     else:
         mutation_list = read_list(mutation_list_file)
-    if repair:
-        pdb_file = foldx_binder.repair_pdb(pdb_file)
-    job_list = mk_job_list(pdb_file, numOfRuns, mutation_list)
-    results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
-    dump_score_file(results, args.pdb)
+    if 'foldx' in engines:
+        if repair:
+            pdb_file = foldx_binder.repair_pdb(pdb_file)
+        job_list = FoldX.mk_job_list(pdb_file, numOfRuns, mutation_list)
+        results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
+        FoldX.dump_score_file(results, args.pdb)
+    if 'rosetta' in engines:
+        relaxed_pdb = rosetta_binder.relax(args.pdb, threads, relax_num)
+        job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list)
+        results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_one_job)(var) for var in job_list)
+        Rosetta.dump_score_file(results, args.pdb)
+
 
 if __name__ == '__main__':
     main()

@@ -2,12 +2,12 @@
 
 import json
 import os
-# from utlis import modeller_loop
+from utlis.common import *
 import time
 
 import pandas as pd
 from joblib import Parallel, delayed
-
+import distutils.dir_util
 import utlis.foldx as foldx
 import utlis.io as io
 import utlis.rosetta as rosetta
@@ -45,11 +45,7 @@ class GRAPE:
 
         prot = io.Protein(self.repaired_pdbfile, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
-
-        try:
-            os.mkdir("foldx_jobs")
-        except FileExistsError:
-            pass
+        distutils.dir_util.mkpath(FOLDX_JOBS_DIR)
         all_results = []
         job_list = []
         for i, res in enumerate(seq):
@@ -57,7 +53,7 @@ class GRAPE:
             wild = res
             for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
-                    jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
+                    jobID = FOLDX_JOBS_DIR + "_".join([wild, str(resNum), aa])
                     job_list.append(
                         [
                             self.repaired_pdbfile,
@@ -92,11 +88,7 @@ class GRAPE:
 
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
-
-        try:
-            os.mkdir("rosetta_jobs")
-        except FileExistsError:
-            pass
+        distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
         # all_results = []
         job_list = []
         for i, res in enumerate(seq):
@@ -105,7 +97,7 @@ class GRAPE:
             wild = res
             for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
-                    jobID = "rosetta_jobs/" + "_".join([wild, str(resNum), aa])
+                    jobID = ROSETTA_JOBS_DIR + "_".join([wild, str(resNum), aa])
                     job_list.append([wild, aa, str(i + 1), jobID])
 
         scan_start = time.time()
@@ -122,11 +114,7 @@ class GRAPE:
     def run_abacus2(self, pdb, threads, chain):
 
         print("[INFO]: ABACUS2 started at %s" % (time.ctime()))
-        try:
-            os.mkdir("abacus2_results")
-        except FileExistsError:
-            pass
-
+        distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
@@ -157,7 +145,8 @@ class GRAPE:
         self.running_time["abacus2"] = scan_time
         print("[INFO]: ABACUS2 Scan took %f seconds." % (scan_time))
         # print(self.abacus2_results)
-        with open("abacus2_results/All_ABACUS2.score", "w+") as complete:
+        # ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE
+        with open(ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, "w+") as complete:
             complete.write(
                 "#Score file formatted by GRAPE from ABACUS2.\n#mutation\tscore\tstd\n"
             )
@@ -169,10 +158,7 @@ class GRAPE:
 
     def Analysis_foldx(self, pdb, chain, foldx1):
         self.repaired_pdbfile = pdb.replace(".pdb", "_Repair.pdb")
-        try:
-            os.mkdir("foldx_results")
-        except FileExistsError:
-            pass
+        distutils.dir_util.mkpath(FOLDX_RESULTS_DIR)
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
@@ -183,12 +169,12 @@ class GRAPE:
             for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                 if aa != wild:
-                    jobID = "foldx_jobs/" + "_".join([wild, str(resNum), aa])
+                    jobID = FOLDX_JOBS_DIR + "_".join([wild, str(resNum), aa])
                     all_results.append(
                         foldx1.calScore(wild, resNum, aa, self.repaired_pdbfile, jobID)
                     )
 
-        with open("foldx_results/All_FoldX.score", "w+") as foldxout:
+        with open(FOLDX_RESULTS_DIR + FOLDX_SCORE_FILE, "w+") as foldxout:
             foldxout.write(
                 "#Score file formatted by GRAPE from FoldX.\n#mutation\tscore\tstd\n"
             )
@@ -199,10 +185,7 @@ class GRAPE:
         return all_results
 
     def Analysis_rosetta(self, pdb, chain, prot_rosetta):
-        try:
-            os.mkdir("rosetta_results")
-        except FileExistsError:
-            pass
+        distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
@@ -215,7 +198,7 @@ class GRAPE:
                     # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
                     # "_".join([wild, str(resNum), mutation])
                     rosettaddgfile = (
-                            "rosetta_jobs/"
+                            ROSETTA_JOBS_DIR
                             + "_".join([wild, str(resNum), aa])
                             + "/mtfile.ddg"
                     )
@@ -224,7 +207,7 @@ class GRAPE:
                         + prot_rosetta.read_rosetta_ddgout(rosettaddgfile)
                     )
 
-        with open("rosetta_results/All_Rosetta.score", "w+") as rosettaout:
+        with open(ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE, "w+") as rosettaout:
             rosettaout.write(
                 "#Score file formatted by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
             )
@@ -343,11 +326,12 @@ def readfasta(fastafile):
 
 
 def selectpdb4md(pdb, softlist):
-    try:
-        os.mkdir("selectpdb")
-    except FileExistsError:
-        os.system("rm -rf selectpdb")
-        os.mkdir("selectpdb")
+    distutils.dir_util.mkpath("selectpdb/")
+    # try:
+    #     os.mkdir("selectpdb")
+    # except FileExistsError:
+    #     os.system("rm -rf selectpdb")
+    #     os.mkdir("selectpdb")
     selected_dict = {"mutation": [], "score": [], "sd": [], "soft": []}
     for soft in softlist:
         with open("%s_results/MutationsEnergies_BelowCutOff.tab" % (soft)) as scorefile:
@@ -369,7 +353,7 @@ def selectpdb4md(pdb, softlist):
         # print(WORKING_DIR)
         # print("%s/selectpdb"%WORKING_DIR)
         os.system(
-            "cp foldx_jobs/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation)
+            f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation)
         )
         # os.chdir("%s/selectpdb"%WORKING_DIR)
 
@@ -421,7 +405,7 @@ def main1(args):
     # WORKING_DIR = os.getcwd()
     # print(WORKING_DIR)
 
-    def checkpdb(pdb, chain, seqfile):
+    def checkpdb(pdb, chain, seqfile=None):
 
         if bool(seqfile) == False:
             from utlis import modeller_loop
@@ -520,55 +504,58 @@ def main1(args):
             pdb = checkpdb(pdb, chain, seqfile)
 
         if autofix:
-            pdb = checkpdb(pdb, [chain])
+            pdb = autofix(pdb, [chain])
 
 
         # FoldX
         if "foldx" in softlist:
             grape.run_foldx(pdb, threads, chain, numOfRuns)
             grape.Analysis_foldx(pdb, chain, foldx1)
+
             grape.analysisGrapeScore(
-                "foldx_results/All_FoldX.score", foldx_cutoff, "foldx_results/"
+                FOLDX_RESULTS_DIR + FOLDX_SCORE_FILE, foldx_cutoff, FOLDX_RESULTS_DIR
             )
         if preset == "slow":
             if "rosetta" in softlist:
                 prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num, cartesian_ddg_exe, rosettadb)
                 grape.Analysis_rosetta(pdb, chain, prot_rosetta)
                 grape.analysisGrapeScore(
-                    "rosetta_results/All_rosetta.score",
+                    ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE,
                     rosetta_cutoff,
-                    "rosetta_results/",
+                    ROSETTA_RESULTS_DIR,
                 )
         if preset == "fast":
             if "rosetta" in softlist:
                 relaxed_pdb = rosetta1.relax()
-
-                try:
-                    os.mkdir("rosetta_jobs")
-                    os.chdir("rosetta_jobs")
-                except FileExistsError:
-                    os.chdir("rosetta_jobs")
-                os.system("cp ../rosetta_relax/%s ./" % (relaxed_pdb))
+                distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
+                os.chdir(ROSETTA_JOBS_DIR)
+                # try:
+                #     os.mkdir("rosetta_jobs")
+                #     os.chdir("rosetta_jobs")
+                # except FileExistsError:
+                #     os.chdir("rosetta_jobs")
+                os.system("cp ../%s/%s ./" % (ROSETTA_RELAX_DIR, relaxed_pdb))
                 pmut_time = rosetta1.pmut_scan(relaxed_pdb)
                 grape.running_time["rosetta_scan"] = pmut_time
                 print(
                     "[INFO]: Rosetta pmut_scan_parallel took %f seconds." % (pmut_time)
                 )
                 os.chdir("..")
-
-                try:
-                    os.mkdir("rosetta_results")
-                    os.chdir("rosetta_results")
-                except FileExistsError:
-                    os.chdir("rosetta_results")
-                    os.system("rm *")
-                rosetta1.pmut_scan_analysis("../rosetta_jobs/pmut.out")
+                distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
+                os.chdir(ROSETTA_RESULTS_DIR)
+                # try:
+                #     os.mkdir("rosetta_results")
+                #     os.chdir("rosetta_results")
+                # except FileExistsError:
+                #     os.chdir("rosetta_results")
+                #     os.system("rm *")
+                rosetta1.pmut_scan_analysis(f"../{ROSETTA_JOBS_DIR}pmut.out")
                 os.chdir("..")
 
                 grape.analysisGrapeScore(
-                    "rosetta_results/All_rosetta.score",
+                    ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE,
                     rosetta_cutoff,
-                    "rosetta_results/",
+                    ROSETTA_RESULTS_DIR,
                 )
 
                 # prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
@@ -581,13 +568,13 @@ def main1(args):
 
             abacus.parse_abacus_out()
             grape.analysisGrapeScore(
-                "abacus_results/All_ABACUS.score", abacus_cutoff, "abacus_results/"
+                ABACUS_RESULTS_DIR + ABACUS_SCORE_FILE, abacus_cutoff, ABACUS_RESULTS_DIR
             )
 
         if "abacus2" in softlist:
             grape.run_abacus2(pdb, threads, chain)
             grape.analysisGrapeScore(
-                "abacus2_results/All_ABACUS2.score", abacus2_cutoff, "abacus2_results/"
+                ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, abacus2_cutoff, ABACUS2_RESULTS_DIR
             )
 
     if mode == "analysis":
@@ -596,41 +583,37 @@ def main1(args):
             # pdb = pdb.replace(".pdb", "_Repair.pdb")
             grape.Analysis_foldx(pdb, chain, foldx1)
             grape.analysisGrapeScore(
-                "foldx_results/All_FoldX.score", foldx_cutoff, "foldx_results/"
+                FOLDX_RESULTS_DIR + FOLDX_SCORE_FILE, foldx_cutoff, FOLDX_RESULTS_DIR
             )
         if preset == "slow":
             if "rosetta" in softlist:
                 prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads, cartesian_ddg_exe, rosettadb)
                 grape.Analysis_rosetta(pdb, chain, prot_rosetta)
                 grape.analysisGrapeScore(
-                    "rosetta_results/All_rosetta.score",
+                    ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE,
                     rosetta_cutoff,
-                    "rosetta_results/",
+                    ROSETTA_RESULTS_DIR,
                 )
         if preset == "fast":
             if "rosetta" in softlist:
-                try:
-                    os.mkdir("rosetta_results")
-                    os.chdir("rosetta_results")
-                except FileExistsError:
-                    os.chdir("rosetta_results")
-                    os.system("rm *")
-                rosetta1.pmut_scan_analysis("../rosetta_jobs/pmut.out")
+                distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
+                os.chdir(ROSETTA_JOBS_DIR)
+                rosetta1.pmut_scan_analysis(f"../{ROSETTA_JOBS_DIR}pmut.out")
                 os.chdir("..")
                 grape.analysisGrapeScore(
-                    "rosetta_results/All_rosetta.score",
+                    ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE,
                     rosetta_cutoff,
-                    "rosetta_results/",
+                    ROSETTA_RESULTS_DIR,
                 )
         if "abacus" in softlist:
             # abacus.run_abacus(pdb)
             abacus.parse_abacus_out()
             grape.analysisGrapeScore(
-                "abacus_results/All_ABACUS.score", abacus_cutoff, "abacus_results/"
+                ABACUS_RESULTS_DIR + ABACUS_SCORE_FILE, abacus_cutoff, ABACUS_RESULTS_DIR
             )
         if "abacus2" in softlist:
             grape.analysisGrapeScore(
-                "abacus2_results/All_ABACUS2.score", abacus2_cutoff, "abacus2_results/"
+                ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, abacus2_cutoff, ABACUS2_RESULTS_DIR
             )
 
     print(
@@ -663,6 +646,6 @@ def main1(args):
 
 
 if __name__ == "__main__":
-    # args = io.Parser().get_args()
-    main1()
+    args = io.Parser().get_args()
+    main1(args)
     print("[INFO]: Ended at %s" % (time.ctime()))

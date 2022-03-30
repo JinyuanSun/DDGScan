@@ -3,20 +3,20 @@
 # By Jinyuan Sun, Oct, 13, 2021
 
 import os
-import pandas as pd
 import numpy as np
-import subprocess
 import time
+import distutils.dir_util
+from common import *
 
 
 class Rosetta:
     def __init__(
-        self,
-        pdbName,
-        relax_num,
-        numThreads,
-        exe,
-        rosettadb,
+            self,
+            pdbName,
+            relax_num,
+            numThreads,
+            exe,
+            rosettadb,
     ):
         self.exe = exe
         self.pdbname = pdbName
@@ -30,14 +30,17 @@ class Rosetta:
         self.result = []
 
     def relax(self):
-        try:
-            os.mkdir("rosetta_relax")
-            os.system("cp  " + self.pdbname + " rosetta_relax/")
-            os.chdir("rosetta_relax")
-        except FileExistsError:
-            os.system("cp  " + self.pdbname + " rosetta_relax/")
-            os.chdir("rosetta_relax")
-            pass
+        distutils.dir_util.mkpath(ROSETTA_RELAX_DIR)
+        os.system("cp  " + self.pdbname + ROSETTA_RELAX_DIR)
+        os.chdir(ROSETTA_RELAX_DIR)
+        # try:
+        #     os.mkdir("rosetta_relax")
+        #     os.system("cp  " + self.pdbname + " rosetta_relax/")
+        #     os.chdir("rosetta_relax")
+        # except FileExistsError:
+        #     os.system("cp  " + self.pdbname + " rosetta_relax/")
+        #     os.chdir("rosetta_relax")
+        #     pass
 
         with open("cart2.script", "w+") as cart2:
             cart2.write("switch:cartesian\n")
@@ -98,14 +101,16 @@ class Rosetta:
 
     def runOneJob(self, varlist: list):
         wild, mutation, resNum, jobID = varlist
-        try:
-            os.mkdir(jobID)
-            os.chdir(jobID)
-        except FileExistsError:
-            os.chdir(jobID)
+        distutils.dir_util.mkpath(jobID)
+        os.chdir(jobID)
+        # try:
+        #     os.mkdir(jobID)
+        #     os.chdir(jobID)
+        # except FileExistsError:
+        #     os.chdir(jobID)
 
         # os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
-        os.system("cp ../../rosetta_relax/" + self.relaxedpdb + " ./")
+        os.system("cp ../../" + ROSETTA_RELAX_DIR + self.relaxedpdb + " ./")
         with open("mtfile", "w+") as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")
@@ -158,8 +163,8 @@ class Rosetta:
         else:
             pmut_scan_exe = (
                 os.popen("which pmut_scan_parallel.mpi.linuxgccrelease")
-                .read()
-                .replace("\n", "")
+                    .read()
+                    .replace("\n", "")
             )
             rosettadb = "/".join(pmut_scan_exe.split("/")[:-3]) + "/database/"
             arg_list = [
@@ -201,7 +206,7 @@ class Rosetta:
                 i += 1
                 line = line.replace("\x1b[0m", "")
                 if line.endswith(
-                    "mutation   mutation_PDB_numbering   average_ddG   average_total_energy\n"
+                        "mutation   mutation_PDB_numbering   average_ddG   average_total_energy\n"
                 ):
                     start_line = 1
                 if "protocol took" in line:
@@ -209,13 +214,13 @@ class Rosetta:
                 if start_line == 1:
                     mutinfo = line.replace("\n", "").split(")")[1].split()
                     if mutinfo[2] == "average_ddG":
-                        with open("All_rosetta.score", "w") as scorefile:
+                        with open(ROSETTA_SCORE_FILE, "w") as scorefile:
                             scorefile.write(
-                                "#Score file formated by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
+                                "#Score file formatted by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
                             )
                             scorefile.close()
                     else:
-                        with open("All_rosetta.score", "a+") as scorefile:
+                        with open(ROSETTA_SCORE_FILE, "a+") as scorefile:
                             mut = mutinfo[0].split("-")[1]
                             scorefile.write(
                                 "_".join([mut[0], mut[1:-1], mut[-1]])
@@ -226,6 +231,135 @@ class Rosetta:
                             )
                             scorefile.close()
         pmut_out.close()
+
+
+class rosetta_binder:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def relax(pdbname, threads, relax_num):
+        distutils.dir_util.mkpath(ROSETTA_RELAX_DIR)
+        os.system("cp  " + pdbname + ROSETTA_RELAX_DIR)
+        os.chdir(ROSETTA_RELAX_DIR)
+
+        with open("cart2.script", "w+") as cart2:
+            cart2.write("switch:cartesian\n")
+            cart2.write("repeat 2\n")
+            cart2.write("ramp_repack_min 0.02  0.01     1.0  50\n")
+            cart2.write("ramp_repack_min 0.250 0.01     0.5  50\n")
+            cart2.write("ramp_repack_min 0.550 0.01     0.0 100\n")
+            cart2.write("ramp_repack_min 1     0.00001  0.0 200\n")
+            cart2.write("accept_to_best\n")
+            cart2.write("endrepeat")
+            cart2.close()
+        relax_cmd = "".join(
+            [
+                "mpirun -n "
+                + threads
+                + " relax.mpi.linuxgccrelease -s "
+                + pdbname
+                + " -use_input_sc",
+                " -constrain_relax_to_start_coords -ignore_unrecognized_res",
+                " -nstruct " + relax_num,
+                " -relax:coord_constrain_sidechains",
+                " -relax:cartesian -score:weights ref2015_cart ",
+                " -relax:min_type lbfgs_armijo_nonmonotone",
+                " -relax:script cart2.script 1>/dev/null && sort -nk2 score.sc |head -n 1|awk '{print$22}'",
+            ]
+        )
+        print("==" * 20)
+        print(" Relaxing your Protein: ")
+        # os.system(relax_cmd)
+        relaxed_pdb_name = os.popen(relax_cmd).read()
+        print(" Finished relax! ")
+        print("==" * 20)
+        relaxed_pdb_name = os.popen(
+            "sort -nk2 score.sc |head -n 1|awk '{print$22}'"
+        ).read()
+        relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
+        os.chdir("../")
+        return relaxedpdb
+
+    @staticmethod
+    def read_rosetta_ddgout(rosettaddgfilename, wild, mutation, resNum):
+        ddg_array = []
+        with open(rosettaddgfilename, 'r') as rosettaddg:
+            for line in rosettaddg:
+                # print(line.split(":")[2])
+                if line.split(":")[2].strip() == "WT":
+                    dg_ref = float(line.split(":")[3][1:10])
+                else:
+                    ddg = float(line.split(":")[3][1:10]) - dg_ref
+                    ddg_array.append(ddg)
+            rosettaddg.close()
+
+        return [
+            "_".join([wild, str(resNum), mutation]),
+            str(round(np.array(ddg_array).mean(), 4)),
+            str(round(min(np.array(ddg_array)), 4)),
+            str(round(np.array(ddg_array).std(), 4))
+        ]
+
+    @staticmethod
+    def run_one_job(varlist: list):
+        wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb = varlist
+        distutils.dir_util.mkpath(jobID)
+        os.chdir(jobID)
+        # try:
+        #     os.mkdir(jobID)
+        #     os.chdir(jobID)
+        # except FileExistsError:
+        #     os.chdir(jobID)
+
+        # os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
+        os.system("cp ../../" + ROSETTA_RELAX_DIR + relaxedpdb + " ./")
+        with open("mtfile", "w+") as mtfile:
+            mtfile.write("total 1\n")
+            mtfile.write("1\n")
+            mtfile.write(wild + " " + str(resNum) + " " + mutation + "\n")
+            mtfile.close()
+
+        argument_list = [
+            exe,
+            "-database",
+            rosettadb,
+            "-use_input_sc",
+            "-s",
+            relaxedpdb,
+            "-ddg:mut_file",
+            "mtfile",
+            "-ddg:iterations",
+            "3",
+            "-ddg::cartesian",
+            "-ddg::dump_pdbs",
+            "true",
+            "-ddg:bbnbrs",
+            "1",
+            "-score:weights",
+            "ref2015_cart",
+            "-relax:cartesian",
+            "-relax:min_type",
+            "lbfgs_armijo_nonmonotone",
+            "-flip_HNQ",
+            "-crystal_refine",
+            "-fa_max_dis",
+            "9.0",
+            "1>/dev/null",
+        ]
+        cartddg_cmd = " ".join(argument_list)
+
+        starttime = time.time()
+        os.system(cartddg_cmd)
+        finishtime = time.time()
+        print(
+            "[DEBUG]: Rosetta mutation %s_%s_%s took %f seconds."
+            % (wild, resNum, mutation, finishtime - starttime)
+        )
+        result = rosetta_binder.read_rosetta_ddgout('mtfile.ddg', wild, mutation, resNum)
+        # print(cartddg_cmd)
+        os.chdir("../../")
+        return result
 
 
 if __name__ == "__main__":
