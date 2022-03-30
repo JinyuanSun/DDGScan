@@ -419,11 +419,12 @@ def main1(args):
     def checkpdb(pdb, chain, seqfile=None):
 
         if bool(seqfile) == False:
-            from utlis import modeller_loop
-
             logger.warning("No sequence provided!")
-            pdb = modeller_loop.main(pdb, chain)
+            if fillloop:
+                from utlis import modeller_loop
+                pdb = modeller_loop.main(pdb, chain)
             # exit()
+
         else:
             # print("No sequence provided!")
             seq = readfasta(seqfile)

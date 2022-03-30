@@ -34,11 +34,9 @@ class Protein:
             "TYR": "Y",
             "MET": "M",
         }
-        try:
-            y = d[x]
-            return y
-        except KeyError:
-            return "A"
+        y = d.get(x)
+        assert y, f"{x} dose not belong to 20 canonical animo acids!"
+        return y
 
     def pdb2seq(self):
         with open(self.pdbname) as pdbfile:

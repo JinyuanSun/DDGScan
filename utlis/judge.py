@@ -1,57 +1,5 @@
 #!/usr/bin/env python
-
-
-class Protein:
-    def __init__(self, pdbname, chain):
-        self.pdbname = pdbname
-        self.chain = chain
-        self.seq, self.resNumList = self.pdb2seq()
-
-    @staticmethod
-    def _3_2_1(x):
-        d = {
-            "CYS": "C",
-            "ASP": "D",
-            "SER": "S",
-            "GLN": "Q",
-            "LYS": "K",
-            "ILE": "I",
-            "PRO": "P",
-            "THR": "T",
-            "PHE": "F",
-            "ASN": "N",
-            "GLY": "G",
-            "HIS": "H",
-            "LEU": "L",
-            "ARG": "R",
-            "TRP": "W",
-            "ALA": "A",
-            "VAL": "V",
-            "GLU": "E",
-            "TYR": "Y",
-            "MET": "M",
-        }
-        y = d.get(x)
-        assert y, f"{x} dose not belong to 20 canonical animo acids!"
-        return y
-
-
-    def pdb2seq(self):
-        seq = ""
-        resNumList = []
-        with open(self.pdbname) as pdbfile:
-            for line in pdbfile:
-                if "ATOM" == line[0:6].replace(" ", ""):
-                    if self.chain == line[21].replace(" ", ""):
-                        if line[12:16].replace(" ", "") == "CA":
-                            if line[16] == "B":
-                                # print(line)
-                                continue
-                            else:
-                                seq += Protein._3_2_1(line[17:20].replace(" ", ""))
-                                resNumList.append(int(line[22:26].replace(" ", "")))
-        pdbfile.close()
-        return seq, resNumList
+from .io import Protein
 
 
 def judge(userSeq, seq, resNumList):
