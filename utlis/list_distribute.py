@@ -4,7 +4,6 @@
 # @Time    : 2022/3/28 11:25 PM
 # @File    : list_distribute.py
 # @annotation    :
-# TODO: select mutation by relative properties
 
 import argparse
 import os
@@ -14,21 +13,68 @@ from joblib import Parallel, delayed
 
 from utlis.foldx import foldx_binder
 from utlis.rosetta import rosetta_binder
+from .aa_index import *
 
 # from utlis import modeller_loop
 
-class_type_dict = {
-    '_small': 'GAVSTC',
-    '_large': 'FYWKRHQE',
-    '_neg': 'DE',
-    '_pos': 'RK',
-    '_polar': 'YTSHKREDQN',
-    '_non_charged_polar': 'YTSNQH',
-    '_hydrophobic': 'FILVAGMW',
-    '_cys': "C",
-    '_pro': 'P',
-    '_scan': 'ARNDCQEGHILKMFPSTWYV'
-}
+
+def convert_by_property_selection(wildtype, mutation_type):
+    """
+    @smaller: mutation to AA with smaller vdw
+    @bigger: mutation to AA with bigger vdw
+    @more_hydrophobic: mutation to AA more hydrophobic
+    @less_hydrophobic: mutation to AA more hydrophilic
+    @more_sheet_tendency: mutation to AA with higher sheet tendency
+    @less_sheet_tendency: mutation to AA with higher sheet tendency
+    @more_helix_tendency: mutation to AA with higher helix tendency
+    @less_helix_tendency: mutation to AA with higher helix tendency
+    @random: 0 < random < 19 ,randomly select few mutations for you, good luck!
+    param: one-letter token of amino acid
+    return: list of amino acid
+    """
+
+    mutations = ''
+    wt_volume = volume_index[wildtype]
+    for aa, value in volume_index.items():
+        if aa != wildtype:
+            if mutation_type == '@smaller':
+                if value <= wt_volume:
+                    mutations += aa
+            if mutation_type == '@bigger':
+                if value >= wt_volume:
+                    mutations += aa
+
+    wt_hydropathy = hydrophobic_index[wildtype]
+    for aa, value in hydrophobic_index.item():
+        if aa != wildtype:
+            if mutation_type == '@less_hydrophobic':
+                if value <= wt_hydropathy:
+                    mutations += aa
+            if mutation_type == '@more_hydrophobic':
+                if value >= wt_hydropathy:
+                    mutations += aa
+
+    wt_sheet_tendenvy = sheet_tendency[wildtype]
+    for aa, value in sheet_tendency.item():
+        if aa != wildtype:
+            if mutation_type == '@less_sheet_tendency':
+                if value <= wt_sheet_tendenvy:
+                    mutations += aa
+            if mutation_type == '@more_sheet_tendency':
+                if value >= wt_sheet_tendenvy:
+                    mutations += aa
+
+    wt_helix_tendency = helix_tendency[wildtype]
+    for aa, value in helix_tendency.item():
+        if aa != wildtype:
+            if mutation_type == '@less_helix_tendency':
+                if value <= wt_helix_tendency:
+                    mutations += aa
+            if mutation_type == '@more_helix_tendency':
+                if value >= wt_helix_tendency:
+                    mutations += aa
+
+    return mutations
 
 
 def read_list(mutation_list_file):
@@ -46,6 +92,8 @@ def read_list(mutation_list_file):
             wildtype, chain, position, mutations = line.replace("\n", "").split(" ")
             if mutations[0] == "_":
                 mutations = class_type_dict[mutations]
+            if mutations[0] == "@":
+                mutations = convert_by_property_selection(wildtype, mutations)
             for _, aa in enumerate(list(mutations)):
                 if aa != wildtype:
                     mutation_list.append("_".join([wildtype,

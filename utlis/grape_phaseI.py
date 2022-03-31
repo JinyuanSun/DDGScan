@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 
 import json
+import logging
 import os
-from utlis.common import *
 import time
-
 import pandas as pd
 from joblib import Parallel, delayed
 import distutils.dir_util
+
+from utlis.common import *
 import utlis.foldx as foldx
 import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
 from utlis import judge
 from utlis import autofix
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s   %(levelname)s   %(message)s')
 
 
 class GRAPE:
@@ -77,7 +81,7 @@ class GRAPE:
         return all_results
 
     def run_rosetta(self, pdb, threads, chain, relax_num, exe, rosettadb):
-        print("[INFO]: Rosetta started at %s" % (time.ctime()))
+        print("Rosetta started at %s" % (time.ctime()))
         # relax_num = 200
         prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads, exe, rosettadb)
         relax_start = time.time()
@@ -319,7 +323,7 @@ def readfasta(fastafile):
             if aa in "QWERTYIPASDFGHKLCVNM":
                 continue
             else:
-                print("[ERROR]: Non-canonical amino acids found in sequence!")
+                logging.error("Non-canonical amino acids found in sequence!")
                 exit()
 
     checkseq(seq)
@@ -412,24 +416,26 @@ def main1(args):
     def checkpdb(pdb, chain, seqfile=None):
 
         if bool(seqfile) == False:
-            from utlis import modeller_loop
-
-            print("[WARNING]: No sequence provided!")
-            pdb = modeller_loop.main(pdb, chain)
+            logging.warning("No sequence provided!")
+            if fillloop:
+                from utlis import modeller_loop
+                pdb = modeller_loop.main(pdb, chain)
             # exit()
+
         else:
             # print("No sequence provided!")
             seq = readfasta(seqfile)
-            if judge.main(pdb, chain, seq):
+            if judge.main(pdb, chain, seq):  # break found
                 if fillloop:
                     from utlis import modeller_loop
                     pdb = modeller_loop.main(pdb, chain, seq)
                     # exit()
                 else:
-                    print("PDB check Failed!")
-                    exit()
+                    # print("PDB check Failed!")
+                    logging.warning("Gaps found in your pdb file. PDB check failed. However, the job will continue.")
+                    # exit()
             else:
-                print("PDB check passed!")
+                print("[INFO]: PDB check passed!")
         return pdb
 
     if args.mode == "test":
@@ -471,23 +477,19 @@ def main1(args):
     for soft in softlist:
         if soft == "rosetta":
             if exe_dict["relax"] == "":
-                print("[Error:] Cannot find Rosetta: relax.mpi.linuxgccrelease!")
+                logging.error("Cannot find Rosetta: relax.mpi.linuxgccrelease!")
                 exit()
             if preset == "slow":
                 if exe_dict["cartddg"] == "":
-                    print(
-                        "[Error:] Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!"
-                    )
+                    logging.error("Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
                     exit()
             if preset == "fast":
                 if exe_dict["pmut"] == "":
-                    print(
-                        "[Error:] Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!"
-                    )
+                    logging.error("Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!")
                     exit()
         else:
             if exe_dict[soft] == "":
-                print("[Error:] Cannot find %s!" % (soft))
+                logging.error("Cannot find %s!" % (soft))
                 exit()
 
     mode = args.mode
@@ -504,8 +506,8 @@ def main1(args):
         mode = "run"
 
     if mode == "run":
-        if fillloop:
-            pdb = checkpdb(pdb, chain, seqfile)
+
+        pdb = checkpdb(pdb, chain, seqfile)
 
         if auto_fix:
             pdb = autofix.autofix(pdb, [chain])
@@ -541,9 +543,7 @@ def main1(args):
                 os.system("cp ../%s/%s ./" % (ROSETTA_RELAX_DIR, relaxed_pdb))
                 pmut_time = rosetta1.pmut_scan(relaxed_pdb)
                 grape.running_time["rosetta_scan"] = pmut_time
-                print(
-                    "[INFO]: Rosetta pmut_scan_parallel took %f seconds." % (pmut_time)
-                )
+                print("[INFO]: Rosetta pmut_scan_parallel took %f seconds." % (pmut_time))
                 os.chdir("..")
                 distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
                 os.chdir(ROSETTA_RESULTS_DIR)
@@ -620,13 +620,9 @@ def main1(args):
                 ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, abacus2_cutoff, ABACUS2_RESULTS_DIR
             )
 
-    print(
-        "\n[INFO]: Finished calculation of single point mutation ddG at %s.\n"
-        % (time.ctime())
-    )
+    print(f"[INFO]: Finished calculation in {mode} mode of grape-fast in {time.ctime()}.\n")
     selected_dict = selectpdb4md(pdb, softlist)
     if md:
-        # from utlis import mdrelax
         md_start = time.time()
 
         if platform == "CUDA":
@@ -641,7 +637,7 @@ def main1(args):
         print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
 
     else:
-        print("No MDs!")
+        print("[INFO]: No MDs!")
 
     json_running_time = json.dumps(grape.running_time, indent=4)
     with open("timing.json", "w+") as timing:
