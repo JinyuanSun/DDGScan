@@ -5,6 +5,8 @@
 # @File    : aa_index.py
 # @annotation    : define properties of amino acids
 
+ALPHABET = "QWERTYIPASDFGHKLCVNM"
+
 hydrophobic_index = {
     'R': -0.9,
     'K': -0.889,

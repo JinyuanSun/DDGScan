@@ -7,8 +7,8 @@
 
 import argparse
 import os
-
 import pandas as pd
+import numpy as np
 from joblib import Parallel, delayed
 
 from utlis.foldx import foldx_binder
@@ -28,7 +28,7 @@ def convert_by_property_selection(wildtype, mutation_type):
     @less_sheet_tendency: mutation to AA with higher sheet tendency
     @more_helix_tendency: mutation to AA with higher helix tendency
     @less_helix_tendency: mutation to AA with higher helix tendency
-    @random: 0 < random < 19 ,randomly select few mutations for you, good luck!
+    @{random}: random is an integer in range 1 to 19 ,randomly select few mutations for you, good luck!
     param: one-letter token of amino acid
     return: list of amino acid
     """
@@ -73,6 +73,15 @@ def convert_by_property_selection(wildtype, mutation_type):
             if mutation_type == '@more_helix_tendency':
                 if value >= wt_helix_tendency:
                     mutations += aa
+
+    try:
+        random_number = int(mutation_type.replace("@", ""))
+        aa_list = ALPHABET.replace(wildtype,"")
+        while random_number > 0:
+            mutations += aa_list.pop(np.random.randint(len(aa_list)))
+            random_number -= 1
+    except ValueError:
+        pass
 
     return mutations
 

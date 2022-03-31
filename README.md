@@ -156,14 +156,14 @@ optional arguments:
 ```
 
 ### QuickStart
-#### Grape phaseI
+#### Grape phase I
 You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):  
 I will recommend using the `-S fast` with `-MD` flag, and using `CUDA` to accelerate molecular dynamics simulations. 
 This is a very good crystal structure solved by X-ray, so I did not pass any value about fixing the PDB file!  
 Using `-S slow` to get more accuracy!
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-DDGScan grape_phaseI  1PGA.pdb A -E foldx abaucs rosetta -M run -T 40 -S slow -MD -P CUDA
+DDGScan grape_phaseI 1PGA.pdb A -E foldx abaucs rosetta -M run -T 40 -S slow -MD -P CUDA
 ```
 You should expecting outputs like:  
 A folder named `foldx_results` containing:
@@ -181,13 +181,56 @@ MutationsEnergies_BestPerPositionBelowCutOff.tab
 And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for 
 every mutation built by FoldX. Of course, there will be directories start with rosetta or abacus, depending on your choice!  
 If `-md` was turned on, all produced snapshots can be found in `selectpdb` with `afterMD` as a suffix in the name of PDB files.
-### Inspect structures
+#### Inspect structures
 Using `scripts/inspectmutation.py` to inspect mutations in pymol:
 ```bash
 pymol inspectmutation.py $Wildtype_structure $Mutation_structure $Mutation_position $Chain
 ```
 About principles for protein physics, refer to  [this book](https://u1lib.org/book/2801005/141419).
-
+#### List distribute
+For a given set of single-point mutations of a protein. This module distributes calculations to cores and can parse 
+pre-defined special groups of mutations to make.
+```
+# followings are pre-defined groups:
+    _small: GAVSTC
+    _large: FYWKRHQE
+    _neg: DE
+    _pos: RK
+    _polar: YTSHKREDQN
+    _non_charged_polar: YTSNQH
+    _hydrophobic: FILVAGMW
+    _cys: C
+    _pro: P
+    _scan: ARNDCQEGHILKMFPSTWYV
+```
+Also, "dynamic selection" are supported. 
+```
+# followings are dynamic selection:
+    @smaller: mutation to AA with smaller vdw
+    @bigger: mutation to AA with bigger vdw
+    @more_hydrophobic: mutation to AA more hydrophobic
+    @less_hydrophobic: mutation to AA more hydrophilic
+    @more_sheet_tendency: mutation to AA with higher sheet tendency
+    @less_sheet_tendency: mutation to AA with higher sheet tendency
+    @more_helix_tendency: mutation to AA with higher helix tendency
+    @less_helix_tendency: mutation to AA with higher helix tendency
+    @{random}: random is an integer in range 1 to 19 ,randomly select few mutations for you, good luck!
+```
+An example mutation list file is a plain text file seperated with space,
+looks like:
+```           
+wildtype chain position mutation
+A A 26 P
+A A 26 ILV # make A -> I,L,V
+A A 26 _polar # make A -> Y,T,S,H,K,R,E,D,Q,N
+A A 26 @9
+A A 26 @smaller # make A -> G
+```
+DDGScan also support MSAddg output, you need to add a `-msaddg` flag. The best 80 predictions made by MSAddg will be 
+selected.
+```bash
+DDGScan list_distribute 1pga.pdb 1pga.fa.scan.txt -repair -masddg -T 10 -E foldx
+```
 ### Develop Information
 2019.04: Developed GUI and single mutation scan for FoldX.  
 2021.10: Restart this project to implement GRAPE.  
