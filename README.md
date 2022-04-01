@@ -1,23 +1,30 @@
 # Towards Stable Proteins
+Table of Contents
+=================
 
-
-- [Towards Stable Proteins](#towards-stable-proteins)
-    + [The GUI plugin for FoldX.](#the-gui-plugin-for-foldx)
-    + [Installation](#installation)
-    + [Usage](#usage)
-    + [QuickStart](#quickstart)
-    + [Inspect structures](#inspect-structures)
-    + [Citations](#citations)
-    + [Others](#others)
-    + [Develop Information](#develop-information)
-    + [Known Issues](#known-issues)
-
+* [Towards Stable Proteins](#towards-stable-proteins)
+  * [The GUI plugin for FoldX.](#the-gui-plugin-for-foldx)
+  * [Installation](#installation)
+  * [Usage](#usage)
+     * [Grape phase I](#grape-phase-i)
+     * [List distribute](#list-distribute)
+     * [Analysis and plot](#analysis-and-plot)
+  * [QuickStart](#quickstart)
+     * [Grape phase I](#grape-phase-i-1)
+       * [Inspect structures](#inspect-structures)
+     * [List distribute](#list-distribute-1)
+     * [Analysis <em>in silico</em> screening results](#analysis-in-silico-screening-results)
+  * [Develop Information](#develop-information)
+  * [Known Issues](#known-issues)
+  * [Citation](#citation)
+  * [Lisense](#lisense)
+  
 **I am testing this repo with some different input structures, if you encountered any failure please post a issue.** 
 
-### The GUI plugin for FoldX.
+## The GUI plugin for FoldX.
 [GUI](GUI/) only work for FoldX.
 
-### Installation
+## Installation
  
 First of all, please make sure you have added the **FoldX** executable to your environment! Secondly, **Rosetta** 
 (a mpi build is necessary) is 
@@ -42,8 +49,8 @@ I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by 
 ```
 export ROSETTADB="/path/to/rosetta/database"
 ```
-### Usage
-#### Grape phase I
+## Usage
+### Grape phase I
 I provide many options for users especially those know what they want. I really tried to make this package light and also 
 be well functional. Here are some quick walk-through. `pdb` and `chain` are positional but really you need to set 
 `-E` according to the software you have in your OS. `-seq` are strongly recommended to be set by the user. 
@@ -100,7 +107,8 @@ optional arguments:
                         fixing missing backbone bone using pdbfixer
 
 ```
-#### List distribute
+
+### List distribute
 ```
 usage: DDGScan list_distribute [-h] [-msaddg] [-fill] [-fix_mm] [-T THREADS] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS] [-E {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...]] [-repair]
                                [-MD] [-P {CUDA,CPU}]
@@ -132,7 +140,8 @@ optional arguments:
   -P {CUDA,CPU}, --platform {CUDA,CPU}
                         CUDA or CPU
 ```
-#### Analysis and plot
+
+### Analysis and plot
 ```
 usage: DDGScan analysis_and_plot [-h] [--residue_position RESIDUE_POSITION]
                                  [--plot_type {all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} [{all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} ...]]
@@ -151,8 +160,8 @@ optional arguments:
 
 ```
 
-### QuickStart
-#### Grape phase I
+## QuickStart
+### Grape phase I
 You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):  
 I will recommend using the `-S fast` with `-MD` flag, and using `CUDA` to accelerate molecular dynamics simulations. 
 This is a very good crystal structure solved by X-ray, so I did not pass any value about fixing the PDB file!  
@@ -183,7 +192,7 @@ Using `scripts/inspectmutation.py` to inspect mutations in pymol:
 pymol inspectmutation.py $Wildtype_structure $Mutation_structure $Mutation_position $Chain
 ```
 About principles for protein physics, refer to  [this book](https://u1lib.org/book/2801005/141419).
-#### List distribute
+### List distribute
 For a given set of single-point mutations of a protein. This module distributes calculations to cores and can parse 
 pre-defined special groups of mutations to make.
 ```
@@ -227,7 +236,7 @@ selected.
 ```bash
 DDGScan list_distribute 1pga.pdb 1pga.fa.scan.txt -repair -masddg -T 10 -E foldx
 ```
-#### Analysis *in silico* screening results
+### Analysis *in silico* screening results
 
 Post analysis can help you to easily access to many kinds of plots. 
 Here are two example of a bar-plot of a saturated single point mutation and mutation logo sequence.
@@ -235,16 +244,16 @@ Here are two example of a bar-plot of a saturated single point mutation and muta
   <img width="80%" src="./img/results_toc.png" alt="Workflow of DDGScan">
 </p>
 
-### Develop Information
+## Develop Information
 2019.04: Developed GUI and single mutation scan for FoldX.  
-2021.10: Restart this project to implement GRAPE.  
+2021.10: Restart this project for Rosetta and ABACUS supporting.  
 2021.11: Added `openmm` for MDs.  
 2021.12: Added `modeller` for loop modelling and args was rewritten.  
-2022.03: Fixed few bugs and working on possible docker image.  
-2022.03: Released a few more codes on plotting and interface update.  
+2022.03: Released a few more codes on plotting and updateed the command line interface.  
+**2022.04: Release v0.1.0!**  
 Continuing...
 
-### Known Issues
+## Known Issues
 To avoid issues caused by pdb file, it is recommended to carefully exam your input file. One can 
 use `/path/to/rosetta/main/tools/protein_tools/scripts/clean_pdb.py`
 to clean pdb. However, this script will also renumber pdb file.
@@ -252,18 +261,22 @@ During test, some cases failed because of the following problems:
 - Non-canonical amino acid in pdb will cause failure due to lack parameters in all predictors, therefore is not accepted.   
 - Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold.
 
-### Others
-如果你在中国大陆地区，可以使用：
-```bash
-# 可能会落后此仓库一段时间
-git clone https://gitee.com/puzhunanlu30/Codes_for_FoldX.git
+## Citation
 ```
-or try this:
-```bash
-git clone https://github.com.cnpmjs.org/JinyuanSun/DDGScan.git
+@software{sun_jinyuan_2022_1046990,
+  author       = {Sun Jinyuan},
+  title        = {{DDGScan: an integrated parallel workflow for the 
+                   in silico point mutation scan of protein}},
+  month        = apr,
+  year         = 2022,
+  publisher    = {Zenodo},
+  version      = {v0.1.0},
+  doi          = {10.5072/zenodo.1046990},
+  url          = {https://doi.org/10.5072/zenodo.1046990}
+}
 ```
 
-### Lisense
+## Lisense
 ```
 MIT License
 
