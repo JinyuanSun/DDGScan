@@ -78,8 +78,4 @@ if __name__ == "__main__":
     pdb = sys.argv[1]
     chain = sys.argv[2]
     userSeq = sys.argv[3]
-    seq,  resNumList = Protein(pdb, chain).pdb2seq()
-    judge_result = judge(userSeq, seq, resNumList)
-    if judge_result != 0:
-        logging.error("Chain break detected! Transfer to AlphaFold.")
-        exit()
+    main(pdb, chain, userSeq)
