@@ -12,12 +12,12 @@ import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
 
-from utlis.foldx import foldx_binder
-from utlis.rosetta import rosetta_binder
-from utlis.aa_index import *
+from utils.foldx import foldx_binder
+from utils.rosetta import rosetta_binder
+from utils.aa_index import *
 
 
-# from utlis import modeller_loop
+# from utils import modeller_loop
 
 
 def convert_by_property_selection(wildtype, mutation_type):

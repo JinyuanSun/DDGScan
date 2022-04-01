@@ -34,11 +34,11 @@ def write_file(filename, contents):
 ################################################################################
 
 def autofix(pdb, chain_ids_to_keep, risky=False):
-    pdbid = pdb[:4]
-    os.system("mv %s %s_raw.pdb" % (pdbid, pdbid))
-    # Retrieve structure from PDB.
-    print('Retrieving %s from PDB...' % pdbid)
-    fixer = PDBFixer(pdb)
+
+    os.system("cp %s %s.raw" % (pdb, pdb))
+    fixer = PDBFixer(filename=pdb)
+    fixer_1 = PDBFixer(filename=pdb)
+    fixer_2 = PDBFixer(filename=pdb)
 
     # Build a list of chains to remove.
     print('Removing all chains but %s' % chain_ids_to_keep)
@@ -47,6 +47,8 @@ def autofix(pdb, chain_ids_to_keep, risky=False):
     chain_id_list = [c.id for c in fixer.topology.chains()]
     chain_ids_to_remove = set(chain_id_list) - set(chain_ids_to_keep)
     fixer.removeChains(chainIds=chain_ids_to_remove)
+    fixer_1.removeChains(chainIds=chain_ids_to_remove)
+    fixer_2.removeChains(chainIds=chain_ids_to_remove)
     if risky:
         # Replace nonstandard residues.
         print('Replacing nonstandard residues...')
@@ -63,6 +65,7 @@ def autofix(pdb, chain_ids_to_keep, risky=False):
     # modeller = app.Modeller(self.topology, self.positions)
     # modeller.delete(toDelete)
     fixer.findMissingAtoms()
+    print(f"MISSING ATOMS 000: {fixer.missingAtoms}")
     missing_atoms = fixer.missingAtoms
     # print(missing_atoms)
 
@@ -73,22 +76,25 @@ def autofix(pdb, chain_ids_to_keep, risky=False):
                 # keep mainchain residues only
                 need_atoms[residue] = [atom]
 
-    fixer.missingAtoms = need_atoms
-    # print(fixer.missingAtoms)
-    fixer.addMissingAtoms()
+    fixer_1.missingAtoms = need_atoms
+    print(f"MISSING ATOMS 111: {fixer_1.missingAtoms}")
+    print(f"MISSING terminals: =======\n {fixer.missingTerminals} ======\n")
+    fixer_1.missingTerminals = fixer.missingTerminals
+    fixer_1.missingResidues = need_atoms.keys()
+    fixer_1.addMissingAtoms()
 
     # Remove heterogens.
     print('Removing heterogens...')
-    fixer.removeHeterogens(keepWater=False)
+    fixer_1.removeHeterogens(keepWater=False)
 
     # Write PDB file.
-    output_filename = '%s.pdb' % pdbid
+    output_filename = pdb.replace(".pdb", "_fixed.pdb")
     print('Writing PDB file to "%s"...' % output_filename)
-    app.PDBFile.writeFile(fixer.topology, fixer.positions, open(output_filename, 'w'))
+    app.PDBFile.writeFile(fixer_2.topology, fixer_2.positions, open(output_filename, 'w'))
     return output_filename
 
 
 if __name__ == '__main__':
-    pdb = '4lvr_raw.pdb'  # PDB ID to retrieve
+    pdb = '../test_bak/1NWW.pdb'  # PDB ID to retrieve
     chain_ids_to_keep = ['A']  # chains to keep
     autofix(pdb, chain_ids_to_keep)

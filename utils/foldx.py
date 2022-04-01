@@ -8,7 +8,7 @@ import time
 
 import pandas as pd
 
-from utlis.common import *
+from utils.common import *
 
 
 class FoldX:

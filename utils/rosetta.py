@@ -7,7 +7,7 @@ import os
 import time
 
 import numpy as np
-import utlis.common as common
+import utils.common as common
 # from .common import *
 
 

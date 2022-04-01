@@ -9,13 +9,13 @@ import time
 import pandas as pd
 from joblib import Parallel, delayed
 
-import utlis.foldx as foldx
-import utlis.io as io
-import utlis.rosetta as rosetta
-from utlis import abacus
-from utlis import autofix
-from utlis import judge
-from utlis.common import *
+import utils.foldx as foldx
+import utils.io as io
+import utils.rosetta as rosetta
+from utils import abacus
+# from utils import autofix
+from utils import judge
+from utils.common import *
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s   %(levelname)s   %(message)s')
@@ -367,7 +367,7 @@ def selectpdb4md(pdb, softlist):
 
 
 def runMD(platform, selected_dict, md_threads=None):
-    from utlis import mdrelax
+    from utils import mdrelax
     os.chdir("selectpdb")
 
     def one_md(mutation):
@@ -407,7 +407,7 @@ def main1(args):
     platform = args.platform
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
-    auto_fix = args.fix_mainchain_missing
+    # auto_fix = args.fix_mainchain_missing
     print("[INFO]: Started at %s" % (time.ctime()))
 
     #
@@ -419,7 +419,7 @@ def main1(args):
         if bool(seqfile) == False:
             logging.warning("No sequence provided!")
             if fillloop:
-                from utlis import modeller_loop
+                from utils import modeller_loop
                 pdb = modeller_loop.main(pdb, chain)
             # exit()
 
@@ -428,7 +428,7 @@ def main1(args):
             seq = readfasta(seqfile)
             if judge.main(pdb, chain, seq):  # break found
                 if fillloop:
-                    from utlis import modeller_loop
+                    from utils import modeller_loop
                     pdb = modeller_loop.main(pdb, chain, seq)
                     # exit()
                 else:
@@ -511,8 +511,8 @@ def main1(args):
 
         pdb = checkpdb(pdb, chain, seqfile)
 
-        if auto_fix:
-            pdb = autofix.autofix(pdb, [chain])
+        # if auto_fix:
+        #     pdb = autofix.autofix(pdb, [chain])
 
         # FoldX
         if "foldx" in softlist:
@@ -536,11 +536,7 @@ def main1(args):
                 relaxed_pdb = rosetta1.relax()
                 distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
                 os.chdir(ROSETTA_JOBS_DIR)
-                # try:
-                #     os.mkdir("rosetta_jobs")
-                #     os.chdir("rosetta_jobs")
-                # except FileExistsError:
-                #     os.chdir("rosetta_jobs")
+
                 os.system("cp ../%s/%s ./" % (ROSETTA_RELAX_DIR, relaxed_pdb))
                 pmut_time = rosetta1.pmut_scan(relaxed_pdb)
                 grape.running_time["rosetta_scan"] = pmut_time
@@ -548,12 +544,7 @@ def main1(args):
                 os.chdir("..")
                 distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
                 os.chdir(ROSETTA_RESULTS_DIR)
-                # try:
-                #     os.mkdir("rosetta_results")
-                #     os.chdir("rosetta_results")
-                # except FileExistsError:
-                #     os.chdir("rosetta_results")
-                #     os.system("rm *")
+
                 rosetta1.pmut_scan_analysis(f"../{ROSETTA_JOBS_DIR}pmut.out")
                 os.chdir("..")
 

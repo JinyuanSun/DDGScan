@@ -5,9 +5,10 @@
 import os
 
 from modeller import *
+import distutils.dir_util
 
 
-def _3_2_1(self, x):
+def _3_2_1(x):
     d = {
         "CYS": "C",
         "ASP": "D",
@@ -47,6 +48,7 @@ def getPdbRes(code):
 
 
 def generateFillSeq(code, chain, seq=""):
+
     def outAliFile(seq):
         with open("seqfill.ali", "w+") as seqfill:
             seqfill.write(">P1;seqfill\nsequence:::::::::\n")
@@ -61,26 +63,32 @@ def generateFillSeq(code, chain, seq=""):
             seqfill.close()
 
     def extractSeqFromPDB(code, chain):
+
         seq = ""
         with open(code + ".pdb", "r") as pdbfile:
             for line in pdbfile:
                 if line.startswith("SEQRES"):
+                    # print(line)
                     linelist = line.strip().split()
                     if chain == linelist[2]:
                         reslist = linelist[4:]
                         for aa in reslist:
                             seq += _3_2_1(aa)
             pdbfile.close()
+        print(f"Extracted Seq: {seq}")
         return seq
 
     if bool(seq):
+        # print(1)
         outAliFile(seq)
+        return seq
     else:
         print(
             "[WARNING]: SEQRES information may not exactly match your sequence of you target protein!"
         )
         seq = extractSeqFromPDB(code, chain)
         outAliFile(seq)
+        return seq
 
 
 def align2d(code, chain):
@@ -132,22 +140,30 @@ def buildModel(code, chain):
 
 
 def main(pdb, chain, seq=""):
-    code = pdb.replace(".pdb", "")
-    os.mkdir("modeller")
+    # print(bool(seq))
+    os.system("cp %s %s.bak" %(pdb, pdb))
+    pdb_filename = pdb.split("/")[-1]
+    code = pdb_filename.replace(".pdb", "")
+    distutils.dir_util.mkpath("modeller")
+    os.system("cp %s modeller/" %pdb)
     os.chdir("modeller")
-    os.system("cp ../%s ./" % (pdb))
     # code = '4R21'
     # chain = "A"
-    generateFillSeq(code, chain, seq)
+    seq = generateFillSeq(code, chain, seq)
     align2d(code, chain)
     best = buildModel(code, chain)
-    os.system("cp %s ../%s_modfixed.pdb" % (best, code))
+    # print(best)
+    os.system("cp %s ../%s" % (best, pdb_filename))
     os.chdir("../")
-    return "%s_modfixed.pdb" % (code)
+    return seq
 
 
 if __name__ == "__main__":
-    code = "4R21"
+    code = "/Users/jsun/RESEARCH/DDGScan/test_bak/1NWW.pdb"
     chain = "A"
     seq = ""
+    # if bool(seq):
+    #     print("Have sequences")
+    # else:
+    #     print("None sequence")
     main(code, chain, seq)

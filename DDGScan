@@ -6,7 +6,7 @@
 # @annotation    :
 import argparse
 
-from utlis import list_distribute, grape_phaseI, post_analysis_and_plot
+from utils import list_distribute, grape_phaseI, post_analysis_and_plot
 
 parser = argparse.ArgumentParser()
 subparsers = parser.add_subparsers(help='commands', title="commands", dest="command")
