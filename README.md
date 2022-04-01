@@ -262,7 +262,8 @@ During test, some cases failed because of the following problems:
 - Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold.
 
 ## Citation
-```
+For this software:
+```bibtex
 @software{sun_jinyuan_2022_1046990,
   author       = {Sun Jinyuan},
   title        = {{DDGScan: an integrated parallel workflow for the 
@@ -275,7 +276,28 @@ During test, some cases failed because of the following problems:
   url          = {https://doi.org/10.5072/zenodo.1046990}
 }
 ```
-
+For methodology:
+```bibtex
+@article{cui2021computational,
+  title={Computational redesign of a PETase for plastic biodegradation under ambient condition by the GRAPE strategy},
+  author={Cui, Yinglu and Chen, Yanchun and Liu, Xinyue and Dong, Saijun and Tian, Yu’e and Qiao, Yuxin and Mitra, Ruchira and Han, Jing and Li, Chunli and Han, Xu and others},
+  journal={ACS Catalysis},
+  volume={11},
+  number={3},
+  pages={1340--1350},
+  year={2021},
+  publisher={ACS Publications}
+}
+@incollection{sun2021grape,
+  title={GRAPE, a greedy accumulated strategy for computational protein engineering},
+  author={Sun, Jinyuan and Cui, Yinglu and Wu, Bian},
+  booktitle={Methods in Enzymology},
+  volume={648},
+  pages={207--230},
+  year={2021},
+  publisher={Elsevier}
+}
+```
 ## Lisense
 ```
 MIT License
