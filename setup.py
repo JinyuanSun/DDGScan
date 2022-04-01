@@ -2,14 +2,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="GRAPE",
-    version="1.0",
+    name="DDGScan",
+    version="0.1.0",
     author="Jinyuan Sun",
     author_email="jysun@im.ac.cn",
-    description="A powerful package for GRAPE",
+    description="A powerful package for in silico mutation",
     url="https://github.com/JinyuanSun/DDGScan",
     packages=find_packages(),
-    scripts=['DDGScan'],
+    scripts=['DDGScan, grape-fast.py'],
     install_requires=['pandas',
                       'numpy',
                       'joblib',
@@ -17,6 +17,9 @@ setup(
                       'seaborn',
                       'matplotlib',
                       'venn',
-                      'logomaker'
+                      'logomaker',
+                      'modeller',
+                      'openmm',
+                      'mdtraj',
     ]
 )
