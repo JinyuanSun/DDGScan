@@ -1,9 +1,5 @@
 # Towards Stable Proteins
 
-```diff
-@@ Under extensisvly development! @@
-! Please use previous released version or clone the master branch! The default has been set as dev.
-```
 
 - [Towards Stable Proteins](#towards-stable-proteins)
     + [The GUI plugin for FoldX.](#the-gui-plugin-for-foldx)
@@ -282,7 +278,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-```
-SCRIPTS IN THIS REPO ARE FREELY AVAILABLE TO COMMERCIAL USAGE. I WOULD LIKE TO ENCOURAGE THAT ALL COMMERCIAL USAGE OF THIS INTERFACE TO OBTAIN A 
-PROPER LISENSE OF BACKEND ENGINES (Rosetta, FoldC, ABACUS1/2, and modeller).  
-本项目没有任何使用限制，但是我强烈希望所有商业用途能遵守后端软件（Rosetta, FoldX, ABACUS1/2, and modeller）的许可证！我的初衷是方便合理的使用，不是让侵犯知识产权更容易
