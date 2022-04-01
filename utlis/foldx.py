@@ -2,12 +2,14 @@
 
 # By Jinyuan Sun, Oct, 12, 2021
 
-import os
-import pandas as pd
-import time
 import distutils.dir_util
-from .common import *
-import logging
+import os
+import time
+
+import pandas as pd
+
+from utlis.common import *
+
 
 class FoldX:
     def __init__(self, pdbName, path2foldx, numThreads):
@@ -51,12 +53,12 @@ class FoldX:
         cmd1 = "cp ../../" + pdbfile + " ./"
         os.popen(cmd1)
         cmd2 = (
-            self.path
-            + "foldx --command=BuildModel --numberOfRuns="
-            + numOfRuns
-            + " --mutant-file=individual_list.txt --pdb="
-            + pdbfile
-            + " 1>/dev/null"
+                self.path
+                + "foldx --command=BuildModel --numberOfRuns="
+                + numOfRuns
+                + " --mutant-file=individual_list.txt --pdb="
+                + pdbfile
+                + " 1>/dev/null"
         )
 
         starttime = time.time()
@@ -108,11 +110,11 @@ class foldx_binder:
         cmd1 = "cp ../../" + pdb_file + " ./"
         os.popen(cmd1)
         cmd2 = (
-            "foldx --command=BuildModel --numberOfRuns="
-            + str(numOfRuns)
-            + " --mutant-file=individual_list.txt --pdb="
-            + pdb_file
-            + " 1>/dev/null"
+                "foldx --command=BuildModel --numberOfRuns="
+                + str(numOfRuns)
+                + " --mutant-file=individual_list.txt --pdb="
+                + pdb_file
+                + " 1>/dev/null"
         )
         starttime = time.time()
         os.system(cmd2)

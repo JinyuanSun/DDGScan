@@ -64,8 +64,8 @@ def runOneJob(varlist):
     MUT = _1_2_3(aa)
     output = (
         os.popen("singleMutation %s %s %s %s" % (pdb, chain, str(resNum), MUT))
-        .read()
-        .split()
+            .read()
+            .split()
     )
     # print(output)
     s1 = float(output[6])

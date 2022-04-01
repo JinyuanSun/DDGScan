@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 import logging
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s   %(levelname)s   %(message)s')
+
+
 class Protein:
     def __init__(self, pdbname, chain):
         self.pdbname = pdbname
         self.chain = chain
         self.seq = ''
         self.resNumList = []
-
 
     def _3_2_1(self, x):
         d = {
@@ -53,6 +55,7 @@ class Protein:
         pdbfile.close()
         return self.seq, self.resNumList
 
+
 def judge(userSeq, seq, resNumList):
     # print(resNumList, resNumList)
     listLen = int(resNumList[-1]) - int(resNumList[0]) + 1
@@ -65,7 +68,7 @@ def judge(userSeq, seq, resNumList):
 
 
 def main(pdb, chain, userSeq):
-    seq,  resNumList = Protein(pdb, chain).pdb2seq()
+    seq, resNumList = Protein(pdb, chain).pdb2seq()
     judge_result = judge(userSeq, seq, resNumList)
     if judge_result != 0:
         logging.error("Chain break detected! Transfer to AlphaFold.")

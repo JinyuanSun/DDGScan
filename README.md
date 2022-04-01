@@ -54,7 +54,7 @@ Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu
  downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.  
  
  <p align="center">
-  <img width="80%" src="./img/fast-grape.png" alt="Workflow of DDGScan">
+  <img width="80%" src="./img/workflow.png" alt="Workflow of DDGScan">
 </p>
 
 ```
@@ -227,6 +227,14 @@ selected.
 ```bash
 DDGScan list_distribute 1pga.pdb 1pga.fa.scan.txt -repair -masddg -T 10 -E foldx
 ```
+#### Analysis *in silico* screening results
+
+Post analysis can help you to easily access to many kinds of plots. 
+Here are two example of a bar-plot of a saturated single point mutation and mutation logo sequence.
+ <p align="center">
+  <img width="80%" src="./img/results_toc.png" alt="Workflow of DDGScan">
+</p>
+
 ### Develop Information
 2019.04: Developed GUI and single mutation scan for FoldX.  
 2021.10: Restart this project to implement GRAPE.  

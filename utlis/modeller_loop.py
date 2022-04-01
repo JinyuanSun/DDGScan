@@ -2,8 +2,9 @@
 
 # https://salilab.org/modeller/manual/node34.html
 
-from modeller import *
 import os
+
+from modeller import *
 
 
 def _3_2_1(self, x):
@@ -37,7 +38,6 @@ def _3_2_1(self, x):
 
 
 def getPdbRes(code):
-
     e = Environ()
     m = Model(e, file=code)
     aln = Alignment(e)
@@ -53,7 +53,7 @@ def generateFillSeq(code, chain, seq=""):
             i = 0
             while i + 75 in range(len(seq) + 75):
                 if i + 75 <= len(seq):
-                    seqfill.write(seq[i : i + 75] + "\n")
+                    seqfill.write(seq[i: i + 75] + "\n")
 
                 else:
                     seqfill.write(seq[i:] + "*\n")

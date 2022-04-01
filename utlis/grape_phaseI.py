@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 
+import distutils.dir_util
 import json
 import logging
 import os
 import time
+
 import pandas as pd
 from joblib import Parallel, delayed
-import distutils.dir_util
 
-from utlis.common import *
 import utlis.foldx as foldx
 import utlis.io as io
 import utlis.rosetta as rosetta
 from utlis import abacus
-from utlis import judge
 from utlis import autofix
+from utlis import judge
+from utlis.common import *
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s   %(levelname)s   %(message)s')
@@ -481,7 +482,8 @@ def main1(args):
                 exit()
             if preset == "slow":
                 if exe_dict["cartddg"] == "":
-                    logging.error("Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
+                    logging.error(
+                        "Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
                     exit()
             if preset == "fast":
                 if exe_dict["pmut"] == "":
@@ -511,7 +513,6 @@ def main1(args):
 
         if auto_fix:
             pdb = autofix.autofix(pdb, [chain])
-
 
         # FoldX
         if "foldx" in softlist:

@@ -25,4 +25,3 @@ ABACUS2_SCORE_FILE = 'All_ABACUS2.score'
 # ABACUS2_JOBS_DIR = 'abaucs2_jobs/'
 # ABACUS2_RESULTS_DIR = 'abacus2_results/'
 # ABACUS2_SCORE_FILE = 'All_ABACUS2.score'
-

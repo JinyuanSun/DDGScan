@@ -9,6 +9,7 @@ args = parser.parse_args()
 inf = open(args.i)
 pdbid = args.p
 
+
 def readseq(fasta):
     seq = ''
     for line in fasta:

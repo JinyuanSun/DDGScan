@@ -7,13 +7,15 @@
 
 import argparse
 import os
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
 
 from utlis.foldx import foldx_binder
 from utlis.rosetta import rosetta_binder
-from .aa_index import *
+from utlis.aa_index import *
+
 
 # from utlis import modeller_loop
 
@@ -76,7 +78,7 @@ def convert_by_property_selection(wildtype, mutation_type):
 
     try:
         random_number = int(mutation_type.replace("@", ""))
-        aa_list = ALPHABET.replace(wildtype,"")
+        aa_list = ALPHABET.replace(wildtype, "")
         while random_number > 0:
             mutations += aa_list.pop(np.random.randint(len(aa_list)))
             random_number -= 1

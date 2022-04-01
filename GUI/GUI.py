@@ -15,6 +15,7 @@ os.system("mkdir EasyFoldx")
 sourcePath = "EasyFoldx"
 os.chdir(sourcePath)
 
+
 def mutation():
     inputname = pdb_text.get()
     chainid = pdb_text.get()[5]
@@ -27,14 +28,14 @@ def mutation():
     of = open(of_name, "w+")
     of = open(of_name, "a+")
     print(o, file=of)
-    #cmd = "./foldx --config " + of_name
-    #os.system("./foldx -f " + of_name)
-    os.system("nohup ./foldx -f " + of_name+" &")
+    # cmd = "./foldx --config " + of_name
+    # os.system("./foldx -f " + of_name)
+    os.system("nohup ./foldx -f " + of_name + " &")
 
 
 def analyze():
     inputname = pdb_text.get()
-    filename = "PS_"+inputname+"_Repair_scanning_output.txt"
+    filename = "PS_" + inputname + "_Repair_scanning_output.txt"
     '''
     file = open(filename)
     l = ''
@@ -47,11 +48,13 @@ def analyze():
         for line in f:
             data += line.split()
 
-#Create your listbox here.
+    # Create your listbox here.
     for i in range(len(data)):
-        mut_out.insert(i+1, data[i])
+        mut_out.insert(i + 1, data[i])
 
-    #print("./foldx -f " + of_name)
+    # print("./foldx -f " + of_name)
+
+
 #
 
 def PS():
@@ -124,7 +127,7 @@ def getpdb():
 
 
 def repair_pdb():
-    inputname = pdb_text.get()+".pdb"
+    inputname = pdb_text.get() + ".pdb"
     pdbname = inputname.split(".")[0] + "_Repair.pdb"
     os.system("./foldx --command=RepairPDB --pdb=" + inputname)
     cwd = os.getcwd() + "/" + pdbname
@@ -162,7 +165,6 @@ nt_lable.grid(row=3, column=0, sticky=W)
 nt_entry = Entry(app, textvariable=nt_text)
 nt_entry.grid(row=3, column=1)
 
-
 # mutation out
 mut_out = Listbox(app, height=8, width=50, border=0)
 mut_out.grid(row=4, column=0, columnspan=3, rowspan=6, pady=20, padx=20)
@@ -170,7 +172,6 @@ mut_out.grid(row=4, column=0, columnspan=3, rowspan=6, pady=20, padx=20)
 # creat scrollbar
 scrollbar = Scrollbar(app)
 scrollbar.grid(row=4, column=3)
-
 
 # Buttons
 fetch_btn = Button(app, text='Fetch', width=12, command=getpdb)
@@ -191,6 +192,7 @@ analyze_btn.grid(row=5, column=0)
 
 def pwd():
     print(os.getcwd())
+
 
 pwd_btn = Button(app, text='pwd', width=12, command=pwd)
 pwd_btn.grid(row=2, column=3)

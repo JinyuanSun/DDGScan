@@ -2,11 +2,13 @@
 
 # By Jinyuan Sun, Oct, 13, 2021
 
-import os
-import numpy as np
-import time
 import distutils.dir_util
-from .common import *
+import os
+import time
+
+import numpy as np
+import utlis.common as common
+# from .common import *
 
 
 class Rosetta:
@@ -30,9 +32,9 @@ class Rosetta:
         self.result = []
 
     def relax(self):
-        distutils.dir_util.mkpath(ROSETTA_RELAX_DIR)
-        os.system("cp  " + self.pdbname + " " + ROSETTA_RELAX_DIR)
-        os.chdir(ROSETTA_RELAX_DIR)
+        distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
+        os.system("cp  " + self.pdbname + " " + common.ROSETTA_RELAX_DIR)
+        os.chdir(common.ROSETTA_RELAX_DIR)
         # try:
         #     os.mkdir("rosetta_relax")
         #     os.system("cp  " + self.pdbname + " rosetta_relax/")
@@ -112,7 +114,7 @@ class Rosetta:
         #     os.chdir(jobID)
 
         # os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
-        os.system("cp ../../" + ROSETTA_RELAX_DIR + self.relaxedpdb + " ./")
+        os.system("cp ../../" + common.ROSETTA_RELAX_DIR + self.relaxedpdb + " ./")
         with open("mtfile", "w+") as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")
@@ -216,13 +218,13 @@ class Rosetta:
                 if start_line == 1:
                     mutinfo = line.replace("\n", "").split(")")[1].split()
                     if mutinfo[2] == "average_ddG":
-                        with open(ROSETTA_SCORE_FILE, "w") as scorefile:
+                        with open(common.ROSETTA_SCORE_FILE, "w") as scorefile:
                             scorefile.write(
                                 "#Score file formatted by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
                             )
                             scorefile.close()
                     else:
-                        with open(ROSETTA_SCORE_FILE, "a+") as scorefile:
+                        with open(common.ROSETTA_SCORE_FILE, "a+") as scorefile:
                             mut = mutinfo[0].split("-")[1]
                             scorefile.write(
                                 "_".join([mut[0], mut[1:-1], mut[-1]])
@@ -241,9 +243,9 @@ class rosetta_binder:
 
     @staticmethod
     def relax(pdbname, threads, relax_num):
-        distutils.dir_util.mkpath(ROSETTA_RELAX_DIR)
-        os.system("cp  " + pdbname + " " + ROSETTA_RELAX_DIR)
-        os.chdir(ROSETTA_RELAX_DIR)
+        distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
+        os.system("cp  " + pdbname + " " + common.ROSETTA_RELAX_DIR)
+        os.chdir(common.ROSETTA_RELAX_DIR)
 
         with open("cart2.script", "w+") as cart2:
             cart2.write("switch:cartesian\n")
@@ -306,7 +308,7 @@ class rosetta_binder:
     @staticmethod
     def run_one_job(varlist: list):
         wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb = varlist
-        path_job_id = ROSETTA_JOBS_DIR + jobID
+        path_job_id = common.ROSETTA_JOBS_DIR + jobID
         distutils.dir_util.mkpath(path_job_id)
         os.chdir(path_job_id)
         # try:
@@ -316,7 +318,7 @@ class rosetta_binder:
         #     os.chdir(jobID)
 
         # os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
-        os.system("cp ../../" + ROSETTA_RELAX_DIR + relaxedpdb + " ./")
+        os.system("cp ../../" + common.ROSETTA_RELAX_DIR + relaxedpdb + " ./")
         with open("mtfile", "w+") as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")

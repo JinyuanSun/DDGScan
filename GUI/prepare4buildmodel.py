@@ -1,6 +1,7 @@
-import pandas as pd
-import numpy as np
 import argparse
+
+import numpy as np
+import pandas as pd
 
 parser = argparse.ArgumentParser(description='prepare for BuildModel in FoldX')
 parser.add_argument("-i", '--input', help="input a txt file, a PS_pdbid_file.txt mostly")
@@ -21,11 +22,11 @@ def _3_2_1(x):
     return y
 
 
-def multi_sub(self,string,p,c):
+def multi_sub(self, string, p, c):
     new = []
     for s in string:
         new.append(s)
-    for index,point in enumerate(p):
+    for index, point in enumerate(p):
         new[point] = c[index]
     return ''.join(new)
 
@@ -39,4 +40,4 @@ _list = np.array(part_data[0]).tolist()
 for i in _list:
     _3 = i[0:3]
     mut = _3_2_1(_3) + i[3:len(i)] + ';'
-    print(mut,file=ofile)
+    print(mut, file=ofile)

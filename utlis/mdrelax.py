@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import os
+
 os.environ["OPENMM_CPU_THREADS"] = "2"
 
 from openmm import app
@@ -47,7 +48,6 @@ def fix(pdbfile):
 
 
 def produciton(pdbfilename, platform="CUDA"):
-
     # load in input PDB file and force field XML files
     pdb = app.PDBFile(pdbfilename)
     forcefield = app.ForceField("amber99sbildn.xml", "tip3p.xml")
@@ -120,9 +120,7 @@ def produciton(pdbfilename, platform="CUDA"):
     return topname, dcdname
 
 
-
 def dcd2pdb(dcd_file, topol_file, out_file, stride=100, noWater=True, superimpose=True):
-
     top = mt.load(topol_file)
     if noWater:
         indices = top.topology.select("protein")
@@ -151,5 +149,6 @@ def main(pdbfile, out_file, platform):
 
 if __name__ == "__main__":
     import sys
+
     pdbfile, out_file, platform = sys.argv[1:]
     main(pdbfile, out_file, platform)
