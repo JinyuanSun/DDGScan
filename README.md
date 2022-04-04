@@ -18,6 +18,7 @@ Table of Contents
   * [Known Issues](#known-issues)
   * [Citation](#citation)
   * [Lisense](#lisense)
+  * [Need help?](#need-help?)
   
 **I am testing this repo with some different input structures, if you encountered any failure please post a issue.** 
 
@@ -321,3 +322,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
+## Need help?
+If you need any help on installing backend software, you may contact me to get help by 
+filling [this form](https://forms.gle/1V6hjAtf3MFTGvPQ7).
