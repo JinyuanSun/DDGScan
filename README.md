@@ -324,5 +324,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 ## Need help?
-If you need any help on installing backend software, you may contact me to get help by 
-filling [this form](https://forms.gle/1V6hjAtf3MFTGvPQ7).
+If you need any help like installing backend software or interpreting results, you may contact me to get help by 
+filling [this form](https://forms.gle/1V6hjAtf3MFTGvPQ7). 

@@ -9,7 +9,7 @@ setup(
     description="A powerful package for in silico mutation",
     url="https://github.com/JinyuanSun/DDGScan",
     packages=find_packages(),
-    scripts=['DDGScan, grape-fast.py'],
+    scripts=['DDGScan', 'grape-fast.py'],
     install_requires=['pandas',
                       'numpy',
                       'joblib',

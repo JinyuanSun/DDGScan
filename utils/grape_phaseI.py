@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import distutils.dir_util
+import glob
 import json
 import logging
 import os
@@ -331,13 +332,9 @@ def readfasta(fastafile):
     return seq
 
 
-def selectpdb4md(pdb, softlist):
+def selectpdb4md(pdb, softlist, MD):
     distutils.dir_util.mkpath("selectpdb/")
-    # try:
-    #     os.mkdir("selectpdb")
-    # except FileExistsError:
-    #     os.system("rm -rf selectpdb")
-    #     os.mkdir("selectpdb")
+
     selected_dict = {"mutation": [], "score": [], "sd": [], "soft": []}
     for soft in softlist:
         with open("%s_results/MutationsEnergies_BelowCutOff.tab" % (soft)) as scorefile:
@@ -352,18 +349,31 @@ def selectpdb4md(pdb, softlist):
     selected_df = pd.DataFrame(selected_dict)
     selected_df.to_csv("Selected_Mutation.csv")
 
-    for mutation in set(selected_dict["mutation"]):
-        mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
-        mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
-        # WORKING_DIR = os.getcwd()
-        # print(WORKING_DIR)
-        # print("%s/selectpdb"%WORKING_DIR)
-        os.system(
-            f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation)
-        )
-        # os.chdir("%s/selectpdb"%WORKING_DIR)
+    if MD:
+        for mutation in set(selected_dict["mutation"]):
+            mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
+            mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
+            # WORKING_DIR = os.getcwd()
+            # print(WORKING_DIR)
+            # print("%s/selectpdb"%WORKING_DIR)
+            os.system(
+                f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s.pdb" % (mutation, mut_pdb, mutation)
+            )
+            # os.chdir("%s/selectpdb"%WORKING_DIR)
 
-    return selected_dict
+        return selected_dict
+    else:
+        for mutation in set(selected_dict["mutation"]):
+
+            mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
+            mut_pdb = pdb.replace(".pdb", "_Repair_1_*.pdb")
+            ref_mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
+            os.system(
+                f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s.pdb" % (mutation, ref_mut_pdb, mutation)
+            )
+            for index, foldx_pdb_file_name in enumerate(glob.glob(mut_pdb)):
+                os.system(f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s_sample_{index}.pdb" % (
+                mutation, foldx_pdb_file_name, mutation))
 
 
 def runMD(platform, selected_dict, md_threads=None):
@@ -420,7 +430,7 @@ def main1(args):
             logging.warning("No sequence provided!")
             if fillloop:
                 from utils import modeller_loop
-                pdb = modeller_loop.main(pdb, chain)
+                _seq = modeller_loop.main(pdb, chain)
             # exit()
 
         else:
@@ -429,7 +439,7 @@ def main1(args):
             if judge.main(pdb, chain, seq):  # break found
                 if fillloop:
                     from utils import modeller_loop
-                    pdb = modeller_loop.main(pdb, chain, seq)
+                    _seq = modeller_loop.main(pdb, chain, seq)
                     # exit()
                 else:
                     # print("PDB check Failed!")
@@ -613,8 +623,9 @@ def main1(args):
             )
 
     print(f"[INFO]: Finished calculation in {mode} mode of grape-fast in {time.ctime()}.\n")
-    selected_dict = selectpdb4md(pdb, softlist)
+    #
     if md:
+        selected_dict = selectpdb4md(pdb, softlist, md)
         md_start = time.time()
 
         if platform == "CUDA":
@@ -629,6 +640,7 @@ def main1(args):
         print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
 
     else:
+        selectpdb4md(pdb, softlist, md)
         print("[INFO]: No MDs!")
 
     json_running_time = json.dumps(grape.running_time, indent=4)
