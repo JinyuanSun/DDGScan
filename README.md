@@ -37,15 +37,21 @@ Due to their licenses, I cannot redistribute them here :worried: !
 To our glad, **openmm** is open source! So the glass is half full :smiley: . Here is a good news, the **ABACUS2** is now available at https://zenodo.org/record/4533424.
   
 **Conda**:
-```bash
+```shell
 # create a new conda env
-conda create -n ddgscan -c conda-forge python=3.8 \
-openmm pdbfixer mdtraj venn logomaker matplotlib seaborn joblib pandas numpy
+conda env create -f environment.yml
 # activate new env
 conda activate ddgscan
 # clone repo and install
 git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py install
 ```
+**Via Pip**
+```shell
+pip install -r requirements.txt
+git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py install
+```
+
+
 I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by appending this into `~/.bashrc`:
 ```
 export ROSETTADB="/path/to/rosetta/database"
