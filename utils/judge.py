@@ -61,10 +61,16 @@ def judge(userSeq, seq, resNumList):
     listLen = int(resNumList[-1]) - int(resNumList[0]) + 1
     resLen = len(seq)
     # print(listLen, resLen)
-    if listLen != resLen:
-        return userSeq
-    else:
-        return 0  # no ncAA and gap found
+    if userSeq:
+        if listLen != resLen:
+            return userSeq
+        else:
+            return 0
+    else:  # no sequence provided
+        if listLen != resLen:
+            return "chain break found"
+        else:
+            return 0  # no ncAA and gap found
 
 
 def main(pdb, chain, userSeq):

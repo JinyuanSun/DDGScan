@@ -425,8 +425,11 @@ def main1(args):
     # print(WORKING_DIR)
 
     def checkpdb(pdb, chain, seqfile=None):
-
-        if bool(seqfile) == False:
+        """
+        only breaks in middle of the chain will be fixed, C- and N- terminal missing
+        will be ignored!
+        """
+        if not bool(seqfile):
             logging.warning("No sequence provided!")
             if fillloop:
                 from utils import modeller_loop
@@ -440,6 +443,7 @@ def main1(args):
                 if fillloop:
                     from utils import modeller_loop
                     _seq = modeller_loop.main(pdb, chain, seq)
+                    logging.warning(f"The patched sequence is {_seq}, we modelling the missing part according it!")
                     # exit()
                 else:
                     # print("PDB check Failed!")
