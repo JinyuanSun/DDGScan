@@ -47,8 +47,8 @@ git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py 
 ```
 **Via Pip**
 ```shell
-pip install -r requirements.txt
-git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py install
+git clone https://github.com/openmm/pdbfixer.git && cd pdbfixer && python setup.py install && cd ..
+git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan  && pip install -r requirements.txt && ./setup.py install
 ```
 
 
