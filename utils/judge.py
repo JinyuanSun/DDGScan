@@ -65,6 +65,8 @@ def judge(userSeq, seq, resNumList):
         if listLen != resLen:
             return userSeq
         else:
+            if listLen != len(userSeq):
+                print("Missing at N- or C-terminal is detected, however grape will not build it!")
             return 0
     else:  # no sequence provided
         if listLen != resLen:
