@@ -418,7 +418,7 @@ def main1(args):
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
     # auto_fix = args.fix_mainchain_missing
-    print("[INFO]: Started at %s" % (time.ctime()))
+    logging.info("Started at %s" % (time.ctime()))
 
     #
     # WORKING_DIR = os.getcwd()
@@ -626,7 +626,7 @@ def main1(args):
                 ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, abacus2_cutoff, ABACUS2_RESULTS_DIR
             )
 
-    print(f"[INFO]: Finished calculation in {mode} mode of grape-fast in {time.ctime()}.\n")
+    logging.info(f"Finished calculation in {mode} mode of grape-fast in {time.ctime()}.\n")
     #
     if md:
         selected_dict = selectpdb4md(pdb, softlist, md)
@@ -641,11 +641,11 @@ def main1(args):
 
         md_end = time.time()
         grape.running_time["MD simulations"] = md_end - md_start
-        print("[INFO]: All MDs took %f seconds." % (md_end - md_start))
+        logging.info("All MDs took %f seconds." % (md_end - md_start))
 
     else:
         selectpdb4md(pdb, softlist, md)
-        print("[INFO]: No MDs!")
+        logging.warning("No MDs!")
 
     json_running_time = json.dumps(grape.running_time, indent=4)
     with open("timing.json", "w+") as timing:
@@ -656,4 +656,4 @@ def main1(args):
 if __name__ == "__main__":
     args = io.Parser().get_args()
     main1(args)
-    print("[INFO]: Ended at %s" % (time.ctime()))
+    logging.info("Ended at %s" % (time.ctime()))
