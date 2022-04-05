@@ -450,7 +450,7 @@ def main1(args):
                     logging.warning("Gaps found in your pdb file. PDB check failed. However, the job will continue.")
                     # exit()
             else:
-                print("[INFO]: PDB check passed!")
+                logging.warning("PDB check passed!")
         return pdb
 
     if args.mode == "test":
@@ -554,7 +554,7 @@ def main1(args):
                 os.system("cp ../%s/%s ./" % (ROSETTA_RELAX_DIR, relaxed_pdb))
                 pmut_time = rosetta1.pmut_scan(relaxed_pdb)
                 grape.running_time["rosetta_scan"] = pmut_time
-                print("[INFO]: Rosetta pmut_scan_parallel took %f seconds." % (pmut_time))
+                logging.warning("Rosetta pmut_scan_parallel took %f seconds." % (pmut_time))
                 os.chdir("..")
                 distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
                 os.chdir(ROSETTA_RESULTS_DIR)
