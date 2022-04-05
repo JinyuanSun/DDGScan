@@ -363,6 +363,7 @@ def selectpdb4md(pdb, softlist, MD):
 
         return selected_dict
     else:
+        logging.info("Switching to FoldX sampled structures!")
         for mutation in set(selected_dict["mutation"]):
 
             mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
@@ -372,6 +373,7 @@ def selectpdb4md(pdb, softlist, MD):
                 f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s.pdb" % (mutation, ref_mut_pdb, mutation)
             )
             for index, foldx_pdb_file_name in enumerate(glob.glob(mut_pdb)):
+                logging.info(f"Copyying file {foldx_pdb_file_name}!")
                 os.system(f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s_sample_{index}.pdb" % (
                 mutation, foldx_pdb_file_name, mutation))
 

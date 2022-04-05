@@ -235,7 +235,7 @@ A A 26 @smaller # make A -> G
 DDGScan also support MSAddg output, you need to add a `-msaddg` flag. The best 80 predictions made by MSAddg will be 
 selected.
 ```bash
-DDGScan list_distribute 1pga.pdb 1pga.fa.scan.txt -repair -masddg -T 10 -E foldx
+DDGScan list_distribute 1pga.pdb 1pga.fa.scan.txt -repair -msaddg -T 10 -E foldx
 ```
 ### Analysis *in silico* screening results
 
