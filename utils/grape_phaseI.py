@@ -365,17 +365,15 @@ def selectpdb4md(pdb, softlist, MD):
     else:
         logging.info("Switching to FoldX sampled structures!")
         for mutation in set(selected_dict["mutation"]):
-
             mutation = "_".join([mutation[0], mutation[1:-1], mutation[-1]])
-            mut_pdb = pdb.replace(".pdb", "_Repair_1_*.pdb")
+            mut_pdb = os.path.join(FOLDX_JOBS_DIR, mutation, pdb.replace(".pdb", "_Repair_1_*.pdb"))
             ref_mut_pdb = pdb.replace(".pdb", "_Repair_1_0.pdb")
             os.system(
                 f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s.pdb" % (mutation, ref_mut_pdb, mutation)
             )
             for index, foldx_pdb_file_name in enumerate(glob.glob(mut_pdb)):
                 logging.info(f"Copyying file {foldx_pdb_file_name}!")
-                os.system(f"cp {FOLDX_JOBS_DIR}/%s/%s selectpdb/%s_sample_{index}.pdb" % (
-                mutation, foldx_pdb_file_name, mutation))
+                os.system(f"cp {foldx_pdb_file_name} selectpdb/{mutation}_sample_{index}.pdb")
 
 
 def runMD(platform, selected_dict, md_threads=None):
@@ -400,14 +398,10 @@ def runMD(platform, selected_dict, md_threads=None):
 
 
 def main1(args):
-    # args = io.Parser().get_args()
-    # print(args)
-
     pdb = args.pdb
     chain = args.chain
     threads = int(args.threads)
     numOfRuns = str(args.numofruns)
-    # ratio = args.ratio
     relax_num = args.relax_number
     foldx_cutoff = -float(args.foldx_cutoff)
     rosetta_cutoff = -float(args.rosetta_cutoff)
@@ -419,12 +413,7 @@ def main1(args):
     platform = args.platform
     fillloop = args.fill_break_in_pdb
     seqfile = args.sequence
-    # auto_fix = args.fix_mainchain_missing
     logging.info("Started at %s" % (time.ctime()))
-
-    #
-    # WORKING_DIR = os.getcwd()
-    # print(WORKING_DIR)
 
     def checkpdb(pdb, chain, seqfile=None):
         """
@@ -526,9 +515,6 @@ def main1(args):
     if mode == "run":
 
         pdb = checkpdb(pdb, chain, seqfile)
-
-        # if auto_fix:
-        #     pdb = autofix.autofix(pdb, [chain])
 
         # FoldX
         if "foldx" in softlist:

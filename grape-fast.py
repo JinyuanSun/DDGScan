@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from time import time
+import time
 import utils.io as io
 from utils import grape_phaseI
 
