@@ -166,7 +166,7 @@ class FoldX:
         job_list = []
         for mutation in mutation_list:
             wild, chain, position = ["", "", ""]
-            job_id = mutation.replace(",", "_")
+            # job_id = mutation.replace(",", "_")
             var_list = [pdb_file, wild, chain, mutation, position, job_id, numOfRuns]
             # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
             job_list.append(var_list)
