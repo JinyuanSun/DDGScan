@@ -113,12 +113,6 @@ grape_phaseI_parser.add_argument(
     choices=["CUDA", "CPU"],
     default="CUDA",
 )
-grape_phaseI_parser.add_argument(
-    "-fix_mm",
-    "--fix_mainchain_missing",
-    help="fixing missing backbone bone using pdbfixer",
-    action='store_true',
-)
 
 list_distribute_parser = subparsers.add_parser('list_distribute',
                                                help='process single point mutation according to given list file in a distributed manner')
@@ -135,12 +129,6 @@ list_distribute_parser.add_argument(
     "--fill_break_in_pdb",
     help="Use modeller to fill missing residues in your pdb file. Use this option with caution!",
     action="store_true",
-)
-list_distribute_parser.add_argument(
-    "-fix_mm",
-    "--fix_mainchain_missing",
-    help="fixing missing backbone bone using pdbfixer",
-    action='store_true',
 )
 list_distribute_parser.add_argument(
     "-T",
@@ -188,6 +176,12 @@ list_distribute_parser.add_argument(
     type=str,
     choices=["CUDA", "CPU"],
     default="CUDA",
+)
+list_distribute_parser.add_argument(
+    "-comb",
+    "--combine",
+    help="Run predictions for all possible combinations in mutation file",
+    action="store_true",
 )
 
 analysis_and_plot_parser = subparsers.add_parser('analysis_and_plot',
