@@ -117,7 +117,7 @@ def read_list(mutation_list_file):
         mutation_list = list(set(mutation_list))
         return mutation_list
 
-def mk_combination_jobs(mutation_list_file):
+def mk_combination_list(mutation_list_file):
     """
     param: mutation_list_file: a space-seperated text file
            wildtype chain position mutation
@@ -162,7 +162,7 @@ class FoldX:
         return job_list
 
     @staticmethod
-    def mk_combination_list(pdb_file, numOfRuns, mutation_list):
+    def mk_combination_jobs(pdb_file, numOfRuns, mutation_list):
         job_list = []
         for mutation in mutation_list:
             wild, chain, position = ["", "", ""]
@@ -363,7 +363,8 @@ def main(args):
         if repair:
             pdb_file = foldx_binder.repair_pdb(pdb_file)
         if args.combine:
-            job_list = FoldX.mk_combination_list(pdb_file, numOfRuns, mutation_list)
+            mutation_list = mk_combination_list(mutation_list_file)
+            job_list = FoldX.mk_combination_jobs(pdb_file, numOfRuns, mutation_list)
         else:
             job_list = FoldX.mk_job_list(pdb_file, numOfRuns, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
