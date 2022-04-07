@@ -144,6 +144,7 @@ def mk_combination_list(mutation_list_file):
             for n, i in enumerate(ids):
                 opts.append(str(targets[n]) + mutations[n][i])
             mutation_list.append(",".join(opts))
+    return mutation_list
 
 
 class FoldX:
@@ -166,7 +167,7 @@ class FoldX:
         job_list = []
         for mutation in mutation_list:
             wild, chain, position = ["", "", ""]
-            # job_id = mutation.replace(",", "_")
+            job_id = mutation.replace(",", "_")
             var_list = [pdb_file, wild, chain, mutation, position, job_id, numOfRuns]
             # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
             job_list.append(var_list)
@@ -363,9 +364,10 @@ def main(args):
         if repair:
             pdb_file = foldx_binder.repair_pdb(pdb_file)
         if args.combine:
+            print("Combination")
             mutation_list = mk_combination_list(mutation_list_file)
             job_list = FoldX.mk_combination_jobs(pdb_file, numOfRuns, mutation_list)
-        else:
+        if not args.combine:
             job_list = FoldX.mk_job_list(pdb_file, numOfRuns, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
         FoldX.dump_score_file(results, args.pdb)
