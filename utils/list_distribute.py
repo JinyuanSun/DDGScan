@@ -368,6 +368,7 @@ def main(args):
             mutation_list = mk_combination_list(mutation_list_file)
             job_list = FoldX.mk_combination_jobs(pdb_file, numOfRuns, mutation_list)
         if not args.combine:
+            print("Not Combination")
             job_list = FoldX.mk_job_list(pdb_file, numOfRuns, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
         FoldX.dump_score_file(results, args.pdb)
