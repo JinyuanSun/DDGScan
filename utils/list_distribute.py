@@ -7,6 +7,8 @@
 
 import argparse
 import os
+import itertools
+
 
 import numpy as np
 import pandas as pd
@@ -115,6 +117,34 @@ def read_list(mutation_list_file):
         mutation_list = list(set(mutation_list))
         return mutation_list
 
+def mk_combination_jobs(mutation_list_file):
+    """
+    param: mutation_list_file: a space-seperated text file
+           wildtype chain position mutation
+           A A 26 P
+           A A 26 ILV
+           A A 26 _polar
+    return mutation_list
+    """
+    mutation_list = []
+    with open(mutation_list_file, 'r') as resfile:
+        lines = resfile.readlines()
+        targets = []
+        mutations = []
+        ks = []
+        for l in lines:
+            es = l.strip().split()
+            wild, chn, pos, muts = es
+            nm = len(muts)
+            ks.append(range(nm))
+            targets.append(wild + chn + pos)
+            mutations.append(muts)
+        for ids in itertools.product(*ks):
+            opts = []
+            for n, i in enumerate(ids):
+                opts.append(str(targets[n]) + mutations[n][i])
+            mutation_list.append(",".join(opts))
+
 
 class FoldX:
     def __init__(self):
@@ -132,6 +162,20 @@ class FoldX:
         return job_list
 
     @staticmethod
+    def mk_combination_list(pdb_file, numOfRuns, mutation_list):
+        job_list = []
+        for mutation in mutation_list:
+            wild, chain, position = ["", "", ""]
+            job_id = mutation.replace(",", "_")
+            var_list = [pdb_file, wild, chain, mutation, position, job_id, numOfRuns]
+            # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
+            job_list.append(var_list)
+        return job_list
+
+                # f.write(cmd+'\n')
+
+
+    @staticmethod
     def dump_score_file(results, pdb):
         pdb_id = pdb.replace(".pdb", "")
         with open(pdb_id + "_FoldX.score", 'w+') as outfile:
@@ -139,6 +183,8 @@ class FoldX:
             for index, result in enumerate(results):
                 outfile.write("\t".join(result) + '\n')
             outfile.close()
+
+
 
 
 class Rosetta:
@@ -284,6 +330,12 @@ def get_args():
         choices=["CUDA", "CPU"],
         default="CUDA",
     )
+    parser.add_argument(
+        "-comb",
+        "--combine",
+        help="Run predictions for all possible combinations in mutation file",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 
@@ -316,7 +368,10 @@ def main(args):
     if 'foldx' in engines:
         if repair:
             pdb_file = foldx_binder.repair_pdb(pdb_file)
-        job_list = FoldX.mk_job_list(pdb_file, numOfRuns, mutation_list)
+        if args.combine:
+            job_list = FoldX.mk_combination_list(pdb_file, numOfRuns, mutation_list)
+        else:
+            job_list = FoldX.mk_job_list(pdb_file, numOfRuns, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
         FoldX.dump_score_file(results, args.pdb)
     if 'rosetta' in engines:
@@ -324,6 +379,8 @@ def main(args):
         job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_one_job)(var) for var in job_list)
         Rosetta.dump_score_file(results, args.pdb)
+
+
 
 
 if __name__ == '__main__':
