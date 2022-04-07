@@ -165,6 +165,12 @@ class Parser:
             choices=["CUDA", "CPU"],
             default="CUDA",
         )
+        parser.add_argument(
+            "-comb",
+            "--combine",
+            help="Run predictions for all possible combinations in mutation file",
+            action="store_true",
+        )
         # parser.add_argument(
         #     "-fix_mm",
         #     "--fix_mainchain_missing",

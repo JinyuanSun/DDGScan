@@ -278,12 +278,6 @@ def get_args():
         action="store_true",
     )
     parser.add_argument(
-        "-fix_mm",
-        "--fix_mainchain_missing",
-        help="fixing missing backbone bone using pdbfixer",
-        action='store_true',
-    )
-    parser.add_argument(
         "-T",
         "--threads",
         help="Number of threads to run FoldX, Rosetta or ABACUS2",
