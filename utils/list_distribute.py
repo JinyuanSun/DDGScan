@@ -361,6 +361,7 @@ def main(args):
     else:
         mutation_list = read_list(mutation_list_file)
     if 'foldx' in engines:
+        print(args.combine)
         if repair:
             pdb_file = foldx_binder.repair_pdb(pdb_file)
         if args.combine:
