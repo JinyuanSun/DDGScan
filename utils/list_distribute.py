@@ -137,12 +137,12 @@ def mk_combination_list(mutation_list_file):
             wild, chn, pos, muts = es
             nm = len(muts)
             ks.append(range(nm))
-            targets.append(wild + chn + pos)
+            targets.append("_".join([wild, chn, pos]))
             mutations.append(muts)
         for ids in itertools.product(*ks):
             opts = []
             for n, i in enumerate(ids):
-                opts.append(str(targets[n]) + mutations[n][i])
+                opts.append("_".join([str(targets[n]), mutations[n][i]]))
             mutation_list.append(",".join(opts))
     return mutation_list
 
@@ -167,7 +167,16 @@ class FoldX:
         job_list = []
         for mutation in mutation_list:
             wild, chain, position = ["", "", ""]
-            job_id = mutation
+            wild = ""
+            pos = []
+            mut = ""
+            for single in mutation.split(","):
+                w, chain, p, m = single.split("_")
+                wild += w
+                pos.append(p)
+                mut += m
+            job_id = "_".join([wild, "+".join(pos), mut])
+            mutation = mutation.replace("_", "")
             var_list = [pdb_file, wild, chain, mutation, position, job_id, numOfRuns]
             # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
             job_list.append(var_list)

@@ -90,12 +90,16 @@ class foldx_binder:
     def cal_score(wild, resNum, mutation, pdbfile):
         fxout_name = "Dif_" + pdbfile.replace(".pdb", ".fxout")
         # print(fxout_name)
-        df = pd.read_table(fxout_name, sep="\t", skiprows=8)
-        score = round(df["total energy"].mean(), 4)
-        min_score = round(df["total energy"].min(), 4)
-        sd = round(df["total energy"].std(), 4)
-        # result.append(["_".join([wild, str(resNum), mutation]), score, sd])
-        return ["_".join([wild, str(resNum), mutation]), str(score), str(min_score), str(sd)]
+        try:
+            df = pd.read_table(fxout_name, sep="\t", skiprows=8)
+            score = round(df["total energy"].mean(), 4)
+            min_score = round(df["total energy"].min(), 4)
+            sd = round(df["total energy"].std(), 4)
+            # result.append(["_".join([wild, str(resNum), mutation]), score, sd])
+            return ["_".join([wild, str(resNum), mutation]), str(score), str(min_score), str(sd)]
+        except FileNotFoundError:
+            return ["_".join([wild, str(resNum), mutation]), 'NaN', 'NaN', 'NaN']
+
 
     @staticmethod
     def run_one_job(varlist: list):
@@ -120,7 +124,7 @@ class foldx_binder:
         starttime = time.time()
         os.system(cmd2)
         results = foldx_binder.cal_score(wild, position, mutation, pdb_file)
-        cp_files(job_id, pdb_file, numOfRuns)
+        cp_files(job_id, pdb_file, numOfRuns, chain)
         finishtime = time.time()
         print(
             "FoldX mutation %s_%s_%s took %f seconds."
@@ -131,7 +135,7 @@ class foldx_binder:
         return results
 
 
-def cp_files(job_id, pdb, num_of_runs):
+def cp_files(job_id, pdb, num_of_runs, chain):
     pdb_id = pdb.replace(".pdb", "")
     distutils.dir_util.mkpath('../inspection')
     names = [pdb]
@@ -143,7 +147,7 @@ def cp_files(job_id, pdb, num_of_runs):
     with open(f'../inspection/{job_id}.pml', 'w+') as pml:
         for name in names:
             pml.write(f'load {name}\n')
-        pml.write(f'select mutation, resi {job_id.split("_")[1]}\n')
+        pml.write(f'select mutation, ///{chain}/{job_id.split("_")[1]}\n')  # ///A/1019+1018+1010+1013+1016+1027
         pml.write("select br. all within 6 of mutation\n")
         pml.write("show sticks, sele\n")
         pml.write('color indium, mutation AND elem C AND sc.')
