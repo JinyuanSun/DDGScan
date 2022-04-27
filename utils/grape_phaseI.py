@@ -423,8 +423,10 @@ def main1(args):
         if not bool(seqfile):
             logging.warning("No sequence provided!")
             if fillloop:
-                from utils import modeller_loop
-                _seq = modeller_loop.main(pdb, chain)
+                # if no missing loop found, don't do anything
+                if judge.main(pdb, chain, None):
+                    from utils import modeller_loop
+                    _seq = modeller_loop.main(pdb, chain)
             # exit()
 
         else:
