@@ -58,7 +58,7 @@ class Rosetta:
         relax_threads = min([int(self.threads), int(self.relax_num)])
         relax_cmd = "".join(
             [
-                "mpirun -n "
+                "mpirun --allow-run-as-root -n "
                 + str(relax_threads)
                 + " relax.mpi.linuxgccrelease -s "
                 + self.pdbname
