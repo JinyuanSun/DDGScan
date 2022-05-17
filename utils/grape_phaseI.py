@@ -122,6 +122,7 @@ class GRAPE:
 
         print("[INFO]: ABACUS2 started at %s" % (time.ctime()))
         distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
+        distutils.dir_util.mkpath(ABACUS2_RESULTS_DIR)
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
 
