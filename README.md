@@ -223,9 +223,9 @@ Also, "dynamic selection" are supported.
     @more_hydrophobic: mutation to AA more hydrophobic
     @less_hydrophobic: mutation to AA more hydrophilic
     @more_sheet_tendency: mutation to AA with higher sheet tendency
-    @less_sheet_tendency: mutation to AA with higher sheet tendency
+    @less_sheet_tendency: mutation to AA with lower sheet tendency
     @more_helix_tendency: mutation to AA with higher helix tendency
-    @less_helix_tendency: mutation to AA with higher helix tendency
+    @less_helix_tendency: mutation to AA with lower helix tendency
     @{random}: random is an integer in range 1 to 19 ,randomly select few mutations for you, good luck!
 ```
 An example mutation list file is a plain text file seperated with space,
