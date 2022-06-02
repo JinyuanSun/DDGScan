@@ -40,12 +40,14 @@ module is not available in the zenodo version, you may use the online server at 
   
 **Conda**:
 ```shell
-# create a new conda env
+# clone repo and create a new conda env
+git clone https://github.com/JinyuanSun/DDGScan.git
+cd DDGScan
 conda env create -f environment.yml
 # activate new env
 conda activate ddgscan
-# clone repo and install
-git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py install
+# install
+./setup.py install
 ```
 **Via Pip**
 ```shell
