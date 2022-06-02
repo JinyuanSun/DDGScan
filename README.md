@@ -34,7 +34,9 @@ Also, **ABACUS** is an outstanding software with great statistical energy functi
 Structures downloaded from RCSB could be erroneous. One of the biggest problems that will directly affect energy calculation is breaks in chains. 
 Here I implemented a loop closure module using **modeller**, a great software with a very long history, as backend.   
 Due to their licenses, I cannot redistribute them here :worried: !  
-To our glad, **openmm** is open source! So the glass is half full :smiley: . Here is a good news, the **ABACUS2** is now available at https://zenodo.org/record/4533424.
+To our glad, **openmm** is open source! So the glass is half full :smiley: . 
+Here is a good news, the **ABACUS2** database is now available at https://zenodo.org/record/4533424. However, the necessary 
+module is not available in the zenodo version, you may use the online server at https://biocomp.ustc.edu.cn/servers/abacus-design.php to run ABACUS2.
   
 **Conda**:
 ```shell
