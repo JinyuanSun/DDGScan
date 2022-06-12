@@ -317,7 +317,7 @@ def dump_abacus_score_file(results, pdb):
     with open(pdb_id + "_ABACUS2.score", 'w+') as outfile:
         outfile.write('\t'.join(['mutation', 'total_score']) + '\n')
         for index, result in enumerate(results):
-            outfile.write("\t".join(result) + '\n')
+            outfile.write(f"{result[0]}\t{result[1]}\n")
         outfile.close()
 
 
