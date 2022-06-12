@@ -260,7 +260,7 @@ class rosetta_binder:
         relax_cmd = "".join(
             [
                 "mpirun -n "
-                + threads
+                + str(threads)
                 + " relax.mpi.linuxgccrelease -s "
                 + pdbname
                 + " -use_input_sc",
