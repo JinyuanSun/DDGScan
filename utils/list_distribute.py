@@ -307,7 +307,7 @@ def mk_abacus_joblist(pdb_file, mutation_list):
     for mutation in mutation_list:
         wild, chain, position, mutation = mutation.split("_")
         job_id = "_".join([wild, position, mutation])
-        var_list = [pdb_file, chain, position, mutation]
+        var_list = [pdb_file, wild, chain, mutation, position]
         # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
         job_list.append(var_list)
     return job_list
