@@ -8,6 +8,8 @@
 import argparse
 import os
 
+import distutils.dir_util
+
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
@@ -15,7 +17,8 @@ from joblib import Parallel, delayed
 from utils.foldx import foldx_binder
 from utils.rosetta import rosetta_binder
 from utils.aa_index import *
-
+from utils.common import ABACUS2_JOBS_DIR
+import utils.abacus as abacus
 
 # from utils import modeller_loop
 
@@ -299,6 +302,24 @@ def read_msaddg(msaddg_out, top=80, chain='A'):
         mutation_list.append("_".join([wildtype, chain, position, mutation]))
     return mutation_list
 
+def mk_abacus_joblist(pdb_file, mutation_list):
+    job_list = []
+    for mutation in mutation_list:
+        wild, chain, position, mutation = mutation.split("_")
+        job_id = "_".join([wild, position, mutation])
+        var_list = [pdb_file, chain, position, mutation]
+        # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
+        job_list.append(var_list)
+    return job_list
+
+def dump_abacus_score_file(results, pdb):
+    pdb_id = pdb.replace(".pdb", "")
+    with open(pdb_id + "_ABACUS2.score", 'w+') as outfile:
+        outfile.write('\t'.join(['mutation', 'total_score']) + '\n')
+        for index, result in enumerate(results):
+            outfile.write("\t".join(result) + '\n')
+        outfile.close()
+
 
 def main(args):
     threads = args.threads
@@ -324,6 +345,13 @@ def main(args):
         job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_one_job)(var) for var in job_list)
         Rosetta.dump_score_file(results, args.pdb)
+
+    if 'abacus2' in engines:
+        distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
+        # abacus.runOneJob
+        job_list = mk_abacus_joblist(args.pdb, mutation_list)
+        abacus2_results = Parallel(n_jobs=threads)(delayed(abacus.runOneJob)(var) for var in job_list)
+        dump_abacus_score_file(abacus2_results, args.pdb)
 
 
 if __name__ == '__main__':

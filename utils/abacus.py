@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import time
-
+import utils.common as common
 
 def run_abacus(pdbfilename):
     try:
@@ -144,6 +144,7 @@ def parse_abacus_out():
             tem.close()
         complete.close()
         os.remove("tempfile")
+
 
 
 if __name__ == "__main__":
