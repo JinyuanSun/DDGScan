@@ -265,7 +265,7 @@ class rosetta_binder:
                 + pdbname
                 + " -use_input_sc",
                 " -constrain_relax_to_start_coords -ignore_unrecognized_res",
-                " -nstruct " + relax_num,
+                " -nstruct " + str(relax_num),
                 " -relax:coord_constrain_sidechains",
                 " -relax:cartesian -score:weights ref2015_cart ",
                 " -relax:min_type lbfgs_armijo_nonmonotone",
