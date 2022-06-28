@@ -6,7 +6,10 @@
 # @annotation    :
 from Bio.PDB import PDBParser, NeighborSearch, Atom, Structure, Selection
 import pandas as pd
-from common import *
+from utils.common import *
+from utils.foldx import FoldX, foldx_binder
+from joblib import Parallel, delayed
+from utils.list_distribute import FoldX
 
 
 class Mutation:
@@ -27,8 +30,9 @@ class ProteinInterface:
         if type(pdb) == str:
             self.parser = PDBParser(PERMISSIVE=1)
             self.complex = self.parser.get_structure('s', pdb)
-        if type(pdb) == Structure:
-            self.complex = complex
+        else:
+            self.complex = pdb
+        # print(self.complex)
         self.ca_dict = self.get_ca()
         self.chains = list(self.ca_dict.keys())
         assert len(self.chains) >= 2, f"Only one chain found in {pdb}"
@@ -80,7 +84,9 @@ class Multimerscan:
     # input struc
     # A complementary module for DDGScan, analyze interface positions
     # and make multiple mutations base on beneficial mutations suggested
-    def __init__(self, input_pdb: str, seq_file: str, clean: bool = True):
+    def __init__(self, input_pdb: str, threads: int = 24, seq_file: str = None, clean: bool = True):
+        self.numOfRuns = 5
+        self.threads = threads
         self.input_pdb = input_pdb
         self.input_seq = seq_file
         self.parser = PDBParser(PERMISSIVE=True)
@@ -97,7 +103,7 @@ class Multimerscan:
 
         self.interface = ProteinInterface(self.structure)
         self.interface.find_homomultimer_interface()
-        self.mutations = self.read_score_file()
+        self.mutations = self._generate_all_mutations()
 
     def _remove_hydrogens(self, structure: Structure):
         # Removes all hydrogens.
@@ -164,7 +170,7 @@ class Multimerscan:
             mutations.append(Mutation(mutation[0], int(mutation[1:-1]), mutation[-1]))
         return mutations
 
-    def _generate_all_mutations(self, engine: str):
+    def _generate_all_mutations(self):
         # make list of mutations
 
         single_mutations = self.read_score_file()
@@ -180,8 +186,27 @@ class Multimerscan:
             if int(mutation.position) in mutations_at_interface:
                 selected_mutations.append(mutation)
 
+        return  selected_mutations
+
+    def _mk_foldx_job_list(self, pdb_file, numOfRuns, mutation_list):
+        job_list = []
+        for mutation in mutation_list:
+            job_id = "_".join([mutation.wildtype, str(mutation.position), mutation.mutation])
+            var_list = [pdb_file, mutation.wildtype, self.interface.chains, mutation, mutation.position, job_id, numOfRuns]
+            # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
+            job_list.append(var_list)
+        return job_list
+
+    def run_scan(self, engine: str):
         if engine.lower() == 'foldx':
-            return [mutation.convert2foldx(self.interface.chains[0]) for mutation in selected_mutations]
+            job_list = self._mk_foldx_job_list(self.input_pdb, self.numOfRuns, self.mutations)
+            # foldx_binder.run_one_multimer_job()
+            results = Parallel(n_jobs=self.threads)(delayed(foldx_binder.run_one_multimer_job)(var) for var in job_list)
+            FoldX.dump_score_file(results, self.input_pdb)
+
+
+
+
 
     def _read_fasta(self, seq_file):
         self.fasta_chain_dict = {}
@@ -200,9 +225,9 @@ class Multimerscan:
             if resname in long2short:
                 chain = residue.get_parent().id
                 if chain in self.pdb_chain_dict:
-                    self.pdb_chain_dict[chain] += long2short(resname)
+                    self.pdb_chain_dict[chain] += long2short[resname]
                 else:
-                    self.pdb_chain_dict[chain] = long2short(resname)
+                    self.pdb_chain_dict[chain] = long2short[resname]
 
     def detect_homo(self, chain_dict):
         homo_chains = {}
@@ -219,3 +244,12 @@ class Multimerscan:
 
     def generate_mutations(self, chain_dict: dict, homo_chains: dict):
         pass
+
+if __name__ == "__main__":
+    pdb = 'ranked_0.pdb'
+    mul = Multimerscan(pdb)
+    # print(mul.mutations)
+    print(len(mul.mutations))
+    mul.run_scan('foldx')
+
+
