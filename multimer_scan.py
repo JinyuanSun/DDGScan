@@ -4,12 +4,15 @@
 # @Time    : 2022/6/17 2:08 AM
 # @File    : multimer_scan.py.py
 # @annotation    :
+import os
+
 from Bio.PDB import PDBParser, NeighborSearch, Atom, Structure, Selection
 import pandas as pd
 from utils.common import *
 from utils.foldx import FoldX, foldx_binder
 from joblib import Parallel, delayed
 from utils.list_distribute import FoldX
+import distutils.dir_util
 
 
 class Mutation:
@@ -246,10 +249,13 @@ class Multimerscan:
         pass
 
 if __name__ == "__main__":
+    distutils.dir_util.mkpath('multimer_interface')
+    os.chdir('multimer_interface')
     pdb = 'ranked_0.pdb'
+    os.popen(f'cp ../{pdb} ./')
     mul = Multimerscan(pdb)
     # print(mul.mutations)
-    print(len(mul.mutations))
+    print(f"Found {len(mul.mutations)} putative stabilizing mutations at interface.")
     mul.run_scan('foldx')
 
 
