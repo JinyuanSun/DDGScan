@@ -21,5 +21,6 @@ setup(
                       'modeller',
                       'openmm',
                       'mdtraj',
+                      'Bio'
     ]
 )
