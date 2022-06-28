@@ -293,7 +293,7 @@ def get_args():
     return args
 
 
-def read_msaddg(msaddg_out, top=80, chain='A'):
+def read_msaddg(msaddg_out, top=160, chain='A'):
     mutation_list = []
     df = pd.read_csv(msaddg_out, sep='\t', header=0, index_col=None)
     selected = df.sort_values('score', ascending=False).head(top)
