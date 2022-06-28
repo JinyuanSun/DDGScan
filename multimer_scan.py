@@ -254,7 +254,7 @@ if __name__ == "__main__":
     os.chdir('multimer_interface')
     pdb = sys.argv[1]
     # pdb = 'ranked_0.pdb'
-    os.popen(f'cp ../{pdb} ./ && touch PDB_COPYED')
+    _ = os.popen(f'cp ../{pdb} ./ && touch PDB_COPYED').read()
     if 'PDB_COPYED' in os.listdir("./"):
         mul = Multimerscan(pdb)
         # print(mul.mutations)
