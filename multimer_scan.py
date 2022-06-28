@@ -254,8 +254,9 @@ if __name__ == "__main__":
     os.chdir('multimer_interface')
     pdb = sys.argv[1]
     # pdb = 'ranked_0.pdb'
-    os.popen(f'cp ../{pdb} ./ && touch PDB_COPYED')
-    if 'PDB_COPYED' in os.listdir("./"):
+    _ = os.popen(f'cp ../{pdb} ./ && touch PDB_COPYED').read()
+    _ = os.popen(f'cp ../Selected_Mutation.csv ./ && touch DONE').read()
+    if 'PDB_COPYED' in os.listdir("./") and 'DONE' in os.listdir("./"):
         mul = Multimerscan(pdb)
         # print(mul.mutations)
         print(f"Found {len(mul.mutations)} putative stabilizing mutations at interface.")
