@@ -177,7 +177,7 @@ class Multimerscan:
         # make list of mutations
 
         single_mutations = self.read_score_file()
-        interface_residues =  self.interface.interface_residues
+        interface_residues = self.interface.interface_residues
 
         mutations_at_interface = []
         for residue in interface_residues:
@@ -254,10 +254,11 @@ if __name__ == "__main__":
     os.chdir('multimer_interface')
     pdb = sys.argv[1]
     # pdb = 'ranked_0.pdb'
-    os.popen(f'cp ../{pdb} ./')
-    mul = Multimerscan(pdb)
-    # print(mul.mutations)
-    print(f"Found {len(mul.mutations)} putative stabilizing mutations at interface.")
-    mul.run_scan('foldx')
+    os.popen(f'cp ../{pdb} ./ && touch PDB_COPYED')
+    if 'PDB_COPYED' in os.listdir("./"):
+        mul = Multimerscan(pdb)
+        # print(mul.mutations)
+        print(f"Found {len(mul.mutations)} putative stabilizing mutations at interface.")
+        mul.run_scan('foldx')
 
 
