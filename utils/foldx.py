@@ -78,6 +78,17 @@ class foldx_binder:
         pass
 
     @staticmethod
+    def make_individual_list(mutation, chains: list):
+        ind_file = open("individual_list.txt", "w+")
+        line_list = []
+        for chain in chains:
+            line_list.append("".join(mutation.convert2foldx(chain)))
+        line = ",".join(line_list) + ";\n"
+        ind_file.write(line)
+        ind_file.close()
+
+
+    @staticmethod
     def repair_pdb(pdb_file):
         cmd = "foldx --command=RepairPDB --pdb=" + pdb_file
         repair_out = os.popen(cmd).read()
@@ -107,6 +118,35 @@ class foldx_binder:
         with open("individual_list.txt", "w+") as indFile:
             indFile.write(wild + chain + str(position) + mutation + ";")
             indFile.close()
+        cmd1 = "cp ../../" + pdb_file + " ./"
+        os.popen(cmd1)
+        cmd2 = (
+                "foldx --command=BuildModel --numberOfRuns="
+                + str(numOfRuns)
+                + " --mutant-file=individual_list.txt --pdb="
+                + pdb_file
+                + " 1>/dev/null"
+        )
+        starttime = time.time()
+        os.system(cmd2)
+        results = foldx_binder.cal_score(wild, position, mutation, pdb_file)
+        cp_files(job_id, pdb_file, numOfRuns)
+        finishtime = time.time()
+        print(
+            "FoldX mutation %s_%s_%s took %f seconds."
+            % (wild, position, mutation, finishtime - starttime)
+        )
+
+        os.chdir("../../")
+        return results
+
+    def run_one_multimer_job(varlist: list):
+        pdb_file, wild, chains, mutation, position, job_id, numOfRuns = varlist
+        # mutation_name = "_".join([wild, str(resNum), mutation])
+        path_job_id = FOLDX_JOBS_DIR + job_id
+        distutils.dir_util.mkpath(path_job_id)
+        os.chdir(path_job_id)
+        foldx_binder.make_individual_list(mutation, chains)
         cmd1 = "cp ../../" + pdb_file + " ./"
         os.popen(cmd1)
         cmd2 = (

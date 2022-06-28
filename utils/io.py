@@ -35,7 +35,7 @@ class Protein:
             "MET": "M",
         }
         y = d.get(x)
-        assert y, f"{x} dose not belong to 20 canonical animo acids!"
+        assert y, f"{x} dose not belong to 20 canonical amino acids!"
         return y
 
     def pdb2seq(self):
