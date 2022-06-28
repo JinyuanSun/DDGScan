@@ -207,10 +207,6 @@ class Multimerscan:
             results = Parallel(n_jobs=self.threads)(delayed(foldx_binder.run_one_multimer_job)(var) for var in job_list)
             FoldX.dump_score_file(results, self.input_pdb)
 
-
-
-
-
     def _read_fasta(self, seq_file):
         self.fasta_chain_dict = {}
         with open(seq_file, 'r') as fasta:
