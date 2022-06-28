@@ -249,9 +249,11 @@ class Multimerscan:
         pass
 
 if __name__ == "__main__":
+    import sys
     distutils.dir_util.mkpath('multimer_interface')
     os.chdir('multimer_interface')
-    pdb = 'ranked_0.pdb'
+    pdb = sys.argv[1]
+    # pdb = 'ranked_0.pdb'
     os.popen(f'cp ../{pdb} ./')
     mul = Multimerscan(pdb)
     # print(mul.mutations)
