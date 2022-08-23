@@ -23,7 +23,7 @@ ABACUS2_RESULTS_DIR = 'abacus2_results/'
 ABACUS2_SCORE_FILE = 'All_ABACUS2.score'
 
 
-long2short= {
+long2short = {
         "CYS": "C",
         "ASP": "D",
         "SER": "S",

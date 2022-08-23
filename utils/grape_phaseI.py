@@ -473,8 +473,9 @@ def main1(args):
             break
     relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
     rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
+    exe_dict["relax"] = relax_exe
     if not rosettadb:
-        rosettadb = "/".join(relax_exe.split("/")[:-4]) + "/database/"
+        rosettadb = relax_exe.split('main')[0] + "database/"
     exe_dict["relax"] = relax_exe
     abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
 
