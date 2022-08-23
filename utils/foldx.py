@@ -158,12 +158,12 @@ class foldx_binder:
         )
         starttime = time.time()
         os.system(cmd2)
-        results = foldx_binder.cal_score(wild, position, mutation, pdb_file)
+        results = foldx_binder.cal_score(wild, position, mutation.mutation, pdb_file)
         cp_files(job_id, pdb_file, numOfRuns)
         finishtime = time.time()
         print(
             "FoldX mutation %s_%s_%s took %f seconds."
-            % (wild, position, mutation, finishtime - starttime)
+            % (wild, position, mutation.mutation, finishtime - starttime)
         )
 
         os.chdir("../../")

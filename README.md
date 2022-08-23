@@ -197,6 +197,11 @@ MutationsEnergies_BestPerPositionBelowCutOff.tab
 And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for 
 every mutation built by FoldX. Of course, there will be directories start with rosetta or abacus, depending on your choice!  
 If `-md` was turned on, all produced snapshots can be found in `selectpdb` with `afterMD` as a suffix in the name of PDB files.
+### Support for homo-multimer interface mutation modelling
+In some cases, one may need to redesign a multimer for biocatalysis. For homo-multimer, we need to manage mutations at symmetrical interfaces. To reduce the required computing resources, DDGScan treats homo-multimer as a monomer for 1st round prediction. And putative beneficial mutations located at the interface will be selected for further prediction, and multiple mutations will be made on the entire multimer.
+```bash
+multimer_scan.py multimer.pdb
+```
 #### Inspect structures
 Using `scripts/inspectmutation.py` to inspect mutations in pymol:
 ```bash
@@ -262,6 +267,8 @@ Here are two example of a bar-plot of a saturated single point mutation and muta
 2021.12: Added `modeller` for loop modelling and args was rewritten.  
 2022.03: Released a few more codes on plotting and updateed the command line interface.  
 **2022.04: Release v0.1.0!**  
+2022.05: Fixed some minor bugs reported.
+2022.06: Add `multimer_scan.py` for homo-multimer interface mutation analysis.  
 Continuing...
 
 ## Known Issues
@@ -270,7 +277,7 @@ use `/path/to/rosetta/main/tools/protein_tools/scripts/clean_pdb.py`
 to clean pdb. However, this script will also renumber pdb file.
 During test, some cases failed because of the following problems:
 - Non-canonical amino acid in pdb will cause failure due to lack parameters in all predictors, therefore is not accepted.   
-- Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold.
+- Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold. Based on some case study and reports from the community, the AF2 structrue is prefectly OK as a good start point.
 
 ## Citation
 For this software:

@@ -1,7 +1,12 @@
 test_bak
 
+
 utils/mpnn_protein.py
 
 parallel_sites.py
 
-utils/__pycache__/r
+utils/__pycache__/
+
+build
+DDGScan.egg-info
+dist
