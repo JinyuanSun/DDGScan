@@ -475,7 +475,7 @@ def main1(args):
     rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
     exe_dict["relax"] = relax_exe
     if not rosettadb:
-        rosettadb = relax_exe.split('main')[0] + "database/"
+        rosettadb = relax_exe.split('main')[0] + "main/database/"
     exe_dict["relax"] = relax_exe
     abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
 
