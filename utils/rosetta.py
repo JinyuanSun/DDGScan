@@ -82,6 +82,9 @@ class Rosetta:
             ).read()
             self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
         else:
+            print("==" * 20)
+            print("Relax skipped!")
+            print("==" * 20)
             relaxed_pdb_name = self.pdbname.replace('.pdb', "")
             self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
         os.chdir("../")
