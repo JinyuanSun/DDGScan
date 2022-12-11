@@ -43,44 +43,47 @@ class Rosetta:
         #     os.system("cp  " + self.pdbname + " rosetta_relax/")
         #     os.chdir("rosetta_relax")
         #     pass
+        if int(self.relax_num) > 0:
+            with open("cart2.script", "w+") as cart2:
+                cart2.write("switch:cartesian\n")
+                cart2.write("repeat 2\n")
+                cart2.write("ramp_repack_min 0.02  0.01     1.0  50\n")
+                cart2.write("ramp_repack_min 0.250 0.01     0.5  50\n")
+                cart2.write("ramp_repack_min 0.550 0.01     0.0 100\n")
+                cart2.write("ramp_repack_min 1     0.00001  0.0 200\n")
+                cart2.write("accept_to_best\n")
+                cart2.write("endrepeat")
+                cart2.close()
 
-        with open("cart2.script", "w+") as cart2:
-            cart2.write("switch:cartesian\n")
-            cart2.write("repeat 2\n")
-            cart2.write("ramp_repack_min 0.02  0.01     1.0  50\n")
-            cart2.write("ramp_repack_min 0.250 0.01     0.5  50\n")
-            cart2.write("ramp_repack_min 0.550 0.01     0.0 100\n")
-            cart2.write("ramp_repack_min 1     0.00001  0.0 200\n")
-            cart2.write("accept_to_best\n")
-            cart2.write("endrepeat")
-            cart2.close()
-
-        relax_threads = min([int(self.threads), int(self.relax_num)])
-        relax_cmd = "".join(
-            [
-                "mpirun --allow-run-as-root -n "
-                + str(relax_threads)
-                + " relax.mpi.linuxgccrelease -s "
-                + self.pdbname
-                + " -use_input_sc",
-                " -constrain_relax_to_start_coords -ignore_unrecognized_res",
-                " -nstruct " + str(self.relax_num),
-                " -relax:coord_constrain_sidechains",
-                " -relax:cartesian -score:weights ref2015_cart ",
-                " -relax:min_type lbfgs_armijo_nonmonotone",
-                " -relax:script cart2.script 1>/dev/null && sort -nk2 score.sc |head -n 1|awk '{print$22}'",
-            ]
-        )
-        print("==" * 20)
-        print(" Relaxing your Protein: ")
-        # os.system(relax_cmd)
-        relaxed_pdb_name = os.popen(relax_cmd).read()
-        print(" Finished relax! ")
-        print("==" * 20)
-        relaxed_pdb_name = os.popen(
-            "sort -nk2 score.sc |head -n 1|awk '{print$22}'"
-        ).read()
-        self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
+            relax_threads = min([int(self.threads), int(self.relax_num)])
+            relax_cmd = "".join(
+                [
+                    "mpirun --allow-run-as-root -n "
+                    + str(relax_threads)
+                    + " relax.mpi.linuxgccrelease -s "
+                    + self.pdbname
+                    + " -use_input_sc",
+                    " -constrain_relax_to_start_coords -ignore_unrecognized_res",
+                    " -nstruct " + str(self.relax_num),
+                    " -relax:coord_constrain_sidechains",
+                    " -relax:cartesian -score:weights ref2015_cart ",
+                    " -relax:min_type lbfgs_armijo_nonmonotone",
+                    " -relax:script cart2.script 1>/dev/null && sort -nk2 score.sc |head -n 1|awk '{print$22}'",
+                ]
+            )
+            print("==" * 20)
+            print(" Relaxing your Protein: ")
+            # os.system(relax_cmd)
+            relaxed_pdb_name = os.popen(relax_cmd).read()
+            print(" Finished relax! ")
+            print("==" * 20)
+            relaxed_pdb_name = os.popen(
+                "sort -nk2 score.sc |head -n 1|awk '{print$22}'"
+            ).read()
+            self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
+        else:
+            relaxed_pdb_name = self.pdbname.replace('.pdb', "")
+            self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
         os.chdir("../")
         return relaxed_pdb_name.replace("\n", "") + ".pdb"
 
