@@ -345,7 +345,6 @@ def main(args):
         job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_one_job)(var) for var in job_list)
         Rosetta.dump_score_file(results, args.pdb)
-
     if 'abacus2' in engines:
         distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
         # abacus.runOneJob

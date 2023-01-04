@@ -7,12 +7,14 @@ import logging
 import os
 import time
 
+from shutil import which
 import pandas as pd
 from joblib import Parallel, delayed
 
 import utils.foldx as foldx
 import utils.io as io
 import utils.rosetta as rosetta
+from utils.rosetta import rosetta_binder
 from utils import abacus
 # from utils import autofix
 from utils import judge
@@ -38,7 +40,6 @@ class GRAPE:
         }
         self.abacus2_results = {}
         # self.repaired_pdbfile: str
-        pass
 
     def run_foldx(self, pdb, threads, chain, numOfRuns):
         print("[INFO]: FoldX started at %s" % (time.ctime()))
@@ -111,6 +112,45 @@ class GRAPE:
         Parallel(n_jobs=threads)(
             delayed(prot_rosetta.runOneJob)(var) for var in job_list
         )
+        scan_end = time.time()
+        scan_time = scan_end - scan_start
+        self.running_time["rosetta_scan"] = scan_time
+        print("[INFO]: Rosetta cartesian_ddg Scan took %f seconds." % (scan_time))
+
+        return prot_rosetta
+
+    def run_ddg_monomer(self, pdb, threads, chain, relax_num, exe, rosettadb):
+        print("Rosetta started at %s" % (time.ctime()))
+        # relax_num = 200
+
+        prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads, exe, rosettadb)
+        relax_start = time.time()
+        relaxed_prot = prot_rosetta.fast_relax()
+        relax_end = time.time()
+        relax_time = relax_end - relax_start
+        self.running_time["rosetta_relax"] = relax_time
+        print("[INFO]: Rosetta Relax took %f seconds." % (relax_time))
+
+        prot = io.Protein(pdb, chain)
+        seq, resNumList = io.Protein.pdb2seq(prot)
+        distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
+        # all_results = []
+        job_list = []
+        for i, res in enumerate(seq):
+
+            resNum = resNumList[i]
+            wild = res
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
+                if aa != wild:
+                    jobID = ROSETTA_JOBS_DIR + "_".join([wild, str(resNum), aa])
+                    job_list.append([wild, aa, str(i + 1), jobID, exe, rosettadb])
+
+        scan_start = time.time()
+        # Parallel(n_jobs=threads)(
+        #     delayed(prot_rosetta.runOneJob)(var) for var in job_list
+        # )
+        results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_row1)(var) for var in job_list)
+        # Rosetta.dump_score_file(results, args.pdb)
         scan_end = time.time()
         scan_time = scan_end - scan_start
         self.running_time["rosetta_scan"] = scan_time
@@ -224,7 +264,40 @@ class GRAPE:
                     "\t".join([line[0], str(line[1]), str(line[2])]) + "\n"
                 )
             rosettaout.close()
+        return all_results
 
+    def Analysis_ddgmonomer(self, pdb, chain, prot_rosetta):
+        distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
+        prot = io.Protein(pdb, chain)
+        seq, resNumList = io.Protein.pdb2seq(prot)
+
+        all_results = []
+        for i, res in enumerate(seq):
+            resNum = resNumList[i]
+            wild = res
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
+                if aa != wild:
+                    # jobID = "foldx_jobs/" + str(i) + "_" + str(j) + "/"
+                    # "_".join([wild, str(resNum), mutation])
+                    rosettaddgfile = (
+                            ROSETTA_JOBS_DIR
+                            + "_".join([wild, str(resNum), aa])
+                            + "/ddg_predictions.out"
+                    )
+                    all_results.append(
+                        ["_".join([wild, str(resNum), aa])]
+                        + prot_rosetta.read_ddg_monomer_out(rosettaddgfile)
+                    )
+
+        with open(ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE, "w+") as rosettaout:
+            rosettaout.write(
+                "#Score file formatted by GRAPE from Rosetta.\n#mutation\tscore\tstd\n"
+            )
+            for line in all_results:
+                rosettaout.write(
+                    "\t".join([line[0], str(line[1]), str(line[2])]) + "\n"
+                )
+            rosettaout.close()
         return all_results
 
     def analysisGrapeScore(self, scoreFile, cutoff, result_dir):
@@ -397,6 +470,29 @@ def runMD(platform, selected_dict, md_threads=None):
     os.system("rm *dcd")
     os.chdir("../")
 
+def get_exes():
+    exe_dict = {"foldx": "", "relax": "", "cartddg": "", "ddg_monomer": "", "abacus": "", "abacus2": "", 'rosettadb':''}
+    exe_dict["foldx"] = which("foldx")
+    for release in ["", ".static", ".mpi", ".default"]:
+        ddg_monomer_exe = which(f"ddg_monomer{release}.linuxgccrelease")
+        if ddg_monomer_exe != "":
+            exe_dict["ddg_monomer"] = ddg_monomer_exe
+    for release in ["", ".static", ".mpi", ".default"]:
+        cartesian_ddg_exe = which(f"cartesian_ddg{release}.linuxgccrelease")
+        if cartesian_ddg_exe != "":
+            exe_dict["cartddg"] = cartesian_ddg_exe
+    relax_exe = which("relax.mpi.linuxgccrelease") # required for mpi relax
+    exe_dict["relax"] = relax_exe
+    rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
+    try:
+        if not rosettadb:
+            rosettadb = relax_exe.split('main')[0] + "main/database/"
+    except:
+        print('')
+    exe_dict["rosettadb"] = os.getenv('ROSETTADB')
+    exe_dict["abacus"] = which("ABACUS_prepare")
+    exe_dict["abacus2"] = which('singleMutation')
+    return exe_dict
 
 def main1(args):
     pdb = args.pdb
@@ -440,7 +536,6 @@ def main1(args):
                     logging.warning(f"The patched sequence is {_seq}, we modelling the missing part according it!")
                     # exit()
                 else:
-                    # print("PDB check Failed!")
                     logging.warning("Gaps found in your pdb file. PDB check failed. However, the job will continue.")
                     # exit()
             else:
@@ -448,41 +543,15 @@ def main1(args):
         return pdb
 
     if args.mode == "test":
-        checkpdb(pdb, chain, seqfile)
+        # checkpdb(pdb, chain, seqfile)
+        exe_dict = get_exes()
+        print(exe_dict)
         exit()
-
-    exe_dict = {"foldx": "", "relax": "", "cartddg": "", "pmut": "", "abacus": "", "abacus2": ""}
-
-    foldx_exe = os.popen("which foldx").read().replace("\n", "")
-    exe_dict["foldx"] = foldx_exe
-    pmut_scan_parallel_exe = (
-        os.popen("which pmut_scan_parallel.mpi.linuxgccrelease")
-            .read()
-            .replace("\n", "")
-    )
-    #     rosettadb = "/".join(pmut_scan_parallel_exe.split("/")[:-3]) + "/database/"
-    exe_dict["pmut"] = pmut_scan_parallel_exe
-    for release in ["", ".static", ".mpi", ".default"]:
-        cartesian_ddg_exe = (
-            os.popen("which cartesian_ddg%s.linuxgccrelease" % (release))
-                .read()
-                .replace("\n", "")
-        )
-        if cartesian_ddg_exe != "":
-            exe_dict["cartddg"] = cartesian_ddg_exe
-            break
-    relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
-    rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
-    exe_dict["relax"] = relax_exe
-    if not rosettadb:
-        rosettadb = relax_exe.split('main')[0] + "main/database/"
-    exe_dict["relax"] = relax_exe
-    abacus_prep = os.popen("which ABACUS_prepare").read().replace("\n", "")
-
-    exe_dict["abacus"] = abacus_prep
-
-    singleMutation = os.popen("which singleMutation").read().replace("\n", "")
-    exe_dict["abacus2"] = singleMutation
+    exe_dict = get_exes()
+    foldx_exe = exe_dict['foldx']
+    cartesian_ddg_exe = exe_dict['cartddg']
+    rosettadb = exe_dict['rosettadb']
+    ddg_monomer_exe = exe_dict['ddg_monomer']
 
     for soft in softlist:
         if soft == "rosetta":
@@ -495,8 +564,8 @@ def main1(args):
                         "Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
                     exit()
             if preset == "fast":
-                if exe_dict["pmut"] == "":
-                    logging.error("Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!")
+                if exe_dict["ddg_monomer"] == "":
+                    logging.error("Cannot find Rosetta: any ddg_monomer.linuxgccrelease (mpi nor default nor static)!")
                     exit()
         else:
             if exe_dict[soft] == "":
@@ -539,21 +608,8 @@ def main1(args):
                 )
         if preset == "fast":
             if "rosetta" in softlist:
-                relaxed_pdb = rosetta1.relax()
-                distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
-                os.chdir(ROSETTA_JOBS_DIR)
-
-                os.system("cp ../%s/%s ./" % (ROSETTA_RELAX_DIR, relaxed_pdb))
-                pmut_time = rosetta1.pmut_scan(relaxed_pdb)
-                grape.running_time["rosetta_scan"] = pmut_time
-                logging.warning("Rosetta pmut_scan_parallel took %f seconds." % (pmut_time))
-                os.chdir("..")
-                distutils.dir_util.mkpath(ROSETTA_RESULTS_DIR)
-                os.chdir(ROSETTA_RESULTS_DIR)
-
-                rosetta1.pmut_scan_analysis(f"../{ROSETTA_JOBS_DIR}pmut.out")
-                os.chdir("..")
-
+                prot_rosetta = grape.run_ddg_monomer(pdb, threads, chain, relax_num, ddg_monomer_exe, rosettadb)
+                grape.Analysis_ddgmonomer(pdb, chain, prot_rosetta)
                 grape.analysisGrapeScore(
                     ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE,
                     rosetta_cutoff,

@@ -27,22 +27,12 @@ class Rosetta:
         # self.relaxedpdb = pdbName #for test
         self.rosettadb = rosettadb
         self.relaxedpdb: str  # for test
-
-        # self.cutoff = cutOff
         self.result = []
 
     def relax(self):
         distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
         os.system("cp  " + self.pdbname + " " + common.ROSETTA_RELAX_DIR)
         os.chdir(common.ROSETTA_RELAX_DIR)
-        # try:
-        #     os.mkdir("rosetta_relax")
-        #     os.system("cp  " + self.pdbname + " rosetta_relax/")
-        #     os.chdir("rosetta_relax")
-        # except FileExistsError:
-        #     os.system("cp  " + self.pdbname + " rosetta_relax/")
-        #     os.chdir("rosetta_relax")
-        #     pass
 
         with open("cart2.script", "w+") as cart2:
             cart2.write("switch:cartesian\n")
@@ -84,13 +74,21 @@ class Rosetta:
         os.chdir("../")
         return relaxed_pdb_name.replace("\n", "") + ".pdb"
 
+    def fast_relax(self):
+        distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
+        os.system("cp  " + self.pdbname + " " + common.ROSETTA_RELAX_DIR)
+        os.chdir(common.ROSETTA_RELAX_DIR)
+        relax_cmd = f"relax.mpi.linuxgccrelease -s {self.pdbname} 1>/dev/null"
+        os.popen(relax_cmd)
+        self.relaxedpdb = self.pdbname.replace(".pdb", "_0001.pdb")
+        os.chdir("../")
+        return self.pdbname.replace(".pdb", "_0001.pdb")
+
     def read_rosetta_ddgout(self, rosettaddgfilename):
-        ddg_dict = {}
 
         ddg_array = []
         with open(rosettaddgfilename) as rosettaddg:
             for line in rosettaddg:
-                # print(line.split(":")[2])
                 if line.split(":")[2].strip() == "WT":
                     dg_ref = float(line.split(":")[3][1:10])
                 else:
@@ -99,22 +97,21 @@ class Rosetta:
             rosettaddg.close()
 
         return [
-            round(np.array(ddg_array).mean(), 4),
-            round(np.array(ddg_array).std(), 4),
+            "{:.4f}".format(np.array(ddg_array).mean()),
+            "{:.4f}".format(np.array(ddg_array).std())
         ]
+
+    def read_ddg_monomer_out(self, ddg_monomer_file):
+        ddg = float(open(ddg_monomer_file, 'r').readlines()[1].split()[2])
+        return ["{:.4f}".format(ddg), "{:.4f}".format(ddg)]
 
     def runOneJob(self, varlist: list):
         wild, mutation, resNum, jobID = varlist
         distutils.dir_util.mkpath(jobID)
         os.chdir(jobID)
-        # try:
-        #     os.mkdir(jobID)
-        #     os.chdir(jobID)
-        # except FileExistsError:
-        #     os.chdir(jobID)
 
-        # os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
-        os.system("cp ../../" + common.ROSETTA_RELAX_DIR + self.relaxedpdb + " ./")
+        os.system("cp ../../" + common.ROSETTA_RELAX_DIR +
+                  self.relaxedpdb + " ./")
         with open("mtfile", "w+") as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")
@@ -159,7 +156,6 @@ class Rosetta:
         )
         # print(cartddg_cmd)
         os.chdir("../../")
-        # return pid, '_'.join([wild, str(trueResNum), mutation])
 
     def pmut_scan(self, relaxed_pdb):
         if os.path.isfile("pmut.out"):
@@ -167,8 +163,8 @@ class Rosetta:
         else:
             pmut_scan_exe = (
                 os.popen("which pmut_scan_parallel.mpi.linuxgccrelease")
-                    .read()
-                    .replace("\n", "")
+                .read()
+                .replace("\n", "")
             )
             rosettadb = "/".join(pmut_scan_exe.split("/")[:-3]) + "/database/"
             arg_list = [
@@ -306,18 +302,20 @@ class rosetta_binder:
         ]
 
     @staticmethod
+    def read_ddg_monomer_out(ddg_monomer_file, wild, mutation, resNum):
+        ddg = float(open(ddg_monomer_file, 'r').readlines()[1].split()[2])
+        return ["_".join([wild, str(resNum), mutation]),
+                str(round(ddg), 4),
+                str(round(ddg), 4),
+                "0.000"]
+
+    @staticmethod
     def run_one_job(varlist: list):
         wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb = varlist
         path_job_id = common.ROSETTA_JOBS_DIR + jobID
         distutils.dir_util.mkpath(path_job_id)
         os.chdir(path_job_id)
-        # try:
-        #     os.mkdir(jobID)
-        #     os.chdir(jobID)
-        # except FileExistsError:
-        #     os.chdir(jobID)
 
-        # os.popen('cp ../../rosetta_relax/' + self.relaxedpdb + ' ./')
         os.system("cp ../../" + common.ROSETTA_RELAX_DIR + relaxedpdb + " ./")
         with open("mtfile", "w+") as mtfile:
             mtfile.write("total 1\n")
@@ -361,8 +359,56 @@ class rosetta_binder:
             "[DEBUG]: Rosetta mutation %s_%s_%s took %f seconds."
             % (wild, resNum, mutation, finishtime - starttime)
         )
-        result = rosetta_binder.read_rosetta_ddgout('mtfile.ddg', wild, mutation, resNum)
+        result = rosetta_binder.read_rosetta_ddgout(
+            'mtfile.ddg', wild, mutation, resNum)
         # print(cartddg_cmd)
+        os.chdir("../../")
+        return result
+
+    @staticmethod
+    def run_row1(varlist: list):
+        wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb = varlist
+        path_job_id = common.ROSETTA_JOBS_DIR + jobID
+        distutils.dir_util.mkpath(path_job_id)
+        os.chdir(path_job_id)
+
+        os.system("cp ../../" + common.ROSETTA_RELAX_DIR + relaxedpdb + " ./")
+        with open("mtfile", "w+") as mtfile:
+            mtfile.write("total 1\n")
+            mtfile.write("1\n")
+            mtfile.write(wild + " " + str(resNum) + " " + mutation + "\n")
+            mtfile.close()
+
+        argument_list = [
+            exe,
+            "-database",
+            rosettadb,
+            "-use_input_sc",
+            "-s",
+            relaxedpdb,
+            "-ddg::local_opt_only true",
+            "-ddg::opt_radius 0.1",
+            "-ddg::weight_file soft_rep_design",
+            "-ddg::iterations 1",
+            "-ddg::min_cst false",
+            "-ddg::mean false",
+            "-ddg:min true",
+            "-ddg::sc_min_only false",
+            "1>/dev/null",
+        ]
+
+        ddg_cmd = " ".join(argument_list)
+
+        starttime = time.time()
+        os.system(ddg_cmd)
+        finishtime = time.time()
+        print(
+            "[DEBUG]: Rosetta mutation %s_%s_%s took %f seconds."
+            % (wild, resNum, mutation, finishtime - starttime)
+        )
+        # result = rosetta_binder.read_rosetta_ddgout('mtfile.ddg', wild, mutation, resNum)
+        result = rosetta_binder.read_ddg_monomer_out(
+            'ddg_predictions.out', wild, mutation, resNum)
         os.chdir("../../")
         return result
 
