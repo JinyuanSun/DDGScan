@@ -10,3 +10,6 @@ utils/__pycache__/
 build
 DDGScan.egg-info
 dist
+# Accuracy The random splited test dataset
+__pycache__/
+.idea/

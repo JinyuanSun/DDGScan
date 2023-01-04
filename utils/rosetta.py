@@ -5,7 +5,7 @@
 import distutils.dir_util
 import os
 import time
-
+from shutil import which
 import numpy as np
 import utils.common as common
 # from .common import *
@@ -47,30 +47,37 @@ class Rosetta:
 
         relax_threads = min([int(self.threads), int(self.relax_num)])
         relax_cmd = "".join(
-            [
-                "mpirun --allow-run-as-root -n "
-                + str(relax_threads)
-                + " relax.mpi.linuxgccrelease -s "
-                + self.pdbname
-                + " -use_input_sc",
-                " -constrain_relax_to_start_coords -ignore_unrecognized_res",
-                " -nstruct " + str(self.relax_num),
-                " -relax:coord_constrain_sidechains",
-                " -relax:cartesian -score:weights ref2015_cart ",
-                " -relax:min_type lbfgs_armijo_nonmonotone",
-                " -relax:script cart2.script 1>/dev/null && sort -nk2 score.sc |head -n 1|awk '{print$22}'",
-            ]
-        )
-        print("==" * 20)
-        print(" Relaxing your Protein: ")
-        # os.system(relax_cmd)
-        relaxed_pdb_name = os.popen(relax_cmd).read()
-        print(" Finished relax! ")
-        print("==" * 20)
-        relaxed_pdb_name = os.popen(
-            "sort -nk2 score.sc |head -n 1|awk '{print$22}'"
-        ).read()
-        self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
+                [
+                    "mpirun --allow-run-as-root -n "
+                    + str(relax_threads)
+                    + " relax.mpi.linuxgccrelease -s "
+                    + self.pdbname
+                    + " -use_input_sc",
+                    " -constrain_relax_to_start_coords -ignore_unrecognized_res",
+                    " -nstruct " + str(self.relax_num),
+                    " -relax:coord_constrain_sidechains",
+                    " -relax:cartesian -score:weights ref2015_cart ",
+                    " -relax:min_type lbfgs_armijo_nonmonotone",
+                    " -relax:script cart2.script 1>/dev/null && sort -nk2 score.sc |head -n 1|awk '{print$22}'",
+                ]
+            )
+        if which('relax.mpi.linuxgccrelease'):
+            print("==" * 20)
+            print(" Relaxing your Protein: ")
+            # os.system(relax_cmd)
+            relaxed_pdb_name = os.popen(relax_cmd).read()
+            print(" Finished relax! ")
+            print("==" * 20)
+            relaxed_pdb_name = os.popen(
+                "sort -nk2 score.sc |head -n 1|awk '{print$22}'"
+            ).read()
+            self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
+        else:
+            print("==" * 20)
+            print("Relax skipped!")
+            print("==" * 20)
+            relaxed_pdb_name = self.pdbname.replace('.pdb', "")
+            self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
         os.chdir("../")
         return relaxed_pdb_name.replace("\n", "") + ".pdb"
 
