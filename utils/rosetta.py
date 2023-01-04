@@ -86,7 +86,7 @@ class Rosetta:
         os.system("cp  " + self.pdbname + " " + common.ROSETTA_RELAX_DIR)
         os.chdir(common.ROSETTA_RELAX_DIR)
         relax_cmd = f"relax.mpi.linuxgccrelease -s {self.pdbname} 1>/dev/null"
-        os.popen(relax_cmd)
+        x = os.popen(relax_cmd).read()
         self.relaxedpdb = self.pdbname.replace(".pdb", "_0001.pdb")
         os.chdir("../")
         return self.pdbname.replace(".pdb", "_0001.pdb")
@@ -312,8 +312,8 @@ class rosetta_binder:
     def read_ddg_monomer_out(ddg_monomer_file, wild, mutation, resNum):
         ddg = float(open(ddg_monomer_file, 'r').readlines()[1].split()[2])
         return ["_".join([wild, str(resNum), mutation]),
-                str(round(ddg), 4),
-                str(round(ddg), 4),
+                "{:.4f}".format(ddg),
+                "{:.4f}".format(ddg),
                 "0.000"]
 
     @staticmethod
@@ -376,9 +376,10 @@ class rosetta_binder:
     def run_row1(varlist: list):
         wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb = varlist
         path_job_id = common.ROSETTA_JOBS_DIR + jobID
+        # print(f"path_job_id: {path_job_id}")
         distutils.dir_util.mkpath(path_job_id)
         os.chdir(path_job_id)
-
+        # print(os.getcwd())
         os.system("cp ../../" + common.ROSETTA_RELAX_DIR + relaxedpdb + " ./")
         with open("mtfile", "w+") as mtfile:
             mtfile.write("total 1\n")
@@ -401,11 +402,12 @@ class rosetta_binder:
             "-ddg::mean false",
             "-ddg:min true",
             "-ddg::sc_min_only false",
+            "-ddg::mut_file mtfile",
             "1>/dev/null",
         ]
-
+        # print(argument_list)
         ddg_cmd = " ".join(argument_list)
-
+        # print(ddg_cmd)
         starttime = time.time()
         os.system(ddg_cmd)
         finishtime = time.time()
@@ -417,6 +419,7 @@ class rosetta_binder:
         result = rosetta_binder.read_ddg_monomer_out(
             'ddg_predictions.out', wild, mutation, resNum)
         os.chdir("../../")
+        # print(f"After: {os.getcwd()}")
         return result
 
 

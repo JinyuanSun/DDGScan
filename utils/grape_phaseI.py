@@ -133,7 +133,7 @@ class GRAPE:
 
         prot = io.Protein(pdb, chain)
         seq, resNumList = io.Protein.pdb2seq(prot)
-        distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
+        # distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
         # all_results = []
         job_list = []
         for i, res in enumerate(seq):
@@ -142,10 +142,11 @@ class GRAPE:
             wild = res
             for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
                 if aa != wild:
-                    jobID = ROSETTA_JOBS_DIR + "_".join([wild, str(resNum), aa])
-                    job_list.append([wild, aa, str(i + 1), jobID, exe, rosettadb])
+                    jobID =  "_".join([wild, str(resNum), aa])
+                    job_list.append([wild, aa, str(i + 1), jobID, relaxed_prot, exe, rosettadb])
 
         scan_start = time.time()
+        # print(job_list)
         # Parallel(n_jobs=threads)(
         #     delayed(prot_rosetta.runOneJob)(var) for var in job_list
         # )
@@ -475,12 +476,14 @@ def get_exes():
     exe_dict["foldx"] = which("foldx")
     for release in ["", ".static", ".mpi", ".default"]:
         ddg_monomer_exe = which(f"ddg_monomer{release}.linuxgccrelease")
-        if ddg_monomer_exe != "":
+        if ddg_monomer_exe != None:
             exe_dict["ddg_monomer"] = ddg_monomer_exe
+            break
     for release in ["", ".static", ".mpi", ".default"]:
         cartesian_ddg_exe = which(f"cartesian_ddg{release}.linuxgccrelease")
-        if cartesian_ddg_exe != "":
+        if cartesian_ddg_exe != None:
             exe_dict["cartddg"] = cartesian_ddg_exe
+            break
     relax_exe = which("relax.mpi.linuxgccrelease") # required for mpi relax
     exe_dict["relax"] = relax_exe
     rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
@@ -548,6 +551,7 @@ def main1(args):
         print(exe_dict)
         exit()
     exe_dict = get_exes()
+    # print(exe_dict)
     foldx_exe = exe_dict['foldx']
     cartesian_ddg_exe = exe_dict['cartddg']
     rosettadb = exe_dict['rosettadb']
