@@ -245,6 +245,17 @@ class rosetta_binder:
         pass
 
     @staticmethod
+    def fast_relax(pdbname, threads=1, relax_num=1):
+        distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
+        os.system("cp  " + pdbname + " " + common.ROSETTA_RELAX_DIR)
+        os.chdir(common.ROSETTA_RELAX_DIR)
+        relax_cmd = f"relax.mpi.luxgccrelease -s {pdbname} 1>/dev/null"
+        x = os.popen(relax_cmd).read()
+        relaxedpdb = pdbname.replace(".pdb", "_0001.pdb")
+        os.chdir("../")
+        return pdbname.replace(".pdb", "_0001.pdb")
+
+    @staticmethod
     def relax(pdbname, threads, relax_num):
         distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
         os.system("cp  " + pdbname + " " + common.ROSETTA_RELAX_DIR)
