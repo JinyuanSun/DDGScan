@@ -13,6 +13,7 @@ import distutils.dir_util
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
+from shutil import which
 
 from utils.foldx import foldx_binder
 from utils.rosetta import rosetta_binder
@@ -176,24 +177,24 @@ class Rosetta:
         return res_dict
 
     @staticmethod
-    def mk_job_list(pdb, relaxedpdb, mutation_list):
+    def mk_job_list(pdb, relaxedpdb, mutation_list, fast=False):
 
         def get_exe_db():
-            relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
+            relax_exe = which("relax.mpi.linuxgccrelease")
             rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
             if not rosettadb:
                 rosettadb = "/".join(relax_exe.split("/")[:-4]) + "/database/"
             for release in ["", ".static", ".mpi", ".default"]:
-                cartesian_ddg_exe = (
-                    os.popen("which cartesian_ddg%s.linuxgccrelease" % (release))
-                        .read()
-                        .replace("\n", "")
-                )
-                if cartesian_ddg_exe != "":
-                    # exe_dict["cartddg"] = cartesian_ddg_exe
+                cartesian_ddg_exe = which(f"cartesian_ddg{release}.linuxgccrelease")
+                if cartesian_ddg_exe != None:
                     return cartesian_ddg_exe, rosettadb
 
         exe, rosettadb = get_exe_db()
+        if fast:
+            for release in ["", ".static", ".mpi", ".default"]:
+                exe = which(f"ddg_monomer{release}.linuxgccrelease")
+                if exe != None:
+                    break
 
         job_list = []
         for mutation in mutation_list:
@@ -322,6 +323,7 @@ def dump_abacus_score_file(results, pdb):
 
 
 def main(args):
+    # args = get_args()
     threads = args.threads
     pdb_file = args.pdb
     numOfRuns = args.numofruns
@@ -348,7 +350,7 @@ def main(args):
     if 'rosetta_fast' in engines:
         # relaxed_pdb = rosetta_binder.(args.pdb, threads, relax_num) # fast relax
         relaxed_pdb = rosetta_binder.fast_relax(args.pdb, threads, relax_num)
-        job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list)
+        job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list, fast=True)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_row1)(var) for var in job_list)
         Rosetta.dump_score_file(results, args.pdb)
     if 'abacus2' in engines:
