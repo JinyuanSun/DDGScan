@@ -323,8 +323,8 @@ Here are two example of a bar-plot of a saturated single point mutation and muta
 **2022.04: Release v0.1.0!**  
 2022.05: Fixed some minor bugs reported.
 2022.06: Add `multimer_scan.py` for homo-multimer interface mutation analysis.  
-2023.01: Add support for `ddg_monomer`, about 80% accuracy of the `catresian_ddg`, 100 times faster.
-**2022.04: Release v0.1.1!**
+2023.01: Add support for `ddg_monomer`, about 80% accuracy of the `catresian_ddg`, 100 times faster.  
+**2022.04: Release v0.1.1!**  
 Continuing...
 
 
