@@ -1,4 +1,5 @@
 # Towards Stable Proteins
+
 Table of Contents
 =================
 
@@ -6,76 +7,103 @@ Table of Contents
   * [The GUI plugin for FoldX.](#the-gui-plugin-for-foldx)
   * [Installation](#installation)
   * [Usage](#usage)
-     * [Grape phase I](#grape-phase-i)
-     * [List distribute](#list-distribute)
-     * [Analysis and plot](#analysis-and-plot)
+    * [Grape phase I](#grape-phase-i)
+    * [List distribute](#list-distribute)
+    * [Analysis and plot](#analysis-and-plot)
   * [QuickStart](#quickstart)
-     * [Grape phase I](#grape-phase-i-1)
-       * [Inspect structures](#inspect-structures)
-     * [List distribute](#list-distribute-1)
-     * [Analysis <em>in silico</em> screening results](#analysis-in-silico-screening-results)
+    * [Grape phase I](#grape-phase-i-1)
+      * [Inspect structures](#inspect-structures)
+    * [List distribute](#list-distribute-1)
+    * [Analysis <em>in silico</em> screening results](#analysis-in-silico-screening-results)
   * [Develop Information](#develop-information)
   * [Known Issues](#known-issues)
   * [Citation](#citation)
   * [Lisense](#lisense)
   * [Need help?](#need-help?)
   
-**I am testing this repo with some different input structures, if you encountered any failure please post a issue.** 
+**I am testing this repo with some different input structures, if you encountered any failure please post a issue.**
 
-## The GUI plugin for FoldX.
+## The GUI plugin for FoldX
+
 [GUI](GUI/) only work for FoldX.
 
 ## Installation
- 
-First of all, please make sure you have added the **FoldX** executable to your environment! Secondly, **Rosetta** 
-(a mpi build is necessary) is 
-required for cartesian_ddg (`-mode slow`) calculation or pmut_scan(`-mode fast`). 
-Also, **ABACUS** is an outstanding software with great statistical energy function for protein design. 
-Structures downloaded from RCSB could be erroneous. One of the biggest problems that will directly affect energy calculation is breaks in chains. 
-Here I implemented a loop closure module using **modeller**, a great software with a very long history, as backend.   
+
+First of all, please make sure you have added the **FoldX** executable to your environment! Secondly, **Rosetta**
+(a mpi build is necessary otherwise the `relax` step will be skiped) is
+required for cartesian_ddg (`-mode slow`) calculation or ddg_monomer row1 protocol(`-mode fast`).
+Also, **ABACUS** is an outstanding software with great statistical energy function for protein design.
+Structures downloaded from RCSB could be erroneous. One of the biggest problems that will directly affect energy calculation is breaks in chains.
+Here I implemented a loop closure module using **modeller**, a great software with a very long history, as backend.
 Due to their licenses, I cannot redistribute them here :worried: !  
-To our glad, **openmm** is open source! So the glass is half full :smiley: . 
-Here is a good news, the **ABACUS2** database is now available at https://zenodo.org/record/4533424. However, the necessary 
-module is not available in the zenodo version, you may use the online server at https://biocomp.ustc.edu.cn/servers/abacus-design.php to run ABACUS2.
-  
-**Conda**:
+To our glad, **openmm** is open source! So the glass is half full :smiley: .
+Here is a good news, the **ABACUS2** database is now available at <https://zenodo.org/record/4533424>. However, the necessary
+module is not available in the zenodo version, you may use the online server at <https://biocomp.ustc.edu.cn/servers/abacus-design.php> to run ABACUS2.
+
+**Install DDGScan**
+
 ```shell
-# clone repo and create a new conda env
-git clone https://github.com/JinyuanSun/DDGScan.git
-cd DDGScan
-conda env create -f environment.yml
-# activate new env
+conda create -n ddgscan python=3.8
 conda activate ddgscan
-# install
-./setup.py install
+git clone https://github.com/JinyuanSun/DDGScan.git
+pip install pandas numpy joblib seaborn matplotlib venn logomaker mdtraj bio
+python setup.py install
+DDGScan -h # you should see help message
 ```
-**Via Pip**
+  
+**Install OpenMM and pdbfixer with Conda**:
+
+To avoid possilbe confilcts, create a new conda environment:
+
 ```shell
-git clone https://github.com/openmm/pdbfixer.git && cd pdbfixer && python setup.py install && cd ..
-git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan  && pip install -r requirements.txt && ./setup.py install
+conda activate ddgscan
+conda install -c conda-forge openmm pdbfixer
 ```
 
+**FoldX**
 
+[Register](https://foldxsuite.crg.eu/) and download the executable.
+
+**Rosetta**
+
+Follow the [Rosetta document](https://new.rosettacommons.org/demos/latest/tutorials/install_build/install_buildhttps://new.rosettacommons.org/demos/latest/tutorials/install_build/install_build)  
 I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by appending this into `~/.bashrc`:
-```
+
+```bash
 export ROSETTADB="/path/to/rosetta/database"
 ```
+
+**ABACUS1/2**
+
+Send email to the authors for source code.
+
+**Modeller**
+
+Get the Modeller license key at <https://salilab.org/modeller/registration.html>
+
+```bash
+export KEY_MODELLER=<your_key>
+conda config --add channels salilab
+conda install modeller
+```
+
 ## Usage
+
 ### Grape phase I
-I provide many options for users especially those know what they want. I really tried to make this package light and also 
-be well functional. Here are some quick walk-through. `pdb` and `chain` are positional but really you need to set 
-`-E` according to the software you have in your OS. `-seq` are strongly recommended to be set by the user. 
+
+I provide many options for users especially those know what they want. Here are some quick walk-through. `pdb` and `chain` are positional but  you need to set
+`-E` according to the software you have in your OS. `-seq` are strongly recommended to be set by the user.
 Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu is available (better
- than RTX2060 well be much faster than 48 core cpu). Also, I did not test how much precision dropped to use the `-S fast` 
+ than RTX2060 well be much faster than 48 core cpu). Also, I did not test how much precision dropped to use the `-S fast`
  preset, but I do know it can be faster in about two orders of magnitude.  
- If using `-fill` flag, input structure will be automatically fixed using information from SEQRES record in native PDB 
+ If using `-fill` flag, input structure will be automatically fixed using information from SEQRES record in native PDB
  downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.  
- 
+
  <p align="center">
   <img width="80%" src="./img/workflow.png" alt="Workflow of DDGScan">
 </p>
 
-```
+```bash
 usage: DDGScan grape_phaseI [-h] [-fill] [-seq SEQUENCE] [-T THREADS] [-fc FOLDX_CUTOFF] [-rc ROSETTA_CUTOFF] [-ac ABACUS_CUTOFF] [-a2c ABACUS2_CUTOFF] [-nstruct RELAX_NUMBER]
                             [-nruns NUMOFRUNS] [-E {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...]] [-M {run,rerun,analysis,test}] [-S {fast,slow}] [-MD] [-P {CUDA,CPU}]
                             [-fix_mm]
@@ -120,9 +148,10 @@ optional arguments:
 ```
 
 ### List distribute
-```
-usage: DDGScan list_distribute [-h] [-msaddg] [-fill] [-fix_mm] [-T THREADS] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS] [-E {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...]] [-repair]
-                               [-MD] [-P {CUDA,CPU}]
+
+```bash
+usage: DDGScan list_distribute [-h] [-msaddg] [-fill] [-fix_mm] [-T THREADS] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS] [-E {foldx,rosetta,abacus2,rosetta_fast} [{foldx,rosetta,abacus2,rosetta_fast} ...]]
+                               [-repair] [-MD] [-P {CUDA,CPU}]
                                pdb mutation_list_file
 
 positional arguments:
@@ -143,7 +172,7 @@ optional arguments:
                         Number of how many relaxed structure
   -nruns NUMOFRUNS, --numofruns NUMOFRUNS
                         Number of runs in FoldX BuildModel
-  -E {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...], --engine {foldx,rosetta,abacus2} [{foldx,rosetta,abacus2} ...]
+  -E {foldx,rosetta,abacus2,rosetta_fast} [{foldx,rosetta,abacus2,rosetta_fast} ...], --engine {foldx,rosetta,abacus2,rosetta_fast} [{foldx,rosetta,abacus2,rosetta_fast} ...]
   -repair, --foldx_repair
                         Run Repair before ddG calculation
   -MD, --molecular_dynamics
@@ -153,6 +182,7 @@ optional arguments:
 ```
 
 ### Analysis and plot
+
 ```
 usage: DDGScan analysis_and_plot [-h] [--residue_position RESIDUE_POSITION]
                                  [--plot_type {all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} [{all,venn,residue_bar,heatmap,position_avg_boxplot,variance_lineplot,kde_plot,residue_logo} ...]]
@@ -172,17 +202,22 @@ optional arguments:
 ```
 
 ## QuickStart
+
 ### Grape phase I
+
 You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):  
-I will recommend using the `-S fast` with `-MD` flag, and using `CUDA` to accelerate molecular dynamics simulations. 
+I will recommend using the `-S fast` with `-MD` flag, and using `CUDA` to accelerate molecular dynamics simulations.
 This is a very good crystal structure solved by X-ray, so I did not pass any value about fixing the PDB file!  
 Using `-S slow` to get more accuracy!
+
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
 DDGScan grape_phaseI 1PGA.pdb A -E foldx abaucs rosetta -M run -T 40 -S slow -MD -P CUDA
 ```
+
 You should expecting outputs like:  
 A folder named `foldx_results` containing:
+
 ```
 All_FoldX.score
 MutationsEnergies_BestPerPositionBelowCutOff_SortedByEnergy.tab
@@ -194,23 +229,34 @@ MutationsEnergies_BestPerPosition.tab
 MutationsEnergies_CompleteList_SortedByEnergy.tab
 MutationsEnergies_BestPerPositionBelowCutOff.tab
 ```
-And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for 
+
+And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for
 every mutation built by FoldX. Of course, there will be directories start with rosetta or abacus, depending on your choice!  
 If `-md` was turned on, all produced snapshots can be found in `selectpdb` with `afterMD` as a suffix in the name of PDB files.
+
 ### Support for homo-multimer interface mutation modelling
+
 In some cases, one may need to redesign a multimer for biocatalysis. For homo-multimer, we need to manage mutations at symmetrical interfaces. To reduce the required computing resources, DDGScan treats homo-multimer as a monomer for 1st round prediction. And putative beneficial mutations located at the interface will be selected for further prediction, and multiple mutations will be made on the entire multimer.
+
 ```bash
 multimer_scan.py multimer.pdb
 ```
+
 #### Inspect structures
+
 Using `scripts/inspectmutation.py` to inspect mutations in pymol:
+
 ```bash
 pymol inspectmutation.py $Wildtype_structure $Mutation_structure $Mutation_position $Chain
 ```
+
 About principles for protein physics, refer to  [this book](https://u1lib.org/book/2801005/141419).
+
 ### List distribute
-For a given set of single-point mutations of a protein. This module distributes calculations to cores and can parse 
+
+For a given set of single-point mutations of a protein. This module distributes calculations to cores and can parse
 pre-defined special groups of mutations to make.
+
 ```
 # followings are pre-defined groups:
     _small: GAVSTC
@@ -224,7 +270,9 @@ pre-defined special groups of mutations to make.
     _pro: P
     _scan: ARNDCQEGHILKMFPSTWYV
 ```
-Also, "dynamic selection" are supported. 
+
+Also, "dynamic selection" are supported.
+
 ```
 # followings are dynamic selection:
     @smaller: mutation to AA with smaller vdw
@@ -237,9 +285,11 @@ Also, "dynamic selection" are supported.
     @less_helix_tendency: mutation to AA with lower helix tendency
     @{random}: random is an integer in range 1 to 19 ,randomly select few mutations for you, good luck!
 ```
+
 An example mutation list file is a plain text file seperated with space,
 looks like:
-```           
+
+```
 wildtype chain position mutation
 A A 26 P
 A A 26 ILV # make A -> I,L,V
@@ -247,20 +297,24 @@ A A 26 _polar # make A -> Y,T,S,H,K,R,E,D,Q,N
 A A 26 @9
 A A 26 @smaller # make A -> G
 ```
-DDGScan also support MSAddg output, you need to add a `-msaddg` flag. The best 80 predictions made by MSAddg will be 
+
+DDGScan also support MSAddg output, you need to add a `-msaddg` flag. The best 80 predictions made by MSAddg will be
 selected.
+
 ```bash
 DDGScan list_distribute 1pga.pdb 1pga.fa.scan.txt -repair -msaddg -T 10 -E foldx
 ```
+
 ### Analysis *in silico* screening results
 
-Post analysis can help you to easily access to many kinds of plots. 
+Post analysis can help you to easily access to many kinds of plots.
 Here are two example of a bar-plot of a saturated single point mutation and mutation logo sequence.
  <p align="center">
   <img width="80%" src="./img/results_toc.png" alt="Workflow of DDGScan">
 </p>
 
 ## Develop Information
+
 2019.04: Developed GUI and single mutation scan for FoldX.  
 2021.10: Restart this project for Rosetta and ABACUS supporting.  
 2021.11: Added `openmm` for MDs.  
@@ -269,18 +323,25 @@ Here are two example of a bar-plot of a saturated single point mutation and muta
 **2022.04: Release v0.1.0!**  
 2022.05: Fixed some minor bugs reported.
 2022.06: Add `multimer_scan.py` for homo-multimer interface mutation analysis.  
+2023.01: Add support for `ddg_monomer`, about 80% accuracy of the `catresian_ddg`, 100 times faster.
+**2022.04: Release v0.1.1!**
 Continuing...
 
+
 ## Known Issues
-To avoid issues caused by pdb file, it is recommended to carefully exam your input file. One can 
+
+To avoid issues caused by pdb file, it is recommended to carefully exam your input file. One can
 use `/path/to/rosetta/main/tools/protein_tools/scripts/clean_pdb.py`
 to clean pdb. However, this script will also renumber pdb file.
 During test, some cases failed because of the following problems:
-- Non-canonical amino acid in pdb will cause failure due to lack parameters in all predictors, therefore is not accepted.   
-- Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold. Based on some case study and reports from the community, the AF2 structrue is prefectly OK as a good start point.
+
+* Non-canonical amino acid in pdb will cause failure due to lack parameters in all predictors, therefore is not accepted.
+* Gaps in pdb introduce ugly energy, you may want to apply `-fill` or use model predicted by AlphaFold. Based on some case study and reports from the community, the AF2 structrue is prefectly OK as a good start point.
 
 ## Citation
+
 For this software:
+
 ```bibtex
 @software{sun_jinyuan_2022_1046990,
   author       = {Sun Jinyuan},
@@ -294,7 +355,9 @@ For this software:
   url          = {https://doi.org/10.5072/zenodo.1046990}
 }
 ```
+
 For methodology:
+
 ```bibtex
 @article{cui2021computational,
   title={Computational redesign of a PETase for plastic biodegradation under ambient condition by the GRAPE strategy},
@@ -316,7 +379,9 @@ For methodology:
   publisher={Elsevier}
 }
 ```
+
 ## Lisense
+
 ```
 MIT License
 
@@ -340,6 +405,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
 ## Need help?
-If you need any help like installing backend software or interpreting results, you may contact me to get help by 
-filling [this form](https://forms.gle/1V6hjAtf3MFTGvPQ7). 
+
+If you need any help like installing backend software or interpreting results, you may contact me to get help by
+filling [this form](https://forms.gle/1V6hjAtf3MFTGvPQ7).
