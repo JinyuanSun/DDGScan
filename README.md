@@ -40,31 +40,32 @@ To our glad, **openmm** is open source! So the glass is half full :smiley: .
 Here is a good news, the **ABACUS2** database is now available at <https://zenodo.org/record/4533424>. However, the necessary
 module is not available in the zenodo version, you may use the online server at <https://biocomp.ustc.edu.cn/servers/abacus-design.php> to run ABACUS2.
 
-**Install DDGScan**
+**Install DDGScan**:
+
+To avoid possilbe confilcts, create a new conda environment:
 
 ```shell
-conda create -n ddgscan python=3.8
+conda create -n ddgscan python=3.9
 conda activate ddgscan
+conda install pytorch=1.11 torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
 git clone https://github.com/JinyuanSun/DDGScan.git
-pip install pandas numpy joblib seaborn matplotlib venn logomaker mdtraj bio
+pip install pandas numpy joblib seaborn matplotlib venn logomaker mdtraj bio scikit-learn
 python setup.py install
 DDGScan -h # you should see help message
 ```
   
 **Install OpenMM and pdbfixer with Conda**:
 
-To avoid possilbe confilcts, create a new conda environment:
-
 ```shell
 conda activate ddgscan
 conda install -c conda-forge openmm pdbfixer
 ```
 
-**FoldX**
+**FoldX**:
 
 [Register](https://foldxsuite.crg.eu/) and download the executable.
 
-**Rosetta**
+**Rosetta**:
 
 Follow the [Rosetta document](https://new.rosettacommons.org/demos/latest/tutorials/install_build/install_buildhttps://new.rosettacommons.org/demos/latest/tutorials/install_build/install_build)  
 I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by appending this into `~/.bashrc`:
@@ -73,11 +74,11 @@ I will recommend that users export `ROSETTADB` before runing `grape-fast.py` by 
 export ROSETTADB="/path/to/rosetta/database"
 ```
 
-**ABACUS1/2**
+**ABACUS1/2**:
 
 Send email to the authors for source code.
 
-**Modeller**
+**Modeller**:
 
 Get the Modeller license key at <https://salilab.org/modeller/registration.html>
 
@@ -321,10 +322,10 @@ Here are two example of a bar-plot of a saturated single point mutation and muta
 2021.12: Added `modeller` for loop modelling and args was rewritten.  
 2022.03: Released a few more codes on plotting and updateed the command line interface.  
 **2022.04: Release v0.1.0!**  
-2022.05: Fixed some minor bugs reported.
+2022.05: Fixed some minor bugs reported.  
 2022.06: Add `multimer_scan.py` for homo-multimer interface mutation analysis.  
 2023.01: Add support for `ddg_monomer`, about 80% accuracy of the `catresian_ddg`, 100 times faster.  
-**2022.04: Release v0.1.1!**  
+**2023.01: Release v0.1.1!**  
 Continuing...
 
 

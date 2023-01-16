@@ -22,6 +22,7 @@ from utils.common import ABACUS2_JOBS_DIR
 import utils.abacus as abacus
 
 # from utils import modeller_loop
+from Bio.PDB import PDBParser, Select, PDBIO
 
 
 def convert_by_property_selection(wildtype, mutation_type):
@@ -144,6 +145,19 @@ class FoldX:
                 outfile.write("\t".join(result) + '\n')
             outfile.close()
 
+def chain_resseq_to_pos_number(pdb):
+    res_key_dict = {}
+    parser = PDBParser(QUIET=True)
+    model_0 = parser.get_structure("x", pdb)[0]
+    pos_num = 0
+    for chain in model_0.get_chains():
+        chain_id = chain.id
+        for residue in chain.get_residues():
+            if residue.id[0] == " ":
+                key = f"{chain_id}_{residue.id[1]}"
+                pos_num += 1
+                res_key_dict[key] = pos_num
+    return res_key_dict
 
 class Rosetta:
     def __init__(self):
@@ -154,8 +168,9 @@ class Rosetta:
         '''Most PDB file adopted the biological residue numbering,
         Rosetta using a more numerical numbering begin from 1
         input: a opened pdbfile or a pdbfile name
-        output: hashmap(bio_res, index)'''
+        output: hashmap(chain_resseq, index)'''
         resNumList = list()
+
         if type(pdb) == str:
             pdb = open(pdb)
 
@@ -179,6 +194,8 @@ class Rosetta:
     @staticmethod
     def mk_job_list(pdb, relaxedpdb, mutation_list, fast=False):
 
+        res_key_dict = chain_resseq_to_pos_number(pdb)
+
         def get_exe_db():
             relax_exe = which("relax.mpi.linuxgccrelease")
             rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
@@ -199,8 +216,8 @@ class Rosetta:
         job_list = []
         for mutation in mutation_list:
             wild, chain, position, mutation = mutation.split("_")
-            res_dict = Rosetta.hash_rosettaRes_PdbRes(pdb, chain)
-            resNum = res_dict[int(position)]
+            # res_dict = Rosetta.hash_rosettaRes_PdbRes(pdb, chain)
+            resNum = res_key_dict[f"{chain}_{int(position)}"]
             job_id = "_".join([wild, position, mutation])
             var_list = [wild, mutation, resNum, job_id, relaxedpdb, exe, rosettadb]
             # wild, mutation, resNum, jobID, relaxedpdb, exe, rosettadb
@@ -321,6 +338,22 @@ def dump_abacus_score_file(results, pdb):
             outfile.write(f"{result[0]}\t{result[1]}\n")
         outfile.close()
 
+class ProSelect(Select):
+    def accept_residue(self, residue):
+        if residue.id[0] == ' ':
+            return 1
+        else:
+            return 0
+
+def clean_pdb(pdb):
+    parser = PDBParser(QUIET=True)
+    model_0 = parser.get_structure('x', pdb)[0]
+    io=PDBIO()
+    io.set_structure(model_0)
+    oname = pdb.replace(".pdb", "_protein.pdb")
+    io.save(oname, ProSelect())
+    print("PDB cleaned.")
+    return oname
 
 def main(args):
     # args = get_args()
@@ -332,6 +365,7 @@ def main(args):
     output_of_MSAddg = args.output_of_MSAddg
     engines = args.engine
     relax_num = args.relax_number
+    pdb_file = clean_pdb(pdb_file)
     if output_of_MSAddg:
         mutation_list = read_msaddg(mutation_list_file)
     else:

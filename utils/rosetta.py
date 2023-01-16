@@ -8,17 +8,18 @@ import time
 from shutil import which
 import numpy as np
 import utils.common as common
+
 # from .common import *
 
 
 class Rosetta:
     def __init__(
-            self,
-            pdbName,
-            relax_num,
-            numThreads,
-            exe,
-            rosettadb,
+        self,
+        pdbName,
+        relax_num,
+        numThreads,
+        exe,
+        rosettadb,
     ):
         self.exe = exe
         self.pdbname = pdbName
@@ -47,21 +48,21 @@ class Rosetta:
 
         relax_threads = min([int(self.threads), int(self.relax_num)])
         relax_cmd = "".join(
-                [
-                    "mpirun --allow-run-as-root -n "
-                    + str(relax_threads)
-                    + " relax.mpi.linuxgccrelease -s "
-                    + self.pdbname
-                    + " -use_input_sc",
-                    " -constrain_relax_to_start_coords -ignore_unrecognized_res",
-                    " -nstruct " + str(self.relax_num),
-                    " -relax:coord_constrain_sidechains",
-                    " -relax:cartesian -score:weights ref2015_cart ",
-                    " -relax:min_type lbfgs_armijo_nonmonotone",
-                    " -relax:script cart2.script 1>/dev/null && sort -nk2 score.sc |head -n 1|awk '{print$22}'",
-                ]
-            )
-        if which('relax.mpi.linuxgccrelease'):
+            [
+                "mpirun --allow-run-as-root -n "
+                + str(relax_threads)
+                + " relax.mpi.linuxgccrelease -s "
+                + self.pdbname
+                + " -use_input_sc",
+                " -constrain_relax_to_start_coords -ignore_unrecognized_res",
+                " -nstruct " + str(self.relax_num),
+                " -relax:coord_constrain_sidechains",
+                " -relax:cartesian -score:weights ref2015_cart ",
+                " -relax:min_type lbfgs_armijo_nonmonotone",
+                " -relax:script cart2.script 1>/dev/null && sort -nk2 score.sc |head -n 1|awk '{print$22}'",
+            ]
+        )
+        if which("relax.mpi.linuxgccrelease"):
             print("==" * 20)
             print(" Relaxing your Protein: ")
             # os.system(relax_cmd)
@@ -76,7 +77,7 @@ class Rosetta:
             print("==" * 20)
             print("Relax skipped!")
             print("==" * 20)
-            relaxed_pdb_name = self.pdbname.replace('.pdb', "")
+            relaxed_pdb_name = self.pdbname.replace(".pdb", "")
             self.relaxedpdb = relaxed_pdb_name.replace("\n", "") + ".pdb"
         os.chdir("../")
         return relaxed_pdb_name.replace("\n", "") + ".pdb"
@@ -105,11 +106,11 @@ class Rosetta:
 
         return [
             "{:.4f}".format(np.array(ddg_array).mean()),
-            "{:.4f}".format(np.array(ddg_array).std())
+            "{:.4f}".format(np.array(ddg_array).std()),
         ]
 
     def read_ddg_monomer_out(self, ddg_monomer_file):
-        ddg = float(open(ddg_monomer_file, 'r').readlines()[1].split()[2])
+        ddg = float(open(ddg_monomer_file, "r").readlines()[1].split()[2])
         return ["{:.4f}".format(ddg), "{:.4f}".format(ddg)]
 
     def runOneJob(self, varlist: list):
@@ -117,8 +118,7 @@ class Rosetta:
         distutils.dir_util.mkpath(jobID)
         os.chdir(jobID)
 
-        os.system("cp ../../" + common.ROSETTA_RELAX_DIR +
-                  self.relaxedpdb + " ./")
+        os.system("cp ../../" + common.ROSETTA_RELAX_DIR + self.relaxedpdb + " ./")
         with open("mtfile", "w+") as mtfile:
             mtfile.write("total 1\n")
             mtfile.write("1\n")
@@ -213,7 +213,7 @@ class Rosetta:
                 i += 1
                 line = line.replace("\x1b[0m", "")
                 if line.endswith(
-                        "mutation   mutation_PDB_numbering   average_ddG   average_total_energy\n"
+                    "mutation   mutation_PDB_numbering   average_ddG   average_total_energy\n"
                 ):
                     start_line = 1
                 if "protocol took" in line:
@@ -249,7 +249,7 @@ class rosetta_binder:
         distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
         os.system("cp  " + pdbname + " " + common.ROSETTA_RELAX_DIR)
         os.chdir(common.ROSETTA_RELAX_DIR)
-        relax_cmd = f"mpirun -n 1 relax.mpi.linuxgccrelease -s {pdbname} 1>/dev/null"
+        relax_cmd = f"relax.mpi.linuxgccrelease -s {pdbname} -relax:constrain_relax_to_start_coords -relax:coord_constrain_sidechains -relax:ramp_constraints false -ex1 -ex2 -use_input_sc -no_his_his_pairE -no_optH false -flip_HNQ 1>/dev/null"
         x = os.popen(relax_cmd).read()
         relaxedpdb = pdbname.replace(".pdb", "_0001.pdb")
         os.chdir("../")
@@ -302,7 +302,7 @@ class rosetta_binder:
     @staticmethod
     def read_rosetta_ddgout(rosettaddgfilename, wild, mutation, resNum):
         ddg_array = []
-        with open(rosettaddgfilename, 'r') as rosettaddg:
+        with open(rosettaddgfilename, "r") as rosettaddg:
             for line in rosettaddg:
                 # print(line.split(":")[2])
                 if line.split(":")[2].strip() == "WT":
@@ -316,16 +316,18 @@ class rosetta_binder:
             "_".join([wild, str(resNum), mutation]),
             str(round(np.array(ddg_array).mean(), 4)),
             str(round(min(np.array(ddg_array)), 4)),
-            str(round(np.array(ddg_array).std(), 4))
+            str(round(np.array(ddg_array).std(), 4)),
         ]
 
     @staticmethod
     def read_ddg_monomer_out(ddg_monomer_file, wild, mutation, resNum):
-        ddg = float(open(ddg_monomer_file, 'r').readlines()[1].split()[2])
-        return ["_".join([wild, str(resNum), mutation]),
-                "{:.4f}".format(ddg),
-                "{:.4f}".format(ddg),
-                "0.000"]
+        ddg = float(open(ddg_monomer_file, "r").readlines()[1].split()[2])
+        return [
+            "_".join([wild, str(resNum), mutation]),
+            "{:.4f}".format(ddg),
+            "{:.4f}".format(ddg),
+            "0.000",
+        ]
 
     @staticmethod
     def run_one_job(varlist: list):
@@ -378,8 +380,10 @@ class rosetta_binder:
             % (wild, resNum, mutation, finishtime - starttime)
         )
         result = rosetta_binder.read_rosetta_ddgout(
-            'mtfile.ddg', wild, mutation, resNum)
+            "mtfile.ddg", wild, mutation, resNum
+        )
         # print(cartddg_cmd)
+        result[0] = jobID
         os.chdir("../../")
         return result
 
@@ -428,7 +432,8 @@ class rosetta_binder:
         )
         # result = rosetta_binder.read_rosetta_ddgout('mtfile.ddg', wild, mutation, resNum)
         result = rosetta_binder.read_ddg_monomer_out(
-            'ddg_predictions.out', wild, mutation, resNum)
+            "ddg_predictions.out", wild, mutation, resNum
+        )
         os.chdir("../../")
         # print(f"After: {os.getcwd()}")
         return result

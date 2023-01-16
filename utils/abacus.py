@@ -72,11 +72,20 @@ def runOneJob(varlist):
     s2 = float(output[8])
     pack = float(output[10])
     total = s1 + s2 + pack
-    # self.abacus2_results["_".join([wild, str(resNum), aa])] = total
     # print(all_results)
     # A   42 GLU->TRP SAI: 0.966 S1:  1.748 S2:  0.212 PACK:  -0.009 HB:   0.000
     return "_".join([wild, str(resNum), aa]), total
 
+def run_abacus2_cmd(pdb, chain, res_id, muttype):
+    cmd = f"singleMutation {pdb} {chain} {res_id} {muttype}"
+    out = os.popen(cmd).read()
+    lst = out.replace("\n", "").split(":")
+    sai = float(lst[1].replace("S1", "").replace(" ", ""))
+    s1 = float(lst[2].replace("S2", "").replace(" ", ""))
+    s2 = float(lst[3].replace("PACK", "").replace(" ", ""))
+    pack = float(lst[4].replace("HB", "").replace(" ", ""))
+    hb = float(lst[5].replace(" ", ""))
+    return [sai, s1, s2, pack, hb]
 
 def parse_abacus_out():
     try:
@@ -145,6 +154,7 @@ def parse_abacus_out():
         complete.close()
         os.remove("tempfile")
 
+# def abacus_ddg
 
 
 if __name__ == "__main__":

@@ -18,6 +18,8 @@ setup(
                       'venn',
                       'logomaker',
                       'mdtraj',
+                      'torch',
+                      'scikit-learn',
                       'bio'
     ]
 )
