@@ -20,9 +20,12 @@ from utils.rosetta import rosetta_binder
 from utils.aa_index import *
 from utils.common import ABACUS2_JOBS_DIR
 import utils.abacus as abacus
+from utils.abacus2_nn import *
+
 
 # from utils import modeller_loop
 from Bio.PDB import PDBParser, Select, PDBIO
+from Bio.PDB.Polypeptide import one_to_three
 
 
 def convert_by_property_selection(wildtype, mutation_type):
@@ -330,6 +333,17 @@ def mk_abacus_joblist(pdb_file, mutation_list):
         job_list.append(var_list)
     return job_list
 
+def mk_abacus2nn_joblist(pdb_file, mutation_list):
+    job_list = []
+    mutations = []
+    for mutation in mutation_list:
+        wild, chain, position, mutation = mutation.split("_")
+        mutations.append(f"{wild}_{position}_{mutation}")
+        var_list = [pdb_file, chain, position, one_to_three(mutation)]
+        # pdb_file, wild, chain, mutation, position, job_id, numOfRuns = varlist
+        job_list.append(var_list)
+    return job_list, mutations
+
 def dump_abacus_score_file(results, pdb):
     pdb_id = pdb.replace(".pdb", "")
     with open(pdb_id + "_ABACUS2.score", 'w+') as outfile:
@@ -337,6 +351,30 @@ def dump_abacus_score_file(results, pdb):
         for index, result in enumerate(results):
             outfile.write(f"{result[0]}\t{result[1]}\n")
         outfile.close()
+
+def dump_abacus2nn_score_file(abacus2_results, pdb:str, mutations:list):
+    pdb_id = pdb.replace(".pdb", "")
+    df = pd.DataFrame(abacus2_results)
+    df[5] = mutations
+    df[['mutations', 'sai', 's1', 's2','pack', 'hb']] = df[[5,0,1,2,3,4]]
+    df[['mutations', 'sai', 's1', 's2','pack', 'hb']].to_csv(os.path.join(ABACUS2_JOBS_DIR, 'abacus2_raw.csv'), sep=',', index=None)
+    model_list = get_models()
+    with torch.no_grad():
+        all_preds = []
+        for net in model_list:
+            x = torch.tensor(np.array(abacus2_results)).float()
+            pred0 = net(x)
+            pred0 = pred0.ravel().numpy()
+            all_preds.append(pred0)
+    avg_pred = np.mean(all_preds, axis=0) + 0.6169168
+    std_pred = np.std(all_preds, axis=0)
+    min_pred = np.min(all_preds, axis=0) + 0.6169168
+    with open(pdb_id + "_Rosetta.score", 'w+') as outfile:
+            outfile.write('\t'.join(['mutation', 'mean', 'min', 'std']) + '\n')
+            for mutation, avg_v, min_v, std in zip(mutations, avg_pred, min_pred, std_pred):
+                outfile.write("{:}\t{:.4f}\t{:.4f}\t{:.4f}\n".format(mutation, avg_v, min_v, std))
+            outfile.close()
+
 
 class ProSelect(Select):
     def accept_residue(self, residue):
@@ -393,6 +431,11 @@ def main(args):
         job_list = mk_abacus_joblist(pdb_file, mutation_list)
         abacus2_results = Parallel(n_jobs=threads)(delayed(abacus.runOneJob)(var) for var in job_list)
         dump_abacus_score_file(abacus2_results, pdb_file)
+    if 'abacus2_nn' in engines:
+        distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
+        job_list, mutations = mk_abacus2nn_joblist(pdb_file, mutation_list)
+        abacus2_results = Parallel(n_jobs=threads)(delayed(abacus.run_abacus2_cmd)(*var) for var in job_list)
+        dump_abacus2nn_score_file(abacus2_results, pdb_file, mutations)
 
 
 
