@@ -81,7 +81,7 @@ grape_phaseI_parser.add_argument(
     "-E",
     "--engine",
     nargs="+",
-    choices=["abacus", "foldx", "rosetta", "abacus2", 'rosetta_fast'],
+    choices=["abacus", "foldx", "rosetta", "abacus2", "abacus2_nn"],
 )
 grape_phaseI_parser.add_argument(
     "-M",
@@ -167,7 +167,7 @@ list_distribute_parser.add_argument(
     "-E",
     "--engine",
     nargs="+",
-    choices=["foldx", "rosetta", "abacus2", 'rosetta_fast'],
+    choices=["foldx", "rosetta", "abacus2", 'rosetta_fast', "abacus2_nn"],
 )
 list_distribute_parser.add_argument(
     "-repair",

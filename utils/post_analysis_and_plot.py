@@ -289,9 +289,4 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     main(args)
-    # all_score_file = '../test/foldx_results/All_FoldX.score'
-    # abaucs_arr, abaucs_std, resnum_list, index_list, method, wild_type_dict = score_file2array(all_score_file)
-    # data = energy2p(abaucs_arr, resnum_list, index_list, method, wild_type_dict)
-    # heatmap(abaucs_arr, resnum_list, index_list, method)
-    # position_avg(abaucs_arr, resnum_list, index_list, method)
-    # posistion_variance(abaucs_arr, resnum_list, index_list, method)
+

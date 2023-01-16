@@ -2,6 +2,7 @@
 import os
 import time
 import utils.common as common
+from Bio.PDB.Polypeptide import one_to_three
 
 def run_abacus(pdbfilename):
     try:
@@ -34,34 +35,8 @@ def run_abacus(pdbfilename):
 
 
 def runOneJob(varlist):
-    def _1_2_3(x):
-        d = {
-            "C": "CYS",
-            "D": "ASP",
-            "S": "SER",
-            "Q": "GLN",
-            "K": "LYS",
-            "I": "ILE",
-            "P": "PRO",
-            "T": "THR",
-            "F": "PHE",
-            "N": "ASN",
-            "G": "GLY",
-            "H": "HIS",
-            "L": "LEU",
-            "R": "ARG",
-            "W": "TRP",
-            "A": "ALA",
-            "V": "VAL",
-            "E": "GLU",
-            "Y": "TYR",
-            "M": "MET",
-        }
-        return d[x]
-
-    # me varlist as foldx.runOneJob
     pdb, wild, chain, aa, resNum = varlist
-    MUT = _1_2_3(aa)
+    MUT = one_to_three(aa)
     output = (
         os.popen("singleMutation %s %s %s %s" % (pdb, chain, str(resNum), MUT))
             .read()
@@ -154,7 +129,6 @@ def parse_abacus_out():
         complete.close()
         os.remove("tempfile")
 
-# def abacus_ddg
 
 
 if __name__ == "__main__":

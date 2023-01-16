@@ -19,6 +19,8 @@ from utils import abacus
 # from utils import autofix
 from utils import judge
 from utils.common import *
+from Bio.PDB.Polypeptide import one_to_three
+from utils.abacus2_nn import *
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s   %(levelname)s   %(message)s')
@@ -203,6 +205,67 @@ class GRAPE:
                 complete.write("\t".join([pair[0], str(round(pair[1], 4)), "0"]) + "\n")
             complete.close()
 
+        return self.abacus2_results
+
+    def run_abacus2nn(self, pdb, threads, chain):
+
+        print("[INFO]: ABACUS2-NN started at %s" % (time.ctime()))
+        distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
+        distutils.dir_util.mkpath(ABACUS2_RESULTS_DIR)
+        prot = io.Protein(pdb, chain)
+        seq, resNumList = io.Protein.pdb2seq(prot)
+
+        # all_results = {}
+        job_list = []
+        mutations = []
+        for i, res in enumerate(seq):
+            resNum = resNumList[i]
+            wild = res
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
+                if aa != wild:
+                    # mutationName = "_".join([wild, str(resNum), aa])
+                    # all_results[mutationName] = 0
+                    job_list.append(
+                        [
+                            pdb,
+                            chain,
+                            resNum,
+                            one_to_three(aa)
+                        ]
+                    )
+                    mutations.append(f"{wild}_{resNum}_{aa}")
+        # print("[INFO]: FoldX started at %s" %(time.ctime()))
+        scan_start = time.time()
+        abacus2_results = Parallel(n_jobs=threads)(delayed(abacus.run_abacus2_cmd)(*var) for var in job_list)
+        # mutations, scores = zip(*result)
+        df = pd.DataFrame(abacus2_results)
+        df[5] = mutations
+        df[['mutations', 'sai', 's1', 's2','pack', 'hb']] = df[[5,0,1,2,3,4]]
+        df[['mutations', 'sai', 's1', 's2','pack', 'hb']].to_csv(os.path.join(ABACUS2_JOBS_DIR, 'abacus2_raw.csv'), sep=',', index=None)
+        model_list = get_models()
+        with torch.no_grad():
+            all_preds = []
+            for net in model_list:
+                x = torch.tensor(np.array(abacus2_results)).float()
+                pred0 = net(x)
+                pred0 = pred0.ravel().numpy()
+                all_preds.append(pred0)
+        avg_pred = np.mean(all_preds, axis=0) + 0.6169168
+        std_pred = np.std(all_preds, axis=0)
+        min_pred = np.min(all_preds, axis=0) + 0.6169168
+        scan_end = time.time()
+        scan_time = scan_end - scan_start
+        self.running_time["abacus2"] = scan_time
+        print("[INFO]: ABACUS2 Scan took %f seconds." % (scan_time))
+        # print(self.abacus2_results)
+        # ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE
+        with open(ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, "w+") as complete:
+            complete.write(
+                "#Score file formatted by GRAPE from ABACUS2.\n#mutation\tscore\t\tstd\n"
+            )
+            for mutation, avg, min, std in zip(mutations, avg_pred, min_pred, std_pred):
+                complete.write("{:}\t{:.4f}\t{:.4f}\n".format(mutation, avg, std))
+            complete.close()
         return self.abacus2_results
 
     def Analysis_foldx(self, pdb, chain, foldx1):
@@ -412,6 +475,7 @@ def selectpdb4md(pdb, softlist, MD):
 
     selected_dict = {"mutation": [], "score": [], "sd": [], "soft": []}
     for soft in softlist:
+        soft = soft.replace("_nn", "")
         with open("%s_results/MutationsEnergies_BelowCutOff.tab" % (soft)) as scorefile:
             for line in scorefile:
                 linelist = line.strip().split()
@@ -472,7 +536,7 @@ def runMD(platform, selected_dict, md_threads=None):
     os.chdir("../")
 
 def get_exes():
-    exe_dict = {"foldx": "", "relax": "", "cartddg": "", "ddg_monomer": "", "abacus": "", "abacus2": "", 'rosettadb':''}
+    exe_dict = {"foldx": "", "relax": "", "cartddg": "", "ddg_monomer": "", "abacus": "", "abacus2": "", 'rosettadb':'', "abacus2_nn":""}
     exe_dict["foldx"] = which("foldx")
     for release in ["", ".static", ".mpi", ".default"]:
         ddg_monomer_exe = which(f"ddg_monomer{release}.linuxgccrelease")
@@ -495,6 +559,7 @@ def get_exes():
     exe_dict["rosettadb"] = os.getenv('ROSETTADB')
     exe_dict["abacus"] = which("ABACUS_prepare")
     exe_dict["abacus2"] = which('singleMutation')
+    exe_dict["abacus2_nn"] = which('singleMutation')
     return exe_dict
 
 def main1(args):
@@ -635,6 +700,11 @@ def main1(args):
 
         if "abacus2" in softlist:
             grape.run_abacus2(pdb, threads, chain)
+            grape.analysisGrapeScore(
+                ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, abacus2_cutoff, ABACUS2_RESULTS_DIR
+            )
+        if "abacus2_nn" in softlist:
+            grape.run_abacus2nn(pdb, threads, chain)
             grape.analysisGrapeScore(
                 ABACUS2_RESULTS_DIR + ABACUS2_SCORE_FILE, abacus2_cutoff, ABACUS2_RESULTS_DIR
             )

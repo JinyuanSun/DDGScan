@@ -102,19 +102,12 @@ def run_nn_train(net, opt, train_loader, test_loader, cal_loss, scheduler):
     res_dict["lrs"] = lrs
     return res_dict, net, test_pred, test_y
 
-def get_models(path_to_checkpoints=''):
+def get_models():
     models = []
+    # dir_to_models = os.path.expanduser("~/.cache/ddgscan/")
     for i in range(10):
         net = AbacusNet()
         net.load_state_dict(torch.load(os.path.join(os.path.expanduser('~'),f".cache/ddgscan/abacus2_nn_{i}.pt")))
         models.append(net)
     return models
 
-# model_list = get_models('/home/jsun/egnn-ddg-predictor/DDGScan_DL/abacus2_data')
-# with torch.no_grad():
-#     all_preds = []
-#     for net in model_list:
-#         x = torch.tensor(fp_abacus_df[['sai', 's1', 's2', 'pack', 'hb']].values).float()
-#         pred0 = net(x)
-#         pred0 = pred0.ravel().numpy()
-#         all_preds.append(pred0)

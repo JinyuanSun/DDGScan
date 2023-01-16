@@ -133,7 +133,7 @@ class Parser:
             "-E",
             "--engine",
             nargs="+",
-            choices=["abacus", "foldx", "rosetta", "abacus2"],
+            choices=["abacus", "foldx", "rosetta", "abacus2", "abacus2_nn"],
         )
         parser.add_argument(
             "-M",

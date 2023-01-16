@@ -208,7 +208,7 @@ Using `-S slow` to get more accuracy!
 
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-DDGScan grape_phaseI 1PGA.pdb A -E foldx abaucs rosetta -M run -T 40 -S slow -MD -P CUDA
+DDGScan grape_phaseI 1PGA.pdb A -E foldx abacus rosetta -M run -T 40 -S slow -MD -P CUDA
 ```
 
 You should expecting outputs like:  
