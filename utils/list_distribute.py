@@ -377,22 +377,22 @@ def main(args):
         results = Parallel(n_jobs=threads)(delayed(foldx_binder.run_one_job)(var) for var in job_list)
         FoldX.dump_score_file(results, args.pdb)
     if 'rosetta' in engines:
-        relaxed_pdb = rosetta_binder.relax(args.pdb, threads, relax_num)
-        job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list)
+        relaxed_pdb = rosetta_binder.relax(pdb_file, threads, relax_num)
+        job_list = Rosetta.mk_job_list(pdb_file, relaxed_pdb, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_one_job)(var) for var in job_list)
-        Rosetta.dump_score_file(results, args.pdb)
+        Rosetta.dump_score_file(results, pdb_file)
     if 'rosetta_fast' in engines:
         # relaxed_pdb = rosetta_binder.(args.pdb, threads, relax_num) # fast relax
-        relaxed_pdb = rosetta_binder.fast_relax(args.pdb, threads, relax_num)
-        job_list = Rosetta.mk_job_list(args.pdb, relaxed_pdb, mutation_list, fast=True)
+        relaxed_pdb = rosetta_binder.fast_relax(pdb_file, threads, relax_num)
+        job_list = Rosetta.mk_job_list(pdb_file, relaxed_pdb, mutation_list, fast=True)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_row1)(var) for var in job_list)
-        Rosetta.dump_score_file(results, args.pdb)
+        Rosetta.dump_score_file(results, pdb_file)
     if 'abacus2' in engines:
         distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
         # abacus.runOneJob
-        job_list = mk_abacus_joblist(args.pdb, mutation_list)
+        job_list = mk_abacus_joblist(pdb_file, mutation_list)
         abacus2_results = Parallel(n_jobs=threads)(delayed(abacus.runOneJob)(var) for var in job_list)
-        dump_abacus_score_file(abacus2_results, args.pdb)
+        dump_abacus_score_file(abacus2_results, pdb_file)
 
 
 

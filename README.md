@@ -42,23 +42,18 @@ module is not available in the zenodo version, you may use the online server at 
 
 **Install DDGScan**:
 
-To avoid possilbe confilcts, create a new conda environment:
+To avoid possilbe confilcts, create a new conda environment, and using mamba will be faster
 
 ```shell
 conda create -n ddgscan python=3.9
 conda activate ddgscan
-conda install pytorch=1.11 torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
+conda install -c conda-forge mamba
+mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
+mamba install -c conda-forge openmm pdbfixer
 git clone https://github.com/JinyuanSun/DDGScan.git
 pip install pandas numpy joblib seaborn matplotlib venn logomaker mdtraj bio scikit-learn
 python setup.py install
 DDGScan -h # you should see help message
-```
-  
-**Install OpenMM and pdbfixer with Conda**:
-
-```shell
-conda activate ddgscan
-conda install -c conda-forge openmm pdbfixer
 ```
 
 **FoldX**:
