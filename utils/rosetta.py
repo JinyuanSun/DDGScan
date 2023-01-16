@@ -436,6 +436,7 @@ class rosetta_binder:
         )
         os.chdir("../../")
         # print(f"After: {os.getcwd()}")
+        result[0] = jobID
         return result
 
 
