@@ -403,6 +403,7 @@ def main(args):
     output_of_MSAddg = args.output_of_MSAddg
     engines = args.engine
     relax_num = args.relax_number
+    relax = args.relax
     pdb_file = clean_pdb(pdb_file)
     if output_of_MSAddg:
         mutation_list = read_msaddg(mutation_list_file)
@@ -418,24 +419,24 @@ def main(args):
         relaxed_pdb = rosetta_binder.relax(pdb_file, threads, relax_num)
         job_list = Rosetta.mk_job_list(pdb_file, relaxed_pdb, mutation_list)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_one_job)(var) for var in job_list)
-        Rosetta.dump_score_file(results, pdb_file)
+        Rosetta.dump_score_file(results, args.pdb)
     if 'rosetta_fast' in engines:
-        # relaxed_pdb = rosetta_binder.(args.pdb, threads, relax_num) # fast relax
-        relaxed_pdb = rosetta_binder.fast_relax(pdb_file, threads, relax_num)
-        job_list = Rosetta.mk_job_list(pdb_file, relaxed_pdb, mutation_list, fast=True)
+        if relax:
+            pdb_file = rosetta_binder.fast_relax(pdb_file, threads, relax_num)
+        job_list = Rosetta.mk_job_list(pdb_file, pdb_file, mutation_list, fast=True)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_row1)(var) for var in job_list)
-        Rosetta.dump_score_file(results, pdb_file)
+        Rosetta.dump_score_file(results, args.pdb)
     if 'abacus2' in engines:
         distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
         # abacus.runOneJob
         job_list = mk_abacus_joblist(pdb_file, mutation_list)
         abacus2_results = Parallel(n_jobs=threads)(delayed(abacus.runOneJob)(var) for var in job_list)
-        dump_abacus_score_file(abacus2_results, pdb_file)
+        dump_abacus_score_file(abacus2_results, args.pdb)
     if 'abacus2_nn' in engines:
         distutils.dir_util.mkpath(ABACUS2_JOBS_DIR)
         job_list, mutations = mk_abacus2nn_joblist(pdb_file, mutation_list)
         abacus2_results = Parallel(n_jobs=threads)(delayed(abacus.run_abacus2_cmd)(*var) for var in job_list)
-        dump_abacus2nn_score_file(abacus2_results, pdb_file, mutations)
+        dump_abacus2nn_score_file(abacus2_results, args.pdb, mutations)
 
 
 

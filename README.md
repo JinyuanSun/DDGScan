@@ -323,7 +323,6 @@ Here are two example of a bar-plot of a saturated single point mutation and muta
 **2023.01: Release v0.1.1!**  
 Continuing...
 
-
 ## Known Issues
 
 To avoid issues caused by pdb file, it is recommended to carefully exam your input file. One can

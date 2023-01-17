@@ -176,6 +176,12 @@ list_distribute_parser.add_argument(
     action="store_true",
 )
 list_distribute_parser.add_argument(
+    "-relax",
+    "--rosetta_relax",
+    help="Run relax before ddG calculation",
+    action="store_true",
+)
+list_distribute_parser.add_argument(
     "-MD",
     "--molecular_dynamics",
     help="Run 1ns molecular dynamics simulations for each mutation using openmm.",
