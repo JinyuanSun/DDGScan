@@ -221,7 +221,6 @@ args = parser.parse_args()
 if args.command == 'grape_phaseI':
     grape_phaseI.main1(args)
 if args.command == 'list_distribute':
-#    args = list_distribute.get_args() 
-   list_distribute.main(args)
+    list_distribute.main(args)
 if args.command == 'analysis_and_plot':
     post_analysis_and_plot.main(args)

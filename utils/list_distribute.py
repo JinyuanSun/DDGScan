@@ -403,7 +403,7 @@ def main(args):
     output_of_MSAddg = args.output_of_MSAddg
     engines = args.engine
     relax_num = args.relax_number
-    relax = args.relax
+    relax = args.rosetta_relax
     pdb_file = clean_pdb(pdb_file)
     if output_of_MSAddg:
         mutation_list = read_msaddg(mutation_list_file)
