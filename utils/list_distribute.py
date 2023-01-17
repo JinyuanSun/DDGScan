@@ -18,7 +18,7 @@ from shutil import which
 from utils.foldx import foldx_binder
 from utils.rosetta import rosetta_binder
 from utils.aa_index import *
-from utils.common import ABACUS2_JOBS_DIR
+from utils.common import ABACUS2_JOBS_DIR, ROSETTA_RELAX_DIR
 import utils.abacus as abacus
 from utils.abacus2_nn import *
 
@@ -423,6 +423,8 @@ def main(args):
     if 'rosetta_fast' in engines:
         if relax:
             pdb_file = rosetta_binder.fast_relax(pdb_file, threads, relax_num)
+        else:
+            os.system(f"cp  {pdb_file} {ROSETTA_RELAX_DIR}")
         job_list = Rosetta.mk_job_list(pdb_file, pdb_file, mutation_list, fast=True)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_row1)(var) for var in job_list)
         Rosetta.dump_score_file(results, args.pdb)
