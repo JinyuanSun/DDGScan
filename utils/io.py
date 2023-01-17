@@ -165,6 +165,12 @@ class Parser:
             choices=["CUDA", "CPU"],
             default="CUDA",
         )
+        parser.add_argument(
+            "-relax",
+            "--rosetta_relax",
+            help="Run relax before ddG calculation",
+            action="store_true",
+        )
         # parser.add_argument(
         #     "-fix_mm",
         #     "--fix_mainchain_missing",
