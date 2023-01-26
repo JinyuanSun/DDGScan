@@ -53,6 +53,7 @@ mamba install -c conda-forge openmm pdbfixer
 git clone https://github.com/JinyuanSun/DDGScan.git
 pip install pandas numpy joblib seaborn matplotlib venn logomaker mdtraj bio scikit-learn
 python setup.py install
+mkdir ~/.cache/ddgscan && cp utils/data/nn/* ~/.cache/ddgscan/
 DDGScan -h # you should see help message
 ```
 
@@ -100,9 +101,8 @@ Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu
 </p>
 
 ```bash
-usage: DDGScan grape_phaseI [-h] [-fill] [-seq SEQUENCE] [-T THREADS] [-fc FOLDX_CUTOFF] [-rc ROSETTA_CUTOFF] [-ac ABACUS_CUTOFF] [-a2c ABACUS2_CUTOFF] [-nstruct RELAX_NUMBER]
-                            [-nruns NUMOFRUNS] [-E {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...]] [-M {run,rerun,analysis,test}] [-S {fast,slow}] [-MD] [-P {CUDA,CPU}]
-                            [-fix_mm]
+usage: DDGScan grape_phaseI [-h] [-fill] [-seq SEQUENCE] [-T THREADS] [-fc FOLDX_CUTOFF] [-rc ROSETTA_CUTOFF] [-ac ABACUS_CUTOFF] [-a2c ABACUS2_CUTOFF] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS]
+                            [-E {abacus,foldx,rosetta,abacus2,abacus2_nn} [{abacus,foldx,rosetta,abacus2,abacus2_nn} ...]] [-M {run,rerun,analysis,test}] [-S {fast,slow}] [-MD] [-P {CUDA,CPU}] [-fix_mm]
                             pdb chain
 
 positional arguments:
@@ -129,7 +129,7 @@ optional arguments:
                         Number of how many relaxed structure
   -nruns NUMOFRUNS, --numofruns NUMOFRUNS
                         Number of runs in FoldX BuildModel
-  -E {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...], --engine {abacus,foldx,rosetta,abacus2} [{abacus,foldx,rosetta,abacus2} ...]
+  -E {abacus,foldx,rosetta,abacus2,abacus2_nn} [{abacus,foldx,rosetta,abacus2,abacus2_nn} ...], --engine {abacus,foldx,rosetta,abacus2,abacus2_nn} [{abacus,foldx,rosetta,abacus2,abacus2_nn} ...]
   -M {run,rerun,analysis,test}, --mode {run,rerun,analysis,test}
                         Run, Rerun or analysis
   -S {fast,slow}, --preset {fast,slow}
@@ -146,8 +146,8 @@ optional arguments:
 ### List distribute
 
 ```bash
-usage: DDGScan list_distribute [-h] [-msaddg] [-fill] [-fix_mm] [-T THREADS] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS] [-E {foldx,rosetta,abacus2,rosetta_fast} [{foldx,rosetta,abacus2,rosetta_fast} ...]]
-                               [-repair] [-MD] [-P {CUDA,CPU}]
+usage: DDGScan list_distribute [-h] [-msaddg] [-fill] [-fix_mm] [-T THREADS] [-nstruct RELAX_NUMBER] [-nruns NUMOFRUNS]
+                               [-E {foldx,rosetta,abacus2,rosetta_fast,abacus2_nn} [{foldx,rosetta,abacus2,rosetta_fast,abacus2_nn} ...]] [-repair] [-relax] [-MD] [-P {CUDA,CPU}]
                                pdb mutation_list_file
 
 positional arguments:
@@ -168,9 +168,11 @@ optional arguments:
                         Number of how many relaxed structure
   -nruns NUMOFRUNS, --numofruns NUMOFRUNS
                         Number of runs in FoldX BuildModel
-  -E {foldx,rosetta,abacus2,rosetta_fast} [{foldx,rosetta,abacus2,rosetta_fast} ...], --engine {foldx,rosetta,abacus2,rosetta_fast} [{foldx,rosetta,abacus2,rosetta_fast} ...]
+  -E {foldx,rosetta,abacus2,rosetta_fast,abacus2_nn} [{foldx,rosetta,abacus2,rosetta_fast,abacus2_nn} ...], --engine {foldx,rosetta,abacus2,rosetta_fast,abacus2_nn} [{foldx,rosetta,abacus2,rosetta_fast,abacus2_nn} ...]
   -repair, --foldx_repair
                         Run Repair before ddG calculation
+  -relax, --rosetta_relax
+                        Run relax before ddG calculation
   -MD, --molecular_dynamics
                         Run 1ns molecular dynamics simulations for each mutation using openmm.
   -P {CUDA,CPU}, --platform {CUDA,CPU}

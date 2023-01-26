@@ -369,7 +369,7 @@ def dump_abacus2nn_score_file(abacus2_results, pdb:str, mutations:list):
     avg_pred = np.mean(all_preds, axis=0) + 0.6169168
     std_pred = np.std(all_preds, axis=0)
     min_pred = np.min(all_preds, axis=0) + 0.6169168
-    with open(pdb_id + "_Rosetta.score", 'w+') as outfile:
+    with open(pdb_id + "_ABACUS2_NN.score", 'w+') as outfile:
             outfile.write('\t'.join(['mutation', 'mean', 'min', 'std']) + '\n')
             for mutation, avg_v, min_v, std in zip(mutations, avg_pred, min_pred, std_pred):
                 outfile.write("{:}\t{:.4f}\t{:.4f}\t{:.4f}\n".format(mutation, avg_v, min_v, std))
@@ -424,7 +424,7 @@ def main(args):
         if relax:
             pdb_file = rosetta_binder.fast_relax(pdb_file, threads, relax_num)
         else:
-            distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
+            distutils.dir_util.mkpath(ROSETTA_RELAX_DIR)
             os.system(f"cp  {pdb_file} {ROSETTA_RELAX_DIR}")
         job_list = Rosetta.mk_job_list(pdb_file, pdb_file, mutation_list, fast=True)
         results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_row1)(var) for var in job_list)
