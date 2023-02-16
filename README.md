@@ -29,32 +29,43 @@ Table of Contents
 
 ## Installation
 
-First of all, please make sure you have added the **FoldX** executable to your environment! Secondly, **Rosetta**
-(a mpi build is necessary otherwise the `relax` step will be skiped) is
-required for cartesian_ddg (`-mode slow`) calculation or ddg_monomer row1 protocol(`-mode fast`).
-Also, **ABACUS** is an outstanding software with great statistical energy function for protein design.
-Structures downloaded from RCSB could be erroneous. One of the biggest problems that will directly affect energy calculation is breaks in chains.
-Here I implemented a loop closure module using **modeller**, a great software with a very long history, as backend.
-Due to their licenses, I cannot redistribute them here :worried: !  
-To our glad, **openmm** is open source! So the glass is half full :smiley: .
-Here is a good news, the **ABACUS2** database is now available at <https://zenodo.org/record/4533424>. However, the necessary
-module is not available in the zenodo version, you may use the online server at <https://biocomp.ustc.edu.cn/servers/abacus-design.php> to run ABACUS2.
+To ensure successful usage of our tool, please make sure you have added the FoldX executable to your environment. Additionally, for cartesian_ddg calculations in slow mode, or ddg_monomer row1 protocol in fast mode, Rosetta is required (note: mpi build is necessary or relax step will be skipped). ABACUS is an excellent software option for protein design, providing a great statistical energy function. Please be aware that structures downloaded from RCSB may contain errors, which can directly affect energy calculations - one common issue is breaks in chains. To address this, we have implemented a loop closure module using modeller, a reliable software option with a long history, as a backend. However, please note that due to their licenses, we cannot redistribute these programs. On the bright side, openmm is open source! And we have good news - the ABACUS2 database is now available at https://zenodo.org/record/4533424. Please note that the necessary module is not available in the Zenodo version, so you may use the online server at https://biocomp.ustc.edu.cn/servers/abacus-design.php to run ABACUS2.
 
 **Install DDGScan**:
 
-To avoid possilbe confilcts, create a new conda environment, and using mamba will be faster
+To ensure that there are no possible conflicts, it is recommended that you create a new conda environment. Additionally, using the mamba package manager will result in faster installation times. To create a new conda environment for DDGScan, you can use the following commands:
 
 ```shell
 conda create -n ddgscan python=3.9
 conda activate ddgscan
+```
+
+Once the new environment is activated, you can install mamba and other required packages using the following commands:
+
+```shell
 conda install -c conda-forge mamba
 mamba install pytorch torchvision torchaudio pytorch-cuda=11.6 -c pytorch -c nvidia
 mamba install -c conda-forge openmm pdbfixer
+```
+
+Next, you can clone the DDGScan repository and install the required Python packages using the following commands:
+
+```shell
 git clone https://github.com/JinyuanSun/DDGScan.git
 pip install pandas numpy joblib seaborn matplotlib venn logomaker mdtraj bio scikit-learn
 python setup.py install
+```
+
+Finally, you can create a cache directory for DDGScan and copy some necessary data files using the following command:
+
+```shell
 mkdir ~/.cache/ddgscan && cp utils/data/nn/* ~/.cache/ddgscan/
-DDGScan -h # you should see help message
+```
+
+To ensure that DDGScan is installed properly and working correctly, you can run the following command and confirm that the help message is displayed:
+
+```shell
+DDGScan -h
 ```
 
 **FoldX**:
@@ -88,13 +99,13 @@ conda install modeller
 
 ### Grape phase I
 
-I provide many options for users especially those know what they want. Here are some quick walk-through. `pdb` and `chain` are positional but  you need to set
-`-E` according to the software you have in your OS. `-seq` are strongly recommended to be set by the user.
-Also, I highly recommend adding the `-MD` flag and using `-P CUDA` if a good gpu is available (better
- than RTX2060 well be much faster than 48 core cpu). Also, I did not test how much precision dropped to use the `-S fast`
- preset, but I do know it can be faster in about two orders of magnitude.  
- If using `-fill` flag, input structure will be automatically fixed using information from SEQRES record in native PDB
- downloaded from RCSB using modeller. Model with lowest `molpdf` energy will be subjected to following step.  
+There are many options available for DDGScan users, particularly for those who know what they want. Here is a quick walk-through of some important options:
+
+- `pdb` and `chain` are positional arguments that must be set, depending on the input PDB file you want to analyze.
+- The `-E` flag must be set according to the software you have installed on your operating system.
+- It is strongly recommended that users set the `-seq` flag to provide sequence information for the input PDB file.
+- For best performance, it is highly recommended to add the `-MD` flag and use `-P CUDA` if a powerful GPU is available (e.g., better than an RTX2060). This will be much faster than using a 48-core CPU.
+- If the `-fill` flag is used, the input structure will be automatically fixed using information from the SEQRES record in the native PDB file downloaded from RCSB using modeller. The model with the lowest `molpdf` energy will be used for further analysis.
 
  <p align="center">
   <img width="80%" src="./img/workflow.png" alt="Workflow of DDGScan">
@@ -203,17 +214,16 @@ optional arguments:
 
 ### Grape phase I
 
-You may want to try it out on a small protein like [Gb1](https://www.rcsb.org/structure/1PGA):  
-I will recommend using the `-S fast` with `-MD` flag, and using `CUDA` to accelerate molecular dynamics simulations.
-This is a very good crystal structure solved by X-ray, so I did not pass any value about fixing the PDB file!  
-Using `-S slow` to get more accuracy!
+You can try running DDGScan on a small protein like Gb1 (1PGA) using the following command:
 
 ```bash
 wget https://files.rcsb.org/download/1PGA.pdb
-DDGScan grape_phaseI 1PGA.pdb A -E foldx abacus rosetta -M run -T 40 -S slow -MD -P CUDA
+DDGScan grape_phaseI 1PGA.pdb A -E foldx -M run -T 40 -MD -P CUDA
 ```
 
-You should expecting outputs like:  
+I recommend using the `-MD` flag and `CUDA` to accelerate molecular dynamics simulations. Since `1PGA` is a high-quality crystal structure solved by X-ray, you don't need to pass any arguments to fix the PDB file.
+
+You should expect outputs like:  
 A folder named `foldx_results` containing:
 
 ```
@@ -228,9 +238,10 @@ MutationsEnergies_CompleteList_SortedByEnergy.tab
 MutationsEnergies_BestPerPositionBelowCutOff.tab
 ```
 
-And another folder named `foldx_jobs` contains many subdirectories, in each subdirectory, containing raw output for
-every mutation built by FoldX. Of course, there will be directories start with rosetta or abacus, depending on your choice!  
-If `-md` was turned on, all produced snapshots can be found in `selectpdb` with `afterMD` as a suffix in the name of PDB files.
+After running DDGScan with the command provided, you will see a folder named `foldx_jobs` in the current directory. This folder contains many subdirectories, each containing the raw output for every mutation built by FoldX. Depending on your choice of energy calculation software, there may also be directories starting with `rosetta` or `abacus`.
+
+If you turned on the `-MD` flag, all produced snapshots can be found in the `selectpdb` folder, with `afterMD` as a suffix in the name of the PDB files.
+
 
 ### Support for homo-multimer interface mutation modelling
 
@@ -252,8 +263,7 @@ About principles for protein physics, refer to  [this book](https://u1lib.org/bo
 
 ### List distribute
 
-For a given set of single-point mutations of a protein. This module distributes calculations to cores and can parse
-pre-defined special groups of mutations to make.
+This module is designed to distribute calculations for a given set of single-point mutations of a protein across multiple cores. Additionally, it can parse pre-defined special groups of mutations to execute.
 
 ```
 # followings are pre-defined groups:
@@ -269,7 +279,7 @@ pre-defined special groups of mutations to make.
     _scan: ARNDCQEGHILKMFPSTWYV
 ```
 
-Also, "dynamic selection" are supported.
+Dynamic selection of mutations is also supported by this module.
 
 ```
 # followings are dynamic selection:
@@ -329,7 +339,7 @@ Continuing...
 
 To avoid issues caused by pdb file, it is recommended to carefully exam your input file. One can
 use `/path/to/rosetta/main/tools/protein_tools/scripts/clean_pdb.py`
-to clean pdb. However, this script will also renumber pdb file.
+to clean pdb. However, this script will also renumber pdb file. Or you can trust the preprocess in DDGScan to help you.
 During test, some cases failed because of the following problems:
 
 * Non-canonical amino acid in pdb will cause failure due to lack parameters in all predictors, therefore is not accepted.
