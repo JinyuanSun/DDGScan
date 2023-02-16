@@ -25,7 +25,6 @@ from utils.abacus2_nn import *
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s   %(levelname)s   %(message)s')
 
-
 class GRAPE:
     def __init__(self):
         self.repaired_pdbfile: str

@@ -79,8 +79,13 @@ def main(pdb, chain, userSeq):
     seq, resNumList = Protein(pdb, chain).pdb2seq()
     judge_result = judge(userSeq, seq, resNumList)
     if judge_result != 0:
-        logging.error("Chain break detected! Transfer to AlphaFold.")
-        exit()
+
+        logging.warning("Chain break detected! Transfer to AlphaFold or Modeller.")
+        return True
+        # exit()
+    else:
+        return False
+    
 
 
 if __name__ == "__main__":
