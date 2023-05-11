@@ -55,7 +55,7 @@ def convert_by_property_selection(wildtype, mutation_type):
                     mutations += aa
 
     wt_hydropathy = hydrophobic_index[wildtype]
-    for aa, value in hydrophobic_index.item():
+    for aa, value in hydrophobic_index.items():
         if aa != wildtype:
             if mutation_type == '@less_hydrophobic':
                 if value <= wt_hydropathy:
@@ -65,7 +65,7 @@ def convert_by_property_selection(wildtype, mutation_type):
                     mutations += aa
 
     wt_sheet_tendenvy = sheet_tendency[wildtype]
-    for aa, value in sheet_tendency.item():
+    for aa, value in sheet_tendency.items():
         if aa != wildtype:
             if mutation_type == '@less_sheet_tendency':
                 if value <= wt_sheet_tendenvy:
@@ -75,7 +75,7 @@ def convert_by_property_selection(wildtype, mutation_type):
                     mutations += aa
 
     wt_helix_tendency = helix_tendency[wildtype]
-    for aa, value in helix_tendency.item():
+    for aa, value in helix_tendency.items():
         if aa != wildtype:
             if mutation_type == '@less_helix_tendency':
                 if value <= wt_helix_tendency:
