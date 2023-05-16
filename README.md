@@ -1,4 +1,4 @@
-# Towards Stable Proteins
+# DDGScan: an integrated parallel workflow for the in silico point mutation scan of protein
 
 Table of Contents
 =================
