@@ -1,4 +1,5 @@
 # DDGScan: an integrated parallel workflow for the in silico point mutation scan of protein
+[![DOI](https://sandbox.zenodo.org/badge/181483014.svg)](https://sandbox.zenodo.org/badge/latestdoi/181483014)
 
 Table of Contents
 =================
