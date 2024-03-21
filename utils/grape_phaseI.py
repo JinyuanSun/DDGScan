@@ -160,6 +160,46 @@ class GRAPE:
 
         return prot_rosetta
 
+    def run_ddg_monomer_row3(self, pdb, threads, chain, relax_num, exe, rosettadb):
+        print("Rosetta started at %s" % (time.ctime()))
+        # relax_num = 200
+
+        prot_rosetta = rosetta.Rosetta(pdb, relax_num, threads, exe, rosettadb)
+        relax_start = time.time()
+        relaxed_prot = prot_rosetta.fast_relax()
+        relax_end = time.time()
+        relax_time = relax_end - relax_start
+        self.running_time["rosetta_relax"] = relax_time
+        print("[INFO]: Rosetta Relax took %f seconds." % (relax_time))
+
+        prot = io.Protein(pdb, chain)
+        seq, resNumList = io.Protein.pdb2seq(prot)
+        # distutils.dir_util.mkpath(ROSETTA_JOBS_DIR)
+        # all_results = []
+        job_list = []
+        for i, res in enumerate(seq):
+
+            resNum = resNumList[i]
+            wild = res
+            for j, aa in enumerate("QWERTYIPASDFGHKLCVNM"):
+                if aa != wild:
+                    jobID =  "_".join([wild, str(resNum), aa])
+                    job_list.append([wild, aa, str(i + 1), jobID, relaxed_prot, exe, rosettadb])
+
+        scan_start = time.time()
+        # print(job_list)
+        # Parallel(n_jobs=threads)(
+        #     delayed(prot_rosetta.runOneJob)(var) for var in job_list
+        # )
+        results = Parallel(n_jobs=threads)(delayed(rosetta_binder.run_row3)(var) for var in job_list)
+        # Rosetta.dump_score_file(results, args.pdb)
+        scan_end = time.time()
+        scan_time = scan_end - scan_start
+        self.running_time["rosetta_scan"] = scan_time
+        print("[INFO]: Rosetta cartesian_ddg Scan took %f seconds." % (scan_time))
+
+        return prot_rosetta
+
     def run_abacus2(self, pdb, threads, chain):
 
         print("[INFO]: ABACUS2 started at %s" % (time.ctime()))
@@ -591,7 +631,6 @@ def main1(args):
                 if judge.main(pdb, chain, None):
                     from utils import modeller_loop
                     _seq = modeller_loop.main(pdb, chain)
-            # exit()
 
         else:
             # print("No sequence provided!")
@@ -601,10 +640,8 @@ def main1(args):
                     from utils import modeller_loop
                     _seq = modeller_loop.main(pdb, chain, seq)
                     logging.warning(f"The patched sequence is {_seq}, we modelling the missing part according it!")
-                    # exit()
                 else:
                     logging.warning("Gaps found in your pdb file. PDB check failed. However, the job will continue.")
-                    # exit()
             else:
                 logging.warning("PDB check passed!")
         return pdb
@@ -626,12 +663,12 @@ def main1(args):
             if exe_dict["relax"] == "":
                 logging.error("Cannot find Rosetta: relax.mpi.linuxgccrelease!")
                 exit()
-            if preset == "slow":
+            if preset == "cart":
                 if exe_dict["cartddg"] == "":
                     logging.error(
                         "Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
                     exit()
-            if preset == "fast":
+            if preset == "row1" or preset == "row3":
                 if exe_dict["ddg_monomer"] == "":
                     logging.error("Cannot find Rosetta: any ddg_monomer.linuxgccrelease (mpi nor default nor static)!")
                     exit()
@@ -665,7 +702,7 @@ def main1(args):
             grape.analysisGrapeScore(
                 FOLDX_RESULTS_DIR + FOLDX_SCORE_FILE, foldx_cutoff, FOLDX_RESULTS_DIR
             )
-        if preset == "slow":
+        if preset == "cart":
             if "rosetta" in softlist:
                 prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num, cartesian_ddg_exe, rosettadb)
                 grape.Analysis_rosetta(pdb, chain, prot_rosetta)
@@ -674,7 +711,7 @@ def main1(args):
                     rosetta_cutoff,
                     ROSETTA_RESULTS_DIR,
                 )
-        if preset == "fast":
+        if preset == "row1":
             if "rosetta" in softlist:
                 prot_rosetta = grape.run_ddg_monomer(pdb, threads, chain, relax_num, ddg_monomer_exe, rosettadb)
                 grape.Analysis_ddgmonomer(pdb, chain, prot_rosetta)
@@ -683,6 +720,16 @@ def main1(args):
                     rosetta_cutoff,
                     ROSETTA_RESULTS_DIR,
                 )
+        if preset == "row3":
+            if "rosetta" in softlist:
+                prot_rosetta = grape.run_ddg_monomer_row3(pdb, threads, chain, relax_num, ddg_monomer_exe, rosettadb)
+                grape.Analysis_ddgmonomer(pdb, chain, prot_rosetta)
+                grape.analysisGrapeScore(
+                    ROSETTA_RESULTS_DIR + ROSETTA_SCORE_FILE,
+                    rosetta_cutoff,
+                    ROSETTA_RESULTS_DIR,
+                )
+                
 
                 # prot_rosetta = grape.run_rosetta(pdb, threads, chain, relax_num)
                 # grape.Analysis_rosetta(pdb, chain, prot_rosetta)

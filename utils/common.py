@@ -45,3 +45,7 @@ long2short = {
         "TYR": "Y",
         "MET": "M",
     }
+
+FOLDX_EXE = "foldx"
+ROSETTA_RELAX_EXE = "relax.static.linuxgccrelease"
+ROSETTA_DDG_MONOMER_EXE = "ddg_monomer.static.linuxgccrelease"

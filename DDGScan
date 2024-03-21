@@ -92,13 +92,13 @@ grape_phaseI_parser.add_argument(
     default="run",
 )
 grape_phaseI_parser.add_argument(
-    "-S",
-    "--preset",
-    help="Fast or Slow",
-    type=str,
-    choices=["fast", "slow"],
-    default="slow",
-)
+            "-S",
+            "--preset",
+            help="cart for cartesian_ddg, row1 for ddg_monomer row1 protocol, row3 for ddg_monomer row3 protocol",
+            type=str,
+            choices=["row1", "row3", "cart"],
+            default="row1",
+        )
 grape_phaseI_parser.add_argument(
     "-MD",
     "--molecular_dynamics",

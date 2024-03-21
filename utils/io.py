@@ -146,10 +146,10 @@ class Parser:
         parser.add_argument(
             "-S",
             "--preset",
-            help="Fast or Slow",
+            help="cart for cartesian_ddg, row1 for ddg_monomer row1 protocol, row3 for ddg_monomer row3 protocol",
             type=str,
-            choices=["fast", "slow"],
-            default="slow",
+            choices=["row1", "row3", "cart"],
+            default="row1",
         )
         parser.add_argument(
             "-MD",
